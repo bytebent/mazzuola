@@ -322,3 +322,13 @@ hand test with a second monitor and an iPad.
 - If neither helps: the only setup proven to work on the iPad is one app with one window
   there. Then the fallback is the user's two-apps idea (a paint app whose only window is
   on the iPad), with syncing through the bottega files.
+
+### 2026-11-18 — v0.0.5: iPad test, round 3
+
+- User's test of v0.0.4: neither switch helped. And since v0.0.2 even the **main**
+  window doesn't update on the iPad (it takes taps, but the picture doesn't change),
+  also without opening the paint window. v0.0.1 worked.
+- The only v0.0.2 change touching the main window: the GLFW monitor callback now
+  chained to ImGui's own (so ImGui refreshes its monitor list on display changes).
+  Undone in v0.0.5 as a test. If v0.0.5 updates on the iPad, that's the cause; if not,
+  check whether v0.0.1 still works today (a change in the iPad setup?).

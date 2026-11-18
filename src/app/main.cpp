@@ -53,11 +53,12 @@ void onKey(GLFWwindow*, int key, int, int action, int mods) {
 
 // A display was added or removed (e.g. Sidecar turned off): ask the editor to bring
 // panels that live in their own windows back into the main window.
+// Test (v0.0.5): passing display changes on to ImGui's own handler (added in v0.0.2)
+// is the main suspect for the main window no longer updating on the iPad, so it is
+// off again, as in v0.0.1.
 bool gMonitorsChanged = false;
-GLFWmonitorfun gPrevMonitorCallback = nullptr; // ImGui's own (keeps its monitor list current)
-void onMonitor(GLFWmonitor* m, int event) {
+void onMonitor(GLFWmonitor*, int event) {
     if (event == GLFW_DISCONNECTED) gMonitorsChanged = true;
-    if (gPrevMonitorCallback) gPrevMonitorCallback(m, event);
 }
 
 void onError(int code, const char* text) { std::fprintf(stderr, "Mazzuola: GLFW error %d: %s\n", code, text); }
@@ -115,7 +116,7 @@ int main(int argc, char** argv) {
     }
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
-    gPrevMonitorCallback = glfwSetMonitorCallback(onMonitor);
+    glfwSetMonitorCallback(onMonitor);
     installPenInput();
     ImGuiContext* mainCtx = ImGui::GetCurrentContext();
     registerPenContext(mainCtx);
