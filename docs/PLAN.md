@@ -267,3 +267,5 @@ hand test with a second monitor and an iPad.
 - Added Help → Pen and mouse test (click count, pointer position/source, buttons, pen
   pressure/tilt, how many clicks needed their position supplied).
 - Not testable here (no Mac, no iPad): the user checks the three fixes by hand.
+- User re-test of v0.0.1: with the whole app on the iPad, the Apple Pencil now works.
+  Still to report: a panel pulled out onto the iPad, and turning Sidecar off.
