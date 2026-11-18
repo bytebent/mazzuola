@@ -240,7 +240,10 @@ bool Editor::frame(double dt) {
     } else if (startupFrames_ == 5 && !opt_.screenshot.empty()) {
         quit_ = true;
     }
-    return flying_ || draggingView_ >= 0 || scriptMode_ || !opt_.screenshot.empty();
+    // A scripted run is busy only while commands are left (a finished script without
+    // `quit` leaves the app idle, for the idle check).
+    const bool scriptBusy = scriptMode_ && !scriptDone_;
+    return flying_ || draggingView_ >= 0 || scriptBusy || !screenshotRequest_.empty() || !opt_.screenshot.empty();
 }
 
 void Editor::dockspace() {

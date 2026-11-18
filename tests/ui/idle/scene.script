@@ -1,0 +1,17 @@
+# Idle check scene: the app with everything it can show so far, then no `quit`, so it
+# goes idle. The screenshot at the end is the harness's "ready" signal.
+grid 4
+key Shift+W
+viewdir 1 Back
+viewdir 2 Left
+camera 3 60 30 300 10 20 0
+key 1
+action help.controls
+action view.paintwindow
+wait 4
+expect paintwindow 1
+expect grid 4
+expect snap 0
+expect controls 1
+wait 3
+shot idle-ready.png

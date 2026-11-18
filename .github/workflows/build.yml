@@ -60,6 +60,11 @@ jobs:
         run: tests/ui/run.sh "$PWD/build/Mazzuola" ui-shots
       - name: UI tests at Retina (2x) view scale
         run: MAZZ_VIEW_SCALE=2 tests/ui/run.sh "$PWD/build/Mazzuola"
+      - name: Idle CPU check (control, 1x, 2x)
+        run: |
+          tests/ui/idle.sh "$PWD/build/Mazzuola" --control
+          tests/ui/idle.sh "$PWD/build/Mazzuola"
+          MAZZ_VIEW_SCALE=2 tests/ui/idle.sh "$PWD/build/Mazzuola"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,13 +1,18 @@
 # Mazzuola — rules for AI sessions
 
 Read `docs/ARCHITECTURE.md` before changing anything. It is the agreed design.
-Then read `docs/PLAN.md`: current status, how to build, open questions, log.
-New session? Also read `docs/HANDOFF.md` (user preferences, past mistakes, workspace quirks).
+Then read `docs/PLAN.md`: current status, milestone plans, open questions. The log is `docs/LOG.md`.
+Building, testing, CI and releasing: `docs/DEV.md`.
+New session? Also read `docs/HANDOFF.md` (user preferences, privacy, decisions to keep, past mistakes).
 
 ## Keeping records (required)
-- Update `docs/PLAN.md` after every step: status, test results, next steps, parked questions.
+- After every step, update `docs/PLAN.md` (status, next steps, parked questions) and add an entry
+  to `docs/LOG.md` (what was done, test results). When LOG.md gets long, move its oldest
+  entries to `docs/LOG-archive.md`.
 - Every screenshot taken goes into `docs/screenshots/` (`m<milestone>-<nn>-<what>.png`)
-  and is mentioned in the PLAN log.
+  and is mentioned in the LOG entry.
+- Discuss a new idea with the user first, then record it in the docs the same day it is
+  agreed. Sessions get compressed; the docs are the memory.
 - If a question blocks one thing, park it in PLAN.md and continue with other work.
 
 ## Privacy (strict)

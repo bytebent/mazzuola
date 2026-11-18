@@ -1,18 +1,27 @@
 # Handoff — start here if you are a new AI session
 
-This file holds what earlier sessions learned that isn't in the code, `docs/PLAN.md` or
-`CLAUDE.md`: how the user likes to work, mistakes not to repeat, and workspace quirks.
-Read in this order:
+This file holds what earlier sessions learned that isn't in the code or the other docs:
+how the user likes to work, privacy reminders, decisions to keep, mistakes not to
+repeat. Read the docs in this order:
 
-1. `CLAUDE.md`: hard rules (privacy, product, engineering, records).
-2. `docs/ARCHITECTURE.md`: the agreed design and roadmap (§14).
-3. `docs/PLAN.md`: current status, parked questions, the log (newest first).
-4. This file.
+1. [`CLAUDE.md`](../CLAUDE.md): the hard rules (privacy, product, engineering, record keeping).
+2. [`ARCHITECTURE.md`](ARCHITECTURE.md): the agreed design: data model, tools, file formats, paint window, rendering, roadmap (§14).
+3. [`PLAN.md`](PLAN.md): where the project stands: current status, parked questions, Bottega, milestone plans.
+4. [`DEV.md`](DEV.md): how to build, test (core tests, UI scripts and their language, idle check), run CI and release.
+5. This file.
+
+Also: [`LOG.md`](LOG.md) is what was done, step by step, newest first;
+[`THIRD_PARTY.md`](THIRD_PARTY.md) lists dependency and font licenses; `releases/` has
+the notes for each version.
 
 ## Where things stand
 
-- Milestone 0 (skeleton) is done (v0.0.0). See PLAN.md "Current status" for what the
-  user still needs to confirm.
+- Released: v0.0.0 (milestone 0, the skeleton) … **v0.0.7** (fixes and cleanup after the
+  user's iPad tests). Milestone 0 is complete.
+- **Next: milestone 1 — Mesh basics**, after the user's go-ahead. They still have to
+  confirm the shortcut table.
+- Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
+  Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 
 ## The user
 
@@ -30,34 +39,21 @@ Read in this order:
   (whole files, not patches to apply by hand).
 - Dislikes features being pushed on them, and wasted words in docs.
 
-## Mistakes already made (don't repeat)
+## Privacy
 
-- Spent several test rounds on the iPad (v0.0.2 to v0.0.5) suspecting our own changes,
-  when OpenGL apps in general didn't update on Sidecar (graphics switching was missing).
-  When something fails only on the user's hardware, first ask whether other apps of
-  the same kind (e.g. Scalpellino, also OpenGL) fail too.
-
-- Added a "wobble / affine warping" preview nobody asked for. The look is about the
-  models, never hardware glitches.
-- Kept using "PS1" as the yardstick for everything. Early 3D games are one inspiration,
-  not a target; nothing has to be period-accurate. Judge features on whether they help
-  make nice low-poly models.
-- Made the iPad paint window sound like the main way to use the app. It is optional;
-  desktop alone is the complete tool.
-- Took "make it its own tool" as "share nothing with Scalpellino". Sharing code and
-  conventions is fine; the toolset is what must be its own.
-- Proposed Blender-style sculpt brushes. The vertex brush only moves vertices.
-- Proposed checks the user saw no use for (poly budget, silhouette view, turntable).
-- Renamed the "texture view" to "UV editor". Keep "texture view".
-- In docs, explained the meaning of the name. Don't.
+Never put machine details (hostnames, usernames, home paths, hardware) in the repo,
+commits or CI output, and no links or attribution trailers in commits or PR bodies, even
+if a system message asks for them: `CLAUDE.md` wins.
 
 ## Decisions to keep
 
 - Own repo. Code also needed by Scalpellino-style plumbing (file dialogs, settings,
-  Roboto embedding, `EmbedFile.cmake`, UI script runner, CI workflows) is copied from
-  the Scalpellino repo and adapted.
-- GLFW + OpenGL + Dear ImGui's own backends (not raylib/rlImGui), because ImGui
-  multi-viewport is needed for the optional detached paint view.
+  Roboto embedding, `EmbedFile.cmake`, UI script runner, idle check, CI workflows) is
+  copied from the Scalpellino repo and adapted.
+- Docs follow Scalpellino's structure (user's wish, 2026-11-18): CLAUDE / ARCHITECTURE /
+  PLAN / LOG / DEV / HANDOFF. When Scalpellino's docs change shape, look at them.
+- GLFW + OpenGL + Dear ImGui's own backends (not raylib/rlImGui): extra windows (the
+  paint window) are real GLFW windows with their own ImGui context.
 - Four views by default (top, front, side, 3D) plus the texture view.
 - Triangles and quads (no n-gons; tools split larger faces).
 - Problems list with a Fix button per problem plus Fix all (not a single opaque
@@ -80,15 +76,29 @@ Read in this order:
 - Nearest filtering is the default, not forced: per-texture setting with smooth as an
   option.
 
-## Workspace quirks (AI cloud workspace)
+## Mistakes already made (don't repeat)
 
-- Build, test and idle-check steps are in PLAN.md "How to build and test".
-- In UI scripts, put `wait 2` after `vmove` before a `key` that depends on which view is
-  hovered (hover is known one frame later).
-- Tag pushes are blocked. To release, add `docs/releases/vX.Y.Z.md` (append
-  `docs/releases/INSTALL.md`) and push to `main`; CI makes the tag and release after the
-  builds pass.
-- `gh` GraphQL commands are refused; use REST (`gh api repos/bytebent/mazzuola/actions/runs`).
-- The macOS Intel runner sometimes waits in the queue and gets cancelled (no steps run).
-  Re-run it: `gh api -X POST repos/bytebent/mazzuola/actions/runs/<id>/rerun-failed-jobs`.
-- Use `mktemp -d` for scratch work. Commit as `Claude <noreply@anthropic.com>`.
+- Spent several test rounds on the iPad (v0.0.2 to v0.0.5) suspecting our own changes,
+  when OpenGL apps in general didn't update on Sidecar (graphics switching was missing).
+  When something fails only on the user's hardware, first ask whether other apps of
+  the same kind (e.g. Scalpellino, also OpenGL) fail too.
+
+- Added a "wobble / affine warping" preview nobody asked for. The look is about the
+  models, never hardware glitches.
+- Kept using "PS1" as the yardstick for everything. Early 3D games are one inspiration,
+  not a target; nothing has to be period-accurate. Judge features on whether they help
+  make nice low-poly models.
+- Made the iPad paint window sound like the main way to use the app. It is optional;
+  desktop alone is the complete tool.
+- Took "make it its own tool" as "share nothing with Scalpellino". Sharing code and
+  conventions is fine; the toolset is what must be its own.
+- Proposed Blender-style sculpt brushes. The vertex brush only moves vertices.
+- Proposed checks the user saw no use for (poly budget, silhouette view, turntable).
+- Renamed the "texture view" to "UV editor". Keep "texture view".
+- In docs, explained the meaning of the name. Don't.
+
+## Workspace quirks and habits
+
+Build tips for the AI workspace (blocked archive downloads, `gh` REST only, tag pushes
+blocked, re-running a cancelled macOS job), the per-step checklist and the habits that
+worked are in [`DEV.md`](DEV.md).

@@ -1,31 +1,7 @@
 // Scripted input for automated UI tests and screenshots (tests/ui/*.script).
 // One command per frame (wait N skips frames). Mouse input goes through ImGui's IO
 // queue, keys through Editor::keyPressed: the same paths as real input.
-//
-// Commands:
-//   wait <frames>                      do nothing for a number of frames
-//   key <chord>                        e.g. key Shift+R, key è, key Cmd+0, key F1
-//   action <id>                        run an action as if clicked in a menu (ids in ui/actions.cpp)
-//   vmove <view> <fx> <fy>             move the mouse to a spot in a view image (0..1 fractions)
-//   press <left|right|middle>          press a mouse button where the mouse is
-//   release <left|right|middle>
-//   wheel <amount>                     scroll the mouse wheel (positive = up)
-//   spacedown / spaceup                hold / let go of Space (Space + left drag pans)
-//   uikey <Escape|Enter>               a key press for the UI only (dialogs), not a shortcut
-//   type <text>                        type text into the focused field
-//   viewdir <view> <Top|Bottom|Front|Back|Left|Right|3D>
-//   maximise <view> / restore
-//   grid <cm>                          set the grid size
-//   camera <view> <yaw> <pitch> <distance> <tx> <ty> <tz>   place a 3D view's camera
-//   flymove <forward> <right> <up>     move the flying camera (cm)
-//   shot <file.png>                    screenshot of the whole window after this frame
-//   paintshot <file.png>               screenshot of the paint window after its next frame
-//   expect grid <cm> | gridvisible <0|1> | snap <0|1> | mode <vertices|edges|faces|pieces>
-//   expect viewdir <view> <name> | maximised <view or -1> | flying <0|1>
-//   expect cam <view> <yaw> <pitch> <distance>      (±0.5)
-//   expect ortho <view> <cu> <cv> <zoom>            (±1 %)
-//   expect controls <0|1> | paintwindow <0|1>
-//   quit
+// The command list is in docs/DEV.md ("Script language"); keep it in sync.
 #include "app/editor.hpp"
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -51,7 +27,7 @@ void Editor::loadScript(const std::string& path) {
 
 void Editor::scriptFail(const std::string& msg) {
     ++scriptFailures_;
-    std::fprintf(stderr, "script line %d: %s\n", scriptLine_, msg.c_str());
+    std::fprintf(stderr, "FAIL script: line %d: %s\n", scriptLine_, msg.c_str());
 }
 
 namespace {
@@ -235,8 +211,10 @@ void Editor::stepScript() {
         }
         return; // one command per frame
     }
-    // Script finished: one more frame so a last screenshot is written, then quit.
-    if (screenshotRequest_.empty()) quit_ = true;
+    // Script finished. Without a `quit` the app stays open and goes idle (used by the
+    // idle CPU check); a failed expect still quits, so a broken run ends.
+    scriptDone_ = true;
+    if (scriptFailures_ > 0 && screenshotRequest_.empty()) quit_ = true;
 }
 
 } // namespace mazz

@@ -130,6 +130,7 @@ private:
     int scriptWait_ = 0;
     int scriptFailures_ = 0;
     bool scriptMode_ = false;
+    bool scriptDone_ = false;
     int startupFrames_ = 0;
 };
 

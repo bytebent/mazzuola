@@ -129,3 +129,4 @@ expect paintwindow 0
 action view.paintwindow
 wait 4
 expect paintwindow 1
+quit

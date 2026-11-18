@@ -476,7 +476,8 @@ src/platform/  file dialogs, tablet input, file watching
 src/app/       main loop, settings, startup
 cmake/         dependency pins, file embedding, Info.plist
 tests/         core + io tests, sample models, UI scripts
-docs/          this file, PLAN.md, HANDOFF.md, screenshots
+docs/          this file, PLAN.md, LOG.md, DEV.md, HANDOFF.md, THIRD_PARTY.md,
+               releases/, screenshots/
 .github/       macOS Intel builds + tests, Apple Silicon on demand, Linux tests
 ```
 
@@ -510,7 +511,8 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 - Export tests: `.glb`/`.gltf` read back with cgltf (counts, cm → m, colours, samplers
   per filtering setting,
   alpha, double-sided, parts and their origins); `.obj` parsed back.
-- Scripted UI tests with screenshots into `docs/screenshots/`.
+- Scripted UI tests with screenshots into `docs/screenshots/`; an idle CPU check with
+  everything open (see DEV.md).
 - Second display and tablet input tested by hand.
 
 ## 14. Roadmap
