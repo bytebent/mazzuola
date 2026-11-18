@@ -48,6 +48,9 @@ private:
     int taps_ = 0;
     bool dragging_ = false;
     double lastGridSize_ = -1;
+    bool syncToDisplay_ = true;
+    bool syncApplied_ = false;
+    unsigned long long frames_ = 0;
     bool lastGridVisible_ = true;
     std::string shot_;
 };

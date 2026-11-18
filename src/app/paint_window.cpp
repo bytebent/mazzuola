@@ -41,7 +41,8 @@ bool PaintWindow::open(GLFWwindow* mainWindow, bool automated) {
 
     ImGuiContext* prevCtx = ImGui::GetCurrentContext();
     glfwMakeContextCurrent(window_);
-    glfwSwapInterval(0); // the main window already waits for the display; don't wait twice
+    glfwSwapInterval(1);
+    syncApplied_ = true;
     ctx_ = ImGui::CreateContext();
     ImGui::SetCurrentContext(ctx_);
     ImGuiIO& io = ImGui::GetIO();
@@ -118,6 +119,11 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     glClearColor(0.955f, 0.957f, 0.965f, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    if (syncToDisplay_ != syncApplied_) {
+        glfwSwapInterval(syncToDisplay_ ? 1 : 0);
+        syncApplied_ = syncToDisplay_;
+    }
+    ++frames_;
     if (!shot_.empty()) {
         saveScreenshot(window_, shot_);
         shot_.clear();
@@ -178,6 +184,10 @@ void PaintWindow::ui(const Grid& grid) {
     ImGui::Text("Pressure: %.2f", p.pressure);
     ImGui::Text("Tilt: %.2f, %.2f", p.tiltX, p.tiltY);
     ImGui::TextWrapped("Drag on the view to turn it; scroll (two fingers) to zoom.");
+    ImGui::Spacing();
+    ImGui::TextDisabled("Display test");
+    ImGui::Text("Frames drawn: %llu", frames_);
+    ImGui::Checkbox("Sync to display", &syncToDisplay_);
     ImGui::EndChild();
 
     // ---- the view: drag orbits (pens have no right button), scroll zooms

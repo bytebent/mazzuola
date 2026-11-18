@@ -294,3 +294,17 @@ hand test with a second monitor and an iPad.
   follows the grid) passes at 1× and 2×; idle 0 ticks. Screenshot `m0-08-paint-window.png`.
 - If the test works on the iPad, milestone 8 uses this second window, and the ImGui
   "pull a panel out" feature can be switched off (it was the fragile part).
+
+### 2026-11-18 — v0.0.3: paint window display test
+
+- User's test of v0.0.2: in the paint window on the iPad, Pencil taps register, but the
+  window doesn't redraw until moved back to the Mac screen.
+- The one difference from the main window (which redraws fine on the iPad): the paint
+  window was set not to wait for the display (swap interval 0, to avoid waiting twice
+  per loop). Now it waits like the main window (interval 1). Cost: while both windows
+  draw, each waits for the display, so about half the frame rate during interaction.
+  Fine for the test; to revisit if this is the fix (e.g. draw a window only when it
+  changed).
+- Added to the paint window: a "Frames drawn" counter and a "Sync to display" checkbox
+  (on = new behaviour, off = v0.0.2's) so the user can tell a presenting problem from a
+  drawing one.
