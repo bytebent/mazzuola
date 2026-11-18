@@ -129,8 +129,11 @@ to the GPU → one redraw of the views that show it.
 - **Four views** by default: top, front, side (orthographic) and 3D. Any view can be
   maximised and switched to another direction (front/back/left/right/top/bottom).
   Splitters resize; double-click restores.
-- **3D camera**: orbit around the origin, orbit around the selection, or fly
-  (Z, WASD physical keys) — three buttons in the view's corner.
+- **3D camera**: right mouse drag orbits around the origin or the selection (two buttons
+  in the view's header), middle mouse (or Space + left mouse) pans, the wheel zooms.
+  **Fly** (Z over the 3D view, or the header button): mouse looks, W A S D move, Q/E
+  down/up, Shift fast; Z or Esc stops.
+- **2D views**: wheel zooms toward the cursor, middle mouse (or Space + left mouse) pans.
 - **Texture view**: always visible next to the views (§6 Texture coordinates).
 - **Paint view**: an extra 3D view with its own camera, a slim toolbar and a palette
   strip. Docked as a tab by default; can be pulled out into its own window (§8).
@@ -141,9 +144,10 @@ to the GPU → one redraw of the views that show it.
 - **Counter**: vertices and triangles (total, selected, hidden).
 
 ### General rules
-- Menus: File, Edit, Select, **Create** (everything that makes new geometry: primitives,
-  rock, lathe, loft, image card, tree), Mesh (editing commands), Texture, Paint, View,
-  Help.
+- Menus: File, Edit, Select, Tools, **Create** (everything that makes new geometry:
+  primitives, rock, lathe, loft, image card, tree), Mesh (editing commands), Texture,
+  Paint, View, Help. Features of later milestones are listed, disabled, with the
+  milestone that brings them.
 - Every shortcut also in the menus with typed dialogs; Help → Controls lists them.
 - Creation commits on **Return**, cancels on **Esc**, never on mouse release.
 - Operations with settings (extrude, bevel, divide…) show a live preview and a panel of
@@ -152,8 +156,8 @@ to the GPU → one redraw of the views that show it.
 - **Look: light theme with a red accent** (Scalpellino is dark with blue, so the two
   are told apart at a glance). The accent marks the active tool, focused fields,
   buttons, tabs and selected list rows. Views keep the usual axis colours (X red,
-  Y green, Z blue); selection in the views is drawn in orange so it never reads as the
-  X axis. Model views use a light grey background, the texture view a checkerboard
+  Y green, Z blue); selection in the views is drawn in pink so it never reads as the
+  X axis or the UI accent. Model views use a light grey background, the texture view a checkerboard
   behind transparent pixels.
 - UI font Roboto. Grid halve/double on the two keys right of P; grid and snap toggles.
   Grid steps match Scalpellino's (in cm), plus steps below 1 cm (millimetres) for small
@@ -443,8 +447,10 @@ rectangle of a texture, or the changed vertex colours.
 Fetched by CMake, versions pinned:
 - GLFW: windows, input
 - Dear ImGui (docking branch) with its GLFW + OpenGL3 backends
-- glad (OpenGL loader, for Linux CI)
-- cgltf: `.glb`/`.gltf` writing (and reading in tests)
+- cgltf: `.glb`/`.gltf` writing (and reading in tests); added in milestone 1
+
+OpenGL functions: macOS links the system framework; elsewhere a short list of function
+pointers is loaded at start-up (`render/gl.hpp`), so no loader library is needed.
 - stb_image, stb_image_write: images
 - Roboto (embedded)
 
@@ -504,7 +510,7 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 0 | Skeleton: GLFW + OpenGL + ImGui docking, idle = zero, Roboto, menus, four views + maximise, 3D orbit/fly, grid keys, counter, shortcut scheme, CI | |
+| 0 | Skeleton: GLFW + OpenGL + ImGui docking, idle = zero, Roboto, menus, four views + maximise, 3D orbit/fly, grid keys, counter, shortcut scheme, CI | done (v0.0.0) |
 | 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), rock, selection modes, transform + clone (with rotate/scale per copy), mirror, flatten, model pivot, undo, `.mazz`, reference images (transparency, front/back), scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
 | 2 | Modelling: draw on faces + polygon tool, push/pull, inference snapping, extrude/inset/bevel, bridge, shell, divide (subdivide plain/smoothed, edges, poke, connect), cut, loop cut, slide, merge/collapse/weld, dissolve, fill, split, flip, diagonals, double-sided, mirror mode | |
 | 3 | Lathe + loft, parts with pivots, smoothing groups + auto smooth, problems list with fixes | |

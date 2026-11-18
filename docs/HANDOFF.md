@@ -11,8 +11,8 @@ Read in this order:
 
 ## Where things stand
 
-- Design agreed and written down. Nothing built yet.
-- **Next: milestone 0 — Skeleton**, after the user's go-ahead.
+- Milestone 0 (skeleton) is done (v0.0.0). See PLAN.md "Current status" for what the
+  user still needs to confirm.
 
 ## The user
 
@@ -65,14 +65,19 @@ Read in this order:
   image card, generate texture, tree later). The user is also reading the Bryce docs to
   expand Scalpellino; things that fit Mazzuola may come from there.
 - Create menu holds everything that makes new geometry; Mesh holds editing commands.
-- Look: light theme, red accent (Scalpellino: dark, blue accent).
+- Look: light theme, red accent (Scalpellino: dark, blue accent). The accent is for UI
+  chrome only; selection in the views is pink.
 - Units: 1 unit = 1 cm (same as Scalpellino), scale figure 175 cm.
 - Nearest filtering is the default, not forced: per-texture setting with smooth as an
   option.
 
 ## Workspace quirks (AI cloud workspace)
 
-- See Scalpellino's `docs/HANDOFF.md` for the cloud workspace notes (blocked GitHub
-  archive downloads → clone deps at pinned refs and pass `FETCHCONTENT_SOURCE_DIR_*`;
-  Linux packages for builds; `mktemp -d` for scratch work). Add Mazzuola-specific notes
-  here as they come up.
+- Build, test and idle-check steps are in PLAN.md "How to build and test".
+- In UI scripts, put `wait 2` after `vmove` before a `key` that depends on which view is
+  hovered (hover is known one frame later).
+- Tag pushes are blocked. To release, add `docs/releases/vX.Y.Z.md` (append
+  `docs/releases/INSTALL.md`) and push to `main`; CI makes the tag and release after the
+  builds pass.
+- `gh` GraphQL commands are refused; use REST (`gh api repos/bytebent/mazzuola/actions/runs`).
+- Use `mktemp -d` for scratch work. Commit as `Claude <noreply@anthropic.com>`.

@@ -2,8 +2,23 @@
 
 ## Current status
 
-- Design written (`docs/ARCHITECTURE.md`). Nothing built yet.
-- **Next: milestone 0 — Skeleton**, after the user's go-ahead.
+- **Milestone 0 (skeleton) done: v0.0.0.** Window, views, grid, navigation, menus with
+  every planned shortcut. Nothing can be modelled yet.
+- Waiting on the user: confirm the shortcut table (Help → Controls), and the by-hand
+  check of M0 step 7 (a panel pulled out onto a second screen / iPad).
+- **Next: milestone 1 — Mesh basics**, after the user's go-ahead.
+
+## How to build and test (AI workspace)
+
+- GitHub archive downloads are blocked here, so FetchContent can't download. Clone the
+  deps at the pinned refs (`cmake/Deps.cmake`) into a scratch folder and configure with
+  `-DFETCHCONTENT_SOURCE_DIR_GLFW=… -DFETCHCONTENT_SOURCE_DIR_IMGUI=… -DFETCHCONTENT_SOURCE_DIR_STB=…`.
+- Linux packages: `libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+  libgl1-mesa-dri libxkbcommon-dev xvfb` (`apt-get update` first).
+- Core tests: `./build/mazz_core_tests`. UI scripts: `tests/ui/run.sh $PWD/build/Mazzuola <shot-dir>`
+  (absolute path), and again with `MAZZ_VIEW_SCALE=2` (Retina-sized view images).
+- Idle check: start the app under `xvfb-run` with `HOME` set to a temp folder, wait 4 s,
+  read utime+stime from `/proc/<pid>/stat`, wait 10 s, read again: the difference must be 0.
 
 ## How to work in this repo
 
@@ -22,7 +37,8 @@
 1. Clone the Scalpellino repo and copy over what both need, adapted to GLFW/OpenGL:
    file dialogs (`platform/file_dialog*`), settings storage, `cmake/EmbedFile.cmake`
    and Roboto embedding, `cmake/Info.plist.in`, the UI script runner, CI workflows.
-2. CMake project, pinned deps (GLFW, ImGui docking, glad, cgltf, stb), Roboto embedded.
+2. CMake project, pinned deps (GLFW, ImGui docking, stb), Roboto embedded. (No glad: a
+   short own loader list in `render/gl.hpp`. cgltf comes with export in M1.)
 3. Main loop on `glfwWaitEvents`: redraw only on change. Check idle CPU ≈ 0.
 4. ImGui docking with multi-viewport; default layout (four views, texture view, side
    panels, status bar, counter); menus (File, Edit, Select, Create, Mesh, Texture, Paint,
@@ -196,3 +212,32 @@ hand test with a second monitor and an iPad.
 
 - UI: light theme with a red accent (Scalpellino is dark with blue). Axis colours stay
   standard; selection in the views is orange so it isn't confused with the X axis.
+
+### 2026-11-18 — Milestone 0 done (v0.0.0)
+
+- Built: CMake project (GLFW 3.4, Dear ImGui v1.93.0-docking with its GLFW/OpenGL 3
+  backends, stb at a pinned commit; Roboto embedded); `mazz_core` (grid in cm, view
+  directions, 2D and 3D cameras, grid line maths) with 280 checks in `mazz_core_tests`;
+  OpenGL 4.1 core rendering of the views into multisampled offscreen images.
+- Copied from Scalpellino and adapted: settings folder, file dialogs (not used until M1),
+  `EmbedFile.cmake`, `Info.plist.in`, the duplicate-widget-ID check, `tests/ui/run.sh`,
+  CI workflows, `INSTALL.md`.
+- UI: light theme, red accent; menus File, Edit, Select, Tools, Create, Mesh, Texture,
+  Paint, View, Help, with later features listed disabled and labelled with their
+  milestone; one action table drives menus, shortcuts, Help → Controls and scripts.
+  Four views (Top, Front, Right, 3D) with direction menus, maximise/restore, resizable
+  splitters; texture view (empty checkerboard), Tools, Properties, Parts, Palette panels;
+  status bar with tool, mode, cursor position, grid and the vertex/triangle counter.
+- Navigation: 2D wheel zoom toward the cursor, middle / Space+left pan; 3D right-drag
+  orbit, wheel zoom, pan; fly mode (Z over the 3D view; WASD, Q/E, Shift; Z or Esc
+  stops). Cmd+0 back to origin. Grid keys è/+, Shift+R, Shift+W, View → Set grid size.
+- Decisions made along the way: a **Tools** menu was added (tool shortcuts need a menu
+  home); right mouse orbits the 3D view (Scalpellino uses it to look around: Mazzuola is
+  model-centred); view selection colour is **pink** (user's choice, replaces orange).
+- Tests: core 280/280; UI script `m0_views` passes at 1× and 2×; idle CPU 0 ticks
+  over 10 s.
+- Screenshots: `m0-01-start.png`, `m0-02-top-zoomed-panned.png`, `m0-03-orbited.png`,
+  `m0-04-directions.png`, `m0-05-maximised-3d.png`, `m0-06-flying.png`,
+  `m0-07-controls.png`.
+- Not checked here (no Mac in the workspace): the macOS build and look on a Retina
+  screen; CI builds it. The second-screen / iPad check is by hand.

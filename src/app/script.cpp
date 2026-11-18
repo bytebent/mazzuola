@@ -1,0 +1,235 @@
+// Scripted input for automated UI tests and screenshots (tests/ui/*.script).
+// One command per frame (wait N skips frames). Mouse input goes through ImGui's IO
+// queue, keys through Editor::keyPressed: the same paths as real input.
+//
+// Commands:
+//   wait <frames>                      do nothing for a number of frames
+//   key <chord>                        e.g. key Shift+R, key è, key Cmd+0, key F1
+//   action <id>                        run an action as if clicked in a menu (ids in ui/actions.cpp)
+//   vmove <view> <fx> <fy>             move the mouse to a spot in a view image (0..1 fractions)
+//   press <left|right|middle>          press a mouse button where the mouse is
+//   release <left|right|middle>
+//   wheel <amount>                     scroll the mouse wheel (positive = up)
+//   spacedown / spaceup                hold / let go of Space (Space + left drag pans)
+//   uikey <Escape|Enter>               a key press for the UI only (dialogs), not a shortcut
+//   type <text>                        type text into the focused field
+//   viewdir <view> <Top|Bottom|Front|Back|Left|Right|3D>
+//   maximise <view> / restore
+//   grid <cm>                          set the grid size
+//   camera <view> <yaw> <pitch> <distance> <tx> <ty> <tz>   place a 3D view's camera
+//   flymove <forward> <right> <up>     move the flying camera (cm)
+//   shot <file.png>                    screenshot of the whole window after this frame
+//   expect grid <cm> | gridvisible <0|1> | snap <0|1> | mode <vertices|edges|faces|pieces>
+//   expect viewdir <view> <name> | maximised <view or -1> | flying <0|1>
+//   expect cam <view> <yaw> <pitch> <distance>      (±0.5)
+//   expect ortho <view> <cu> <cv> <zoom>            (±1 %)
+//   expect controls <0|1>
+//   quit
+#include "app/editor.hpp"
+#include <GLFW/glfw3.h>
+#include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <sstream>
+
+namespace mazz {
+
+void Editor::loadScript(const std::string& path) {
+    std::ifstream f(path);
+    if (!f) {
+        std::fprintf(stderr, "Mazzuola: cannot open script %s\n", path.c_str());
+        ++scriptFailures_;
+        quit_ = true;
+        return;
+    }
+    std::string line;
+    while (std::getline(f, line)) script_.push_back(line);
+    // Start after a few frames so the dock layout has settled.
+    scriptWait_ = 3;
+}
+
+void Editor::scriptFail(const std::string& msg) {
+    ++scriptFailures_;
+    std::fprintf(stderr, "script line %d: %s\n", scriptLine_, msg.c_str());
+}
+
+namespace {
+int buttonFromName(const std::string& s) {
+    if (s == "left") return 0;
+    if (s == "right") return 1;
+    if (s == "middle") return 2;
+    return -1;
+}
+bool near(double a, double b, double tol) { return std::fabs(a - b) <= tol; }
+} // namespace
+
+void Editor::stepScript() {
+    if (scriptWait_ > 0) { --scriptWait_; return; }
+    ImGuiIO& io = ImGui::GetIO();
+    while (!script_.empty()) {
+        std::string line = script_.front();
+        script_.pop_front();
+        ++scriptLine_;
+        if (const size_t hash = line.find('#'); hash != std::string::npos) line.resize(hash);
+        std::istringstream in(line);
+        std::string cmd;
+        if (!(in >> cmd)) continue; // blank or comment: no frame used
+
+        auto viewIndex = [&](int v) {
+            if (v < 0 || v > 3) { scriptFail("bad view index"); return false; }
+            return true;
+        };
+
+        if (cmd == "wait") {
+            int n = 1;
+            in >> n;
+            scriptWait_ = std::max(0, n - 1);
+        } else if (cmd == "key") {
+            std::string k;
+            in >> k;
+            Chord c;
+            if (!parseChord(k, c)) scriptFail("unknown key " + k);
+            else keyPressed(c.key, c.shift, c.cmd);
+        } else if (cmd == "action") {
+            std::string id;
+            in >> id;
+            Act a;
+            if (!actionFromId(id, a)) scriptFail("unknown action " + id);
+            else run(a);
+        } else if (cmd == "vmove") {
+            int v = 0;
+            double fx = 0.5, fy = 0.5;
+            in >> v >> fx >> fy;
+            if (viewIndex(v))
+                io.AddMousePosEvent(viewImgPos_[v].x + (float)(fx * viewImgSize_[v].x),
+                                    viewImgPos_[v].y + (float)(fy * viewImgSize_[v].y));
+        } else if (cmd == "press" || cmd == "release") {
+            std::string b;
+            in >> b;
+            const int btn = buttonFromName(b);
+            if (btn < 0) scriptFail("unknown button " + b);
+            else io.AddMouseButtonEvent(btn, cmd == "press");
+        } else if (cmd == "wheel") {
+            float d = 0;
+            in >> d;
+            io.AddMouseWheelEvent(0, d);
+        } else if (cmd == "spacedown" || cmd == "spaceup") {
+            io.AddKeyEvent(ImGuiKey_Space, cmd == "spacedown");
+        } else if (cmd == "uikey") {
+            std::string k;
+            in >> k;
+            const ImGuiKey key = k == "Escape" ? ImGuiKey_Escape : k == "Enter" ? ImGuiKey_Enter : ImGuiKey_None;
+            if (key == ImGuiKey_None) scriptFail("unknown ui key " + k);
+            else { io.AddKeyEvent(key, true); io.AddKeyEvent(key, false); }
+        } else if (cmd == "type") {
+            std::string t;
+            std::getline(in >> std::ws, t);
+            io.AddInputCharactersUTF8(t.c_str());
+        } else if (cmd == "viewdir") {
+            int v = 0;
+            std::string name;
+            in >> v >> name;
+            ViewDir d;
+            if (!viewIndex(v)) {
+            } else if (!viewDirFromName(name.c_str(), d)) scriptFail("unknown view direction " + name);
+            else views_[v].setDir(d);
+        } else if (cmd == "maximise") {
+            int v = 0;
+            in >> v;
+            if (viewIndex(v)) { layout_.maximised = v; markViewsDirty(); }
+        } else if (cmd == "restore") {
+            layout_.maximised = -1;
+            markViewsDirty();
+        } else if (cmd == "grid") {
+            double s = 8;
+            in >> s;
+            grid_.setSize(s);
+            markViewsDirty();
+        } else if (cmd == "camera") {
+            int v = 0;
+            Camera3D c;
+            in >> v >> c.yaw >> c.pitch >> c.distance >> c.target.x >> c.target.y >> c.target.z;
+            if (viewIndex(v)) { views_[v].cam3d = c; views_[v].dirty = true; }
+        } else if (cmd == "flymove") {
+            double f = 0, r = 0, u = 0;
+            in >> f >> r >> u;
+            if (!flying_ || flyView_ < 0) scriptFail("flymove while not flying");
+            else { views_[flyView_].cam3d.fly(f, r, u); views_[flyView_].dirty = true; }
+        } else if (cmd == "shot") {
+            std::string file;
+            in >> file;
+            screenshotRequest_ = file;
+        } else if (cmd == "quit") {
+            quit_ = true;
+        } else if (cmd == "expect") {
+            std::string what;
+            in >> what;
+            if (what == "grid") {
+                double s = 0;
+                in >> s;
+                if (!near(grid_.size, s, 1e-9)) scriptFail("grid is " + std::to_string(grid_.size));
+            } else if (what == "gridvisible" || what == "snap") {
+                int b = 0;
+                in >> b;
+                const bool val = what == "snap" ? grid_.snap : grid_.visible;
+                if (val != (b != 0)) scriptFail(what + " is " + (val ? "1" : "0"));
+            } else if (what == "mode") {
+                std::string m;
+                in >> m;
+                if (m != selectModeName(mode_)) scriptFail(std::string("mode is ") + selectModeName(mode_));
+            } else if (what == "viewdir") {
+                int v = 0;
+                std::string name;
+                in >> v >> name;
+                if (viewIndex(v) && name != viewDirName(views_[v].dir))
+                    scriptFail(std::string("view direction is ") + viewDirName(views_[v].dir));
+            } else if (what == "maximised") {
+                int v = 0;
+                in >> v;
+                if (layout_.maximised != v) scriptFail("maximised is " + std::to_string(layout_.maximised));
+            } else if (what == "flying") {
+                int b = 0;
+                in >> b;
+                if (flying_ != (b != 0)) scriptFail(std::string("flying is ") + (flying_ ? "1" : "0"));
+            } else if (what == "controls") {
+                int b = 0;
+                in >> b;
+                if (controlsOpen_ != (b != 0)) scriptFail("controls window state differs");
+            } else if (what == "cam") {
+                int v = 0;
+                double yaw = 0, pitch = 0, dist = 0;
+                in >> v >> yaw >> pitch >> dist;
+                if (viewIndex(v)) {
+                    const Camera3D& c = views_[v].cam3d;
+                    if (!near(c.yaw, yaw, 0.5) || !near(c.pitch, pitch, 0.5) || !near(c.distance, dist, 0.5)) {
+                        char b[160];
+                        std::snprintf(b, sizeof b, "camera is yaw %.2f pitch %.2f distance %.2f", c.yaw, c.pitch, c.distance);
+                        scriptFail(b);
+                    }
+                }
+            } else if (what == "ortho") {
+                int v = 0;
+                double cu = 0, cv = 0, zoom = 0;
+                in >> v >> cu >> cv >> zoom;
+                if (viewIndex(v)) {
+                    const OrthoCamera& o = views_[v].ortho;
+                    const double tol = std::max(0.5, 0.01 * std::max(std::fabs(cu), std::fabs(cv)));
+                    if (!near(o.cu, cu, tol) || !near(o.cv, cv, tol) || !near(o.zoom, zoom, zoom * 0.01)) {
+                        char b[160];
+                        std::snprintf(b, sizeof b, "view is centre %.2f %.2f zoom %.4f", o.cu, o.cv, o.zoom);
+                        scriptFail(b);
+                    }
+                }
+            } else {
+                scriptFail("unknown expectation " + what);
+            }
+        } else {
+            scriptFail("unknown command " + cmd);
+        }
+        return; // one command per frame
+    }
+    // Script finished: one more frame so a last screenshot is written, then quit.
+    if (screenshotRequest_.empty()) quit_ = true;
+}
+
+} // namespace mazz

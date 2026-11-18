@@ -1,0 +1,122 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Intel only on every push. Apple Silicon runners often queue 5-10 minutes on
+        # free plans; build them on demand with the "apple-silicon" workflow instead.
+        include:
+          - runner: macos-15-intel
+            arch: intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -j 4
+
+      - name: Core tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package app
+        run: |
+          codesign --force --deep --sign - build/Mazzuola.app
+          ditto -c -k --keepParent build/Mazzuola.app Mazzuola-${{ matrix.arch }}.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mazzuola-${{ matrix.arch }}
+          path: Mazzuola-${{ matrix.arch }}.zip
+          retention-days: 30
+
+
+  linux:
+    # Core tests + scripted UI tests on a virtual screen (Xvfb + Mesa software GL).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install X11/GL packages
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+            libgl1-mesa-dev libgl1-mesa-dri libxkbcommon-dev xvfb
+      - name: Build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j 4
+      - name: Core tests
+        run: ctest --test-dir build --output-on-failure
+      - name: UI tests (scripted)
+        run: tests/ui/run.sh "$PWD/build/Mazzuola" ui-shots
+      - name: UI tests at Retina (2x) view scale
+        run: MAZZ_VIEW_SCALE=2 tests/ui/run.sh "$PWD/build/Mazzuola"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-screenshots
+          path: ui-shots/*.png
+          if-no-files-found: ignore
+          retention-days: 30
+
+  # Publishes the Mac builds on the repo's Releases page:
+  #  - every push to main updates the "latest" pre-release (newest working build)
+  #  - a version release (v0.1.0, ...) is created for every docs/releases/vX.Y.Z.md that
+  #    has no release yet (at the commit that pushed it); pushing a vX.Y.Z tag also works
+  release:
+    needs: [macos, linux]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # One release job at a time; a stale run must never replace a newer "latest".
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Mazzuola-*
+          merge-multiple: true
+          path: dist
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la dist
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            notes="docs/releases/${GITHUB_REF_NAME}.md"
+            [ -f "$notes" ] || notes="docs/releases/INSTALL.md"
+            gh release create "${GITHUB_REF_NAME}" dist/*.zip \
+              --title "Mazzuola ${GITHUB_REF_NAME}" --notes-file "$notes" --verify-tag
+          else
+            head="$(git ls-remote origin refs/heads/main | cut -f1)"
+            if [ "$head" != "${GITHUB_SHA}" ]; then
+              echo "main has moved on (${head::7}); a newer run will publish. Skipping."
+              exit 0
+            fi
+            subject="$(git log -1 --format=%s)"
+            { echo "Newest working build from \`main\` (${GITHUB_SHA::7}): ${subject}"; echo; cat docs/releases/INSTALL.md; } > latest-notes.md
+            gh release delete latest --yes --cleanup-tag || true
+            gh release create latest dist/*.zip --prerelease --target "${GITHUB_SHA}" \
+              --title "Latest build" --notes-file latest-notes.md
+            # Version releases from notes files that don't have a release yet.
+            for notes in docs/releases/v*.md; do
+              [ -f "$notes" ] || continue
+              tag="$(basename "$notes" .md)"
+              if ! gh release view "$tag" >/dev/null 2>&1; then
+                gh release create "$tag" dist/*.zip --target "${GITHUB_SHA}" --latest \
+                  --title "Mazzuola ${tag}" --notes-file "$notes"
+              fi
+            done
+          fi

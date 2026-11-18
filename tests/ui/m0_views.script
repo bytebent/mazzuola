@@ -1,0 +1,116 @@
+# Milestone 0: views, grid, selection modes, navigation, fly mode, layout.
+# 2D input uses fractions of a view's image (vmove <view> <fx> <fy>), independent of window size.
+shot m0-01-start.png
+expect viewdir 0 Top
+expect viewdir 1 Front
+expect viewdir 2 Right
+expect viewdir 3 3D
+expect grid 8
+# grid keys: the two keys right of P (è smaller, + larger)
+key +
+expect grid 16
+key è
+key è
+expect grid 4
+# typed grid size: the dialog takes focus; Return applies, Esc cancels
+action grid.set
+wait 2
+type 12
+uikey Enter
+wait 2
+expect grid 12
+action grid.set
+wait 2
+type 99
+uikey Escape
+wait 2
+expect grid 12
+grid 8
+expect grid 8
+key Shift+R
+expect gridvisible 0
+key Shift+R
+expect gridvisible 1
+key Shift+W
+expect snap 0
+key Shift+W
+expect snap 1
+# selection modes 1-4
+key 1
+expect mode vertices
+key 4
+expect mode pieces
+key 3
+expect mode faces
+# zoom the top view toward a point, then pan it with the middle mouse
+vmove 0 0.75 0.25
+wheel 2
+wait 2
+vmove 0 0.5 0.5
+press middle
+vmove 0 0.6 0.5
+vmove 0 0.7 0.5
+release middle
+wait 2
+shot m0-02-top-zoomed-panned.png
+# pan the front view with Space + left drag
+vmove 1 0.5 0.5
+spacedown
+press left
+vmove 1 0.4 0.6
+release left
+spaceup
+wait 2
+# orbit the 3D view (right drag), then zoom it (wheel)
+camera 3 35 25 400 0 0 0
+vmove 3 0.5 0.5
+press right
+vmove 3 0.45 0.5
+vmove 3 0.40 0.45
+release right
+wait 2
+wheel -1
+wait 2
+shot m0-03-orbited.png
+# back to origin restores every view
+key Cmd+0
+expect ortho 0 0 0 2
+expect ortho 1 0 0 2
+expect cam 3 35 25 400
+# switch directions
+viewdir 0 Bottom
+viewdir 2 Left
+expect viewdir 0 Bottom
+viewdir 1 3D
+shot m0-04-directions.png
+viewdir 0 Top
+viewdir 1 Front
+viewdir 2 Right
+# maximise / restore
+maximise 3
+expect maximised 3
+shot m0-05-maximised-3d.png
+restore
+expect maximised -1
+# fly mode: Z over the 3D view, move, Esc leaves
+vmove 3 0.5 0.5
+wait 2
+key Z
+expect flying 1
+flymove 100 0 0
+wait 2
+shot m0-06-flying.png
+key Esc
+expect flying 0
+# Z over a 2D view does nothing
+vmove 0 0.5 0.5
+wait 2
+key Z
+expect flying 0
+# Help -> Controls (F1)
+key F1
+expect controls 1
+wait 2
+shot m0-07-controls.png
+key F1
+expect controls 0
