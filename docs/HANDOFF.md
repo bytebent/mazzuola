@@ -80,4 +80,6 @@ Read in this order:
   `docs/releases/INSTALL.md`) and push to `main`; CI makes the tag and release after the
   builds pass.
 - `gh` GraphQL commands are refused; use REST (`gh api repos/bytebent/mazzuola/actions/runs`).
+- The macOS Intel runner sometimes waits in the queue and gets cancelled (no steps run).
+  Re-run it: `gh api -X POST repos/bytebent/mazzuola/actions/runs/<id>/rerun-failed-jobs`.
 - Use `mktemp -d` for scratch work. Commit as `Claude <noreply@anthropic.com>`.
