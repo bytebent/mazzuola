@@ -1,5 +1,6 @@
 // Side panels, the texture view, and the small windows (Controls, About, grid size).
 #include "app/editor.hpp"
+#include "platform/pen.hpp"
 #include "ui/theme.hpp"
 #include <algorithm>
 #include <cmath>
@@ -152,6 +153,31 @@ void Editor::aboutWindow() {
         dimText("A small, fast modeller for static low-poly models. Units: 1 unit = 1 cm.");
         ImGui::Spacing();
         dimText("Uses GLFW, Dear ImGui, stb and the Roboto font (see docs/THIRD_PARTY.md).");
+    }
+    ImGui::End();
+}
+
+// A check for pointer and pen input: what ImGui sees, and what the pen reports. Click
+// the button with a mouse and with the pen; both should count.
+void Editor::penTestWindow() {
+    if (!penTestOpen_) return;
+    ImGui::SetNextWindowSize(ImVec2(340, 0), ImGuiCond_Appearing);
+    if (ImGui::Begin("Pen and mouse test", &penTestOpen_, ImGuiWindowFlags_NoCollapse)) {
+        static int clicks = 0;
+        if (ImGui::Button("Click me with the mouse or the pen", ImVec2(-1, 40))) ++clicks;
+        ImGui::Text("Clicks: %d", clicks);
+        ImGui::Separator();
+        const ImGuiIO& io = ImGui::GetIO();
+        static const char* sources[] = {"mouse", "touch screen", "pen"};
+        const int src = (int)io.MouseSource;
+        ImGui::Text("Pointer: %.0f, %.0f (%s)", io.MousePos.x, io.MousePos.y, src >= 0 && src < 3 ? sources[src] : "?");
+        ImGui::Text("Buttons: left %s, right %s, middle %s", io.MouseDown[0] ? "down" : "up",
+                    io.MouseDown[1] ? "down" : "up", io.MouseDown[2] ? "down" : "up");
+        const PenState& p = penState();
+        ImGui::Text("Last event: %s%s", p.lastEvent, p.pen ? " (pen)" : "");
+        ImGui::Text("Pen pressure: %.2f   tilt: %.2f, %.2f", p.pressure, p.tiltX, p.tiltY);
+        ImGui::Text("Events: %llu   clicks moved to the pen tip: %llu", (unsigned long long)p.events,
+                    (unsigned long long)p.positionFixes);
     }
     ImGui::End();
 }

@@ -50,6 +50,10 @@ public:
     // Pixels per logical pixel for the views (MAZZ_VIEW_SCALE overrides, for tests).
     double viewScale() const;
 
+    // Moves every panel that lives in its own window back over the main window (it then
+    // merges into it). Used when a display goes away.
+    void bringWindowsHome();
+
     void run(Act a);
     bool enabled(Act a) const;
 
@@ -69,6 +73,7 @@ private:
     void controlsWindow();       // ui/panels.cpp
     void aboutWindow();          // ui/panels.cpp
     void gridSizeDialog();       // ui/panels.cpp
+    void penTestWindow();        // ui/panels.cpp
     void menuItem(Act a, bool selected = false);
     void plannedItem(const char* label, int milestone);
     void handleKeys();
@@ -108,7 +113,8 @@ private:
     bool flySkipLook_ = false;
 
     bool resetLayout_ = true;
-    bool controlsOpen_ = false, aboutOpen_ = false, gridDialogOpen_ = false;
+    bool controlsOpen_ = false, aboutOpen_ = false, gridDialogOpen_ = false, penTestOpen_ = false;
+    bool bringHome_ = false;
     double gridDialogValue_ = 8;
 
     std::deque<Chord> keyQueue_;

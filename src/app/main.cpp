@@ -6,6 +6,7 @@
 // dragging a view, scripted runs).
 #include "app/editor.hpp"
 #include "app/settings.hpp"
+#include "platform/pen.hpp"
 #include "render/gl.hpp"
 #include "ui/theme.hpp"
 
@@ -49,6 +50,13 @@ void onKey(GLFWwindow*, int key, int, int action, int mods) {
     const bool cmd = (mods & GLFW_MOD_CONTROL) != 0;
 #endif
     gEditor->keyPressed(key, (mods & GLFW_MOD_SHIFT) != 0, cmd);
+}
+
+// A display was added or removed (e.g. Sidecar turned off): ask the editor to bring
+// panels that live in their own windows back into the main window.
+bool gMonitorsChanged = false;
+void onMonitor(GLFWmonitor*, int event) {
+    if (event == GLFW_DISCONNECTED) gMonitorsChanged = true;
 }
 
 void onError(int code, const char* text) { std::fprintf(stderr, "Mazzuola: GLFW error %d: %s\n", code, text); }
@@ -100,6 +108,9 @@ int main(int argc, char** argv) {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // Windows move only by their title bar: a click or pen touch on a panel's empty
+    // space must never drag the window around.
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
     // Panels can be pulled out into their own windows (e.g. onto a second screen).
     // Automated runs keep everything in one window.
     if (!opt.automated()) io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -118,6 +129,8 @@ int main(int argc, char** argv) {
     }
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
+    glfwSetMonitorCallback(onMonitor);
+    installPenInput();
 
     int exitCode = 0;
     {
@@ -135,6 +148,10 @@ int main(int argc, char** argv) {
             const double dt = std::min(0.1, now - last);
             last = now;
 
+            if (gMonitorsChanged) {
+                gMonitorsChanged = false;
+                editor.bringWindowsHome();
+            }
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();

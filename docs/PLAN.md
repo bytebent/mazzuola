@@ -4,8 +4,8 @@
 
 - **Milestone 0 (skeleton) done: v0.0.0.** Window, views, grid, navigation, menus with
   every planned shortcut. Nothing can be modelled yet.
-- Waiting on the user: confirm the shortcut table (Help → Controls), and the by-hand
-  check of M0 step 7 (a panel pulled out onto a second screen / iPad).
+- Waiting on the user: confirm the shortcut table (Help → Controls), and re-check
+  Sidecar with v0.0.1 (pen taps, panels on the iPad, turning Sidecar off).
 - **Next: milestone 1 — Mesh basics**, after the user's go-ahead.
 
 ## How to build and test (AI workspace)
@@ -245,3 +245,25 @@ hand test with a second monitor and an iPad.
   `Mazzuola-intel.zip`.
 - Not checked here (no Mac in the workspace): the look on a Retina screen. The
   second-screen / iPad check is by hand.
+
+### 2026-11-18 — v0.0.1: first Sidecar test (user, by hand)
+
+- Found by the user: (1) with the app on the iPad, Apple Pencil taps didn't press
+  anything; (2) the texture view pulled out onto the iPad moved as a whole at every pen
+  touch; (3) turning Sidecar off with Mazzuola on the iPad crashed it (inside ImGui's
+  GLFW backend, creating a window: `glfwGetCocoaWindow` on a null window).
+- Causes and fixes:
+  1. A pen tap has no pointer move before it, and GLFW only updates the position on
+     moves, so the click landed where the pointer was before. `platform/pen_mac.mm`
+     (Cocoa local event monitor) sends the event's real position to ImGui just before
+     each click, and tags pen events as pen input. It also records pressure and tilt
+     (groundwork for M8).
+  2. ImGui lets a window be dragged from any empty spot; now only by the title bar
+     (`ConfigWindowsMoveFromTitleBarOnly`).
+  3. GLFW refuses 0-sized windows and the backend then used the null window. The
+     backend is compiled from a copy with sizes clamped to at least 1 px
+     (`cmake/Deps.cmake`); and when a display disconnects, panels in their own windows
+     are moved back over the main window (they merge into it).
+- Added Help → Pen and mouse test (click count, pointer position/source, buttons, pen
+  pressure/tilt, how many clicks needed their position supplied).
+- Not testable here (no Mac, no iPad): the user checks the three fixes by hand.
