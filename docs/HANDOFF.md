@@ -32,8 +32,11 @@ Read in this order:
 
 ## Mistakes already made (don't repeat)
 
-- Added a PS1 "wobble / affine warping" preview nobody asked for. "PS1 look" means the
-  look of the models, not hardware glitches.
+- Added a "wobble / affine warping" preview nobody asked for. The look is about the
+  models, never hardware glitches.
+- Kept using "PS1" as the yardstick for everything. Early 3D games are one inspiration,
+  not a target; nothing has to be period-accurate. Judge features on whether they help
+  make nice low-poly models.
 - Made the iPad paint window sound like the main way to use the app. It is optional;
   desktop alone is the complete tool.
 - Took "make it its own tool" as "share nothing with Scalpellino". Sharing code and
@@ -56,6 +59,12 @@ Read in this order:
   "clean up").
 - Export only `.glb`/`.gltf` and `.obj` + `.mtl`.
 - No automatic light baking. Animation is not on the table for now.
+- No scan import (phone 3D scans). Reference photos stay simple: transparency slider and
+  a front/back switch; no extra helpers, no tips in Help.
+- Bryce-inspired additions accepted (rock, clone rotate/scale per copy, jitter, scatter,
+  image card, generate texture, tree later). The user is also reading the Bryce docs to
+  expand Scalpellino; things that fit Mazzuola may come from there.
+- Create menu holds everything that makes new geometry; Mesh holds editing commands.
 
 ## Workspace quirks (AI cloud workspace)
 

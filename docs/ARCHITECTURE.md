@@ -1,7 +1,8 @@
 # Mazzuola — Architecture & Design
 
-A small, fast modeller for static low-poly 3D models in the style of early PlayStation
-games: few polygons, small hand-painted pixel textures, vertex colours.
+A small, fast modeller for static low-poly 3D models: few polygons, small hand-painted
+pixel textures, vertex colours. Early 3D games and tools are an inspiration, not a
+target; nothing has to be period-accurate.
 Its own tool, fitted to the user's workflow: models are made here and placed in
 Scalpellino scenes (or opened in any glTF tool).
 
@@ -19,8 +20,8 @@ Personal tool. Not distributed. Lightweight; does what it does well.
 4. **Everything is undoable.** Every edit, including every brush and paint stroke, is a
    command.
 5. **Static models only.** No skeletons, animation, rigging or physics.
-6. **The PS1 look, not the PS1 hardware.** Low poly counts, small textures, nearest-pixel
-   filtering, vertex colours. No emulated glitches, no enforced hardware limits.
+6. **A look, not old hardware.** Low poly counts, small textures, nearest-pixel
+   filtering, vertex colours. No emulated hardware glitches, no enforced limits.
 7. **One window, mouse and keyboard, is the complete tool.** Extra screens and tablets
    are optional comforts; nothing depends on them.
 8. **Made for one good model at a time.** Tools are chosen for shaping, texturing and
@@ -100,7 +101,8 @@ to the GPU → one redraw of the views that show it.
   to 256 suggested. A model may use several textures. Fully transparent pixels are cut
   out (for leaves, fences, hair).
 - **Reference images**: an image pinned to a view direction (front, side, top…) with
-  position, rotation, scale and opacity. Editor-only, saved in the model file.
+  position, rotation, scale, a transparency slider and a front/back switch (drawn in
+  front of or behind the model). Editor-only, saved in the model file.
 - **Units / axes**: 1 unit ≈ 1 inch, Z-up (matches Scalpellino, so models place at the
   right size). A 72-unit human figure can be shown for scale.
 - **Pivot**: the model's origin, becomes the placement point in Scalpellino.
@@ -136,6 +138,9 @@ to the GPU → one redraw of the views that show it.
 - **Counter**: vertices and triangles (total, selected, hidden).
 
 ### General rules
+- Menus: File, Edit, Select, **Create** (everything that makes new geometry: primitives,
+  rock, lathe, loft, image card, tree), Mesh (editing commands), Texture, Paint, View,
+  Help.
 - Every shortcut also in the menus with typed dialogs; Help → Controls lists them.
 - Creation commits on **Return**, cancels on **Esc**, never on mouse release.
 - Operations with settings (extrude, bevel, divide…) show a live preview and a panel of
@@ -181,13 +186,22 @@ to the GPU → one redraw of the views that show it.
 - **Transform**: move / rotate / scale with handles in every view; Transform dialog
   (Cmd+T) with pivot (bounds centre, average, model pivot, part pivot, typed point) and
   angle snap. **Clone**: N copies at a typed distance or angle (in a row, or in a circle
-  around the pivot), spacing given per copy or as a total.
+  around the pivot), spacing given per copy or as a total. Each copy can also add a
+  **rotation per copy** (X/Y/Z degrees, about the chosen pivot) and a **scale per copy**
+  (X/Y/Z %, multiplied each step), with an option to **scale the offset** too: spiral
+  stairs, tapering towers, twisted columns. Copies stay in the original's part.
 - **Mirror** (along X/Y/Z) and **mirror clone**. **Flatten X/Y/Z**: line selected points
   up on one axis. Move along the selection's normal.
 - **Primitives** (Shift+B): plane (rows, columns, diagonal direction), box (stacks per
   side, optional rounded edges with segments), cylinder (sides, stacks, cap segments,
   rounded edges), cone, tube (inner/outer sides, length), torus, sphere (sides and
   stacks) and geosphere (iterations). Drag in a view, adjust, Return creates.
+- **Rock** (Create menu, generator): a random low-poly rock filling a dragged or typed
+  box. Faces (12–60, target triangle count), roughness, stretch X/Y/Z, flat bottom
+  (with height), join into quads, seed. Built from the hull of jittered points on an
+  ellipsoid, then pushed in/out along normals without self-intersection. One smoothing
+  group or auto smooth; box-projected texture coordinates at the texel target; pivot at
+  the bottom centre.
 - **Draw** (Shift+D):
   - on a face: lines, rectangles and circles drawn onto a face split it into new faces;
   - in a view: a polygon outline point by point (click the first point to close),
@@ -230,6 +244,48 @@ to the GPU → one redraw of the views that show it.
   nodes (origin at the part's pivot) or merged (an export option).
 - **Smoothing groups**: new group from selection, remove smoothing, **auto smooth**
   (typed angle: sharper edges become hard). Primitives get sensible groups when made.
+
+### Generators and random tools
+Common to rock, tree, jitter, scatter and generate texture:
+- A **seed** field plus a **New seed** button: the same seed and values always give the
+  same result.
+- Values are remembered between uses during the session (like the Transform dialog).
+- Live preview, **Return** applies, **Esc** cancels, one undo step, menu access only
+  (shortcuts can be added later on request).
+- Generators never produce problems (zero-area faces, duplicate points, faces over four
+  corners, inconsistent winding); tests check this over many seeds.
+
+- **Jitter points** (Mesh menu): move the selected points by random amounts. Amount
+  (largest move), direction (any / along normal / X / Y / Z), keep on grid, keep open
+  edges still, seed. Stacked points move together (welded corners stay welded); hidden
+  parts untouched; mirror mode mirrors the jitter and keeps plane points on the plane;
+  texture coordinates stay as they are.
+- **Scatter on faces** (Mesh menu): select a piece (a leaf card, a rivet), choose the
+  command, pick target faces in any view (click, Shift+click). Copies, spacing (evenly by
+  area / random), align to surface, random spin and spin step around the normal, size
+  range, sink, avoid overlaps (reports "placed 8 of 10"), seed. The piece's pivot (or
+  bottom centre) sits on the surface; mirror mode places on one side and mirrors; copies
+  join the source's part.
+- **Image card** (Create menu): a quad sized from a PNG, with its transparency. Size from
+  the texel target or a typed width (height follows the image), facing (front / side /
+  top / current view), style (single / crossed pair at 90° / crossed three at 60°), base
+  (bottom / centre), double-sided, trim to the image's opaque area. Click to place
+  (snaps). Texture coordinates fill the image, pixel-snapped; the image becomes one of
+  the model's textures and is watched like the others.
+- **Tree** (Create menu, generator): trunk and branches from tapered lofts, foliage as
+  cards, crossed cards or clumps.
+  - Trunk: height, base/top radius, sides (3–8), bend (degrees + direction).
+  - Branches: levels (0–3), branches per level, start height on parent, angle from
+    parent, spin between branches (default 137.5°), length/radius falloff per level,
+    segments per branch, randomness, seed.
+  - Foliage: style (none / cards / crossed cards / clumps), where (branch tips / along
+    the last level), size, count per tip, texture (alpha cut-out on for cards), clump
+    faces (clumps are softer rocks).
+  - Click a point for the base; branches overlap their parent instead of being welded
+    (fewer faces). Output: two parts, **trunk** (pivot at the base, one smoothing group
+    per branch, cylindrical texture coordinates along each branch with the seam at the
+    back) and **foliage** (double-sided cards, texture coordinates filling the texture).
+    The counter shows the preview's counts.
 
 ### Vertex brush (Shift+G)
 - Drag in any view: the points within the brush radius move with the pointer, the ones
@@ -289,6 +345,16 @@ to the GPU → one redraw of the views that show it.
 - **Import scaled image**: an image painted at ×N is reduced to the texture size with
   nearest-pixel sampling.
 
+### Generate texture (Texture menu)
+- A starting pixel texture to paint over. Size (16–256 per side), pattern (noise /
+  clouds / bricks / planks / wood grain / stone tiles / gradient) with its own values
+  (e.g. bricks: rows, columns, mortar width, offset), colours (from the model's palette
+  or two typed colours), colour count (2–16), dither (none / ordered 2×2 / 4×4),
+  tileable, seed.
+- Preview at pixel scale, plus tiled 3×3 when tileable. Return creates a new PNG next to
+  the model (asks for a name) or replaces the current texture (one undo step). Every
+  pixel is one of the chosen colours; never filtered.
+
 ### Vertex colours (Shift+O)
 - Separate from the texture, multiplied over it.
 - Soft round colour brush (typed radius and strength; pen pressure scales strength),
@@ -313,7 +379,7 @@ to the GPU → one redraw of the views that show it.
   f 0 1 2 3 tex=0 part=0 sg=1 two=0 diag=0
     uv 0 0 / 16 0 / 16 16 / 0 16
     col ffffff ffffff c0c0c0 c0c0c0
-  ref front "lamp-front.png" x=-32 y=0 rot=0 scale=0.5 alpha=0.4
+  ref front "lamp-front.png" x=-32 y=0 rot=0 scale=0.5 alpha=0.4 layer=back
   palette 1a1c2c 5d275d b13e53 ef7d57
   ```
 
@@ -408,6 +474,14 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
   snapping, weld/unweld, stitch, even out, coordinates kept by extrude and divide.
 - Painting tests: screen point → face → texture pixel; stroke fill-in; undo exact.
 - Problems tests: each problem detected and each fix repairs it.
+- Generator and random tool tests: same seed gives identical output; no problems over
+  many seeds (rock closed and free of self-intersection, triangle count within ±20 % of
+  Faces, flat bottom at the cut height; tree branch counts as typed, cards double-sided);
+  clone rotate/scale positions exact for each pivot, "scale the offset" follows a
+  geometric series; jitter within Amount, locks exact, mirror exact, welded corners
+  stay welded; scatter bases on picked faces, aligned to normals, no overlaps when on;
+  image card size and proportions exact, trim matches opaque bounds, crossed cards share
+  the centre line; generated textures use only the chosen colours and tile cleanly.
 - Export tests: `.glb`/`.gltf` read back with cgltf (counts, units, colours, samplers,
   alpha, double-sided, parts and their origins); `.obj` parsed back.
 - Scripted UI tests with screenshots into `docs/screenshots/`.
@@ -418,11 +492,12 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 | # | Milestone | Status |
 |---|-----------|--------|
 | 0 | Skeleton: GLFW + OpenGL + ImGui docking, idle = zero, Roboto, menus, four views + maximise, 3D orbit/fly, grid keys, counter, shortcut scheme, CI | |
-| 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), selection modes, transform + clone, mirror, flatten, model pivot, undo, `.mazz`, reference images, scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
+| 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), rock, selection modes, transform + clone (with rotate/scale per copy), mirror, flatten, model pivot, undo, `.mazz`, reference images (transparency, front/back), scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
 | 2 | Modelling: draw on faces + polygon tool, push/pull, inference snapping, extrude/inset/bevel, bridge, shell, divide (subdivide plain/smoothed, edges, poke, connect), cut, loop cut, slide, merge/collapse/weld, dissolve, fill, split, flip, diagonals, double-sided, mirror mode | |
 | 3 | Lathe + loft, parts with pivots, smoothing groups + auto smooth, problems list with fixes | |
-| 4 | Vertex tool soft selection + vertex brush | |
-| 5 | Texture coordinates: textures, mapping tool (projections, unfold, flatten), texture view (select, transform, weld/unweld, stitch, regroup, tile), texel check + even out, transparency, file watching, layout image export, scaled import; exports with textures | |
-| 6 | Pixel painting: tools, palette + saved palettes, painting on texture view and model, paint view, stroke undo, moved-paint warning | |
-| 7 | Vertex colours: colour brush, fill, split colours; exports with colours, unlit option | |
+| 4 | Vertex tool soft selection + vertex brush, jitter points | |
+| 5 | Texture coordinates: textures, mapping tool (projections, unfold, flatten), texture view (select, transform, weld/unweld, stitch, regroup, tile), texel check + even out, transparency, image card, file watching, layout image export, scaled import; exports with textures | |
+| 6 | Pixel painting: tools, palette + saved palettes, painting on texture view and model, paint view, stroke undo, moved-paint warning, generate texture | |
+| 7 | Vertex colours: colour brush, fill, split colours; exports with colours, unlit option; scatter on faces | |
 | 8 | Detached paint view + tablets: own window on any display, pen pressure, double-tap, larger buttons; hand test with an iPad | |
+| later | Tree generator | |

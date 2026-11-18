@@ -25,8 +25,8 @@
 2. CMake project, pinned deps (GLFW, ImGui docking, glad, cgltf, stb), Roboto embedded.
 3. Main loop on `glfwWaitEvents`: redraw only on change. Check idle CPU ≈ 0.
 4. ImGui docking with multi-viewport; default layout (four views, texture view, side
-   panels, status bar, counter); menus (File, Edit, Select, Mesh, Texture, Paint, View,
-   Help); Help → Controls.
+   panels, status bar, counter); menus (File, Edit, Select, Create, Mesh, Texture, Paint,
+   View, Help); Help → Controls.
 5. Views: four views with maximise, direction switching, splitters; 3D orbit around
    origin / selection and fly mode; pan/zoom; grid with the keys right of P, grid/snap
    toggles.
@@ -43,16 +43,21 @@
    smoothing group, double-sided, diagonal) and document with command-based undo.
 2. Primitives: plane, box (stacks, rounded edges), cylinder, cone, tube, torus, sphere,
    geosphere; drag in a view, typed values, live preview, Return/Esc.
-3. Selection modes 1–4 with picking pass; box select, grow/shrink, select similar,
+3. Rock generator (Create menu): faces, roughness, stretch, flat bottom, join into
+   quads, seed; shared generator machinery (seed + New seed, values remembered,
+   preview). Smoothing and texture coordinates for the rock follow once M3/M5 exist.
+4. Selection modes 1–4 with picking pass; box select, grow/shrink, select similar,
    edge loop / ring.
-4. Transform handles + Transform dialog (pivots, angle snap); clone in a row or circle;
-   mirror and mirror clone; flatten X/Y/Z; move along normal.
-5. Model pivot tool.
-6. `.mazz` reader/writer + round-trip golden tests.
-7. Reference images per view (load, move, rotate, scale, opacity).
-8. Scale figure toggle.
-9. Export geometry to `.glb`/`.gltf` (units + pivot in `extras`) and `.obj`; read-back
-   tests.
+5. Transform handles + Transform dialog (pivots, angle snap); clone in a row or circle,
+   with rotate and scale per copy and "scale the offset"; mirror and mirror clone;
+   flatten X/Y/Z; move along normal.
+6. Model pivot tool.
+7. `.mazz` reader/writer + round-trip golden tests.
+8. Reference images per view (load, move, rotate, scale, transparency slider,
+   front/back switch).
+9. Scale figure toggle.
+10. Export geometry to `.glb`/`.gltf` (units + pivot in `extras`) and `.obj`; read-back
+    tests.
 
 ## Milestone 2 — Modelling
 
@@ -91,7 +96,10 @@
    optional axis/normal lock.
 3. Respects selection, hidden parts and mirror mode; one stroke = one undo step; Esc
    cancels.
-4. Tests: falloff, distance modes, locks, mirror, hidden parts, undo.
+4. Jitter points (Mesh menu): amount, direction, keep on grid, keep open edges, seed;
+   welded corners stay welded, mirror-aware.
+5. Tests: falloff, distance modes, locks, mirror, hidden parts, undo; jitter limits,
+   locks, mirror, seed.
 
 ## Milestone 5 — Texture coordinates
 
@@ -103,22 +111,26 @@
 4. Coordinates kept by extrude, divide, bevel; tests.
 5. Texel check display mode, texel target, even out.
 6. Transparent pixels cut out; double-sided display.
-7. File watching with reload and conflict question.
-8. Layout image export (×1–×8); import scaled image.
-9. Exports with textures (embedded / beside), nearest samplers, alpha, double-sided.
+7. Image card (Create menu): size from texel target or typed width, facing, single /
+   crossed pair / crossed three, base, double-sided, trim to alpha; tests.
+8. File watching with reload and conflict question.
+9. Layout image export (×1–×8); import scaled image.
+10. Exports with textures (embedded / beside), nearest samplers, alpha, double-sided.
 
 ## Milestone 6 — Pixel painting
 
 Pencil, line, rectangle, fill, picker, eraser (colour or transparent); palette panel and
 saved palettes; painting on the texture view and on the model; paint view tab; stroke
 fill-in across faces; one stroke = one undo step; warning when moving pieces with paint
-under them.
+under them. Generate texture (Texture menu): patterns, palette colours, colour count,
+dither, tileable, seed; new PNG or replace current texture (one undo step).
 
 ## Milestone 7 — Vertex colours
 
 Colour brush (typed radius and strength), fill selected, picker, split colours, vertex
 colour display modes, exports with colours (`COLOR_0`, `.obj` extension), unlit option,
-parts as nodes or merged.
+parts as nodes or merged. Scatter on faces (Mesh menu): pick target faces, copies,
+spacing, align to surface, spin, size range, sink, avoid overlaps, seed; tests.
 
 ## Milestone 8 — Detached paint view + tablets
 
@@ -126,6 +138,12 @@ Paint view as its own window on any display, position remembered per display (do
 if the display is gone), vertex brush available there, pen pressure for the brush's
 reach and colour strength, double-tap action, larger-buttons option, two-finger camera;
 hand test with a second monitor and an iPad.
+
+## Later
+
+- Tree generator (Create menu): trunk and branches from tapered lofts, foliage as cards,
+  crossed cards or clumps; two parts (trunk, foliage); see ARCHITECTURE §6. Needs loft
+  (M3), parts (M3) and textures (M5).
 
 ## Open questions (parked)
 
@@ -136,7 +154,7 @@ hand test with a second monitor and an iPad.
 - **Scalpellino reading `.mazz` directly** (live edits in the level) or `.glb` only?
 - **Double-tap default**: picker or eraser.
 - **Vertex brush and texture coordinates**: when points move, texture coordinates stay
-  as they are (the texture stretches with the shape, PS1-like). Proposed default.
+  as they are (the texture stretches with the shape). Proposed default.
 - **Shortcuts**: the proposed table in ARCHITECTURE §6 (push/pull on Shift+F, vertex
   colour on Shift+O are the least obvious) — confirm in M0.
 
@@ -149,3 +167,14 @@ hand test with a second monitor and an iPad.
 - Decided: own repo; code both tools need is copied from the Scalpellino repo and
   adapted (M0 step 1).
 - Next: milestone 0 after the user's go-ahead.
+
+### 2026-11-18 — Additions
+
+- Added from the user's Bryce-inspired list: rock generator (M1), rotate/scale per copy
+  in Clone (M1), jitter points (M4), image card (M5), generate texture (M6), scatter on
+  faces (M7), tree generator (later). Changes made while adding them: a Create menu
+  for everything that makes new geometry; generators must never produce problems
+  (tested over many seeds) instead of the problems list blocking Return.
+- Reference images: transparency slider plus a front/back switch. No scanning import.
+- Wording: low-poly / pixel textures / vertex colours is the style; early 3D games are
+  an inspiration, not a target.
