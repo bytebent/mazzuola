@@ -21,7 +21,7 @@ Personal tool. Not distributed. Lightweight; does what it does well.
    command.
 5. **Static models only.** No skeletons, animation, rigging or physics.
 6. **A look, not old hardware.** Low poly counts, small textures, nearest-pixel
-   filtering, vertex colours. No emulated hardware glitches, no enforced limits.
+   filtering by default, vertex colours. No emulated hardware glitches, no enforced limits.
 7. **One window, mouse and keyboard, is the complete tool.** Extra screens and tablets
    are optional comforts; nothing depends on them.
 8. **Made for one good model at a time.** Tools are chosen for shaping, texturing and
@@ -98,17 +98,19 @@ to the GPU → one redraw of the views that show it.
   own **pivot** (e.g. a lid's hinge), usable as the rotate/scale centre and exported as
   the part's node origin.
 - **Texture**: a PNG file next to the model (relative path), power-of-two sides from 16
-  to 256 suggested. A model may use several textures. Fully transparent pixels are cut
+  to 256 suggested, with a **filtering** setting: nearest (default) or smooth. A model
+  may use several textures. Fully transparent pixels are cut
   out (for leaves, fences, hair).
 - **Reference images**: an image pinned to a view direction (front, side, top…) with
   position, rotation, scale, a transparency slider and a front/back switch (drawn in
   front of or behind the model). Editor-only, saved in the model file.
-- **Units / axes**: 1 unit ≈ 1 inch, Z-up (matches Scalpellino, so models place at the
-  right size). A 72-unit human figure can be shown for scale.
+- **Units / axes**: 1 unit = 1 cm, Z-up (matches Scalpellino, so models place at their
+  real size). A 175 cm human figure can be shown for scale (same as Scalpellino's).
 - **Pivot**: the model's origin, becomes the placement point in Scalpellino.
 - **Mirror mode**: optional symmetry plane (X by default). Edits, brush strokes and soft
   selection on one side are repeated on the other; vertices on the plane stay on it.
-- **Settings per model**: texel target (pixels per unit, optional), palette.
+- **Settings per model**: texel target (pixels per cm, optional; 0.5 suggested for
+  room-sized objects, more for small ones), palette.
 
 ## 6. Interaction design
 
@@ -134,7 +136,8 @@ to the GPU → one redraw of the views that show it.
   strip. Docked as a tab by default; can be pulled out into its own window (§8).
 - Display modes per view: wireframe, flat, vertex colours only, texture only,
   texture × vertex colours (normal), texel check; wireframe overlay; show back faces.
-  Textures always nearest-pixel.
+  Each texture is shown with its own filtering (nearest by default). The texture view
+  always shows exact pixels.
 - **Counter**: vertices and triangles (total, selected, hidden).
 
 ### General rules
@@ -147,6 +150,8 @@ to the GPU → one redraw of the views that show it.
   typed values; Return applies, Esc cancels.
 - No wheel parameter adjustment; the wheel zooms views only.
 - UI font Roboto. Grid halve/double on the two keys right of P; grid and snap toggles.
+  Grid steps match Scalpellino's (in cm), plus steps below 1 cm (millimetres) for small
+  objects.
 
 ### Shortcuts (proposed, Scalpellino patterns; confirmed in M0)
 
@@ -322,7 +327,7 @@ Common to rock, tree, jitter, scatter and generate texture:
   - Texture choice per selection; **tile texture** display option.
 - Shaping tools keep texture coordinates where they can (extrude stretches from the
   edge they came from; divide interpolates).
-- **Texel check** display mode (pixels per unit as colour, or a checker texture) and
+- **Texel check** display mode (pixels per cm as colour, or a checker texture) and
   **even out** (rescale selected pieces to the texel target).
 - Moving pieces that already have paint under them shows a warning: paint doesn't move
   with them. Layout first, then paint.
@@ -367,27 +372,28 @@ Common to rock, tree, jitter, scatter and generate texture:
 
   ```
   mazzuola 1
+  units cm
   pivot 0 0 0
-  texel 1
-  texture 0 "lamp.png" 64 64
+  texel 0.5
+  texture 0 "lamp.png" 64 64 filter=nearest
   part 0 "body" pivot=0,0,0
-  part 1 "shade" pivot=0,0,40
+  part 1 "shade" pivot=0,0,100
   sgroup 1 "round"
   v 0 0 0
-  v 16 0 0
+  v 40 0 0
   ...
   f 0 1 2 3 tex=0 part=0 sg=1 two=0 diag=0
     uv 0 0 / 16 0 / 16 16 / 0 16
     col ffffff ffffff c0c0c0 c0c0c0
-  ref front "lamp-front.png" x=-32 y=0 rot=0 scale=0.5 alpha=0.4 layer=back
+  ref front "lamp-front.png" x=-80 y=0 rot=0 scale=0.5 alpha=0.4 layer=back
   palette 1a1c2c 5d275d b13e53 ef7d57
   ```
 
 - **Export `.glb` / `.gltf`**: positions, normals (from smoothing groups), texture
   coordinates, vertex colours (`COLOR_0`), textures (embedded in `.glb`, beside `.gltf`)
-  with nearest-pixel samplers, alpha cut-out, double-sided materials, optional
+  with samplers matching each texture's filtering, alpha cut-out, double-sided materials, optional
   `KHR_materials_unlit`, parts as separate nodes (origin at the part pivot) or merged.
-  Converted to Y-up and meters; original units and pivot in `extras` so Scalpellino
+  Converted to Y-up and meters (÷ 100); units (cm) and pivot in `extras` so Scalpellino
   converts back exactly.
 - **Export `.obj` + `.mtl`**: positions, normals, texture coordinates, materials with
   texture paths, parts as groups (vertex colours as the common unofficial extension).
@@ -482,7 +488,8 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
   stay welded; scatter bases on picked faces, aligned to normals, no overlaps when on;
   image card size and proportions exact, trim matches opaque bounds, crossed cards share
   the centre line; generated textures use only the chosen colours and tile cleanly.
-- Export tests: `.glb`/`.gltf` read back with cgltf (counts, units, colours, samplers,
+- Export tests: `.glb`/`.gltf` read back with cgltf (counts, cm → m, colours, samplers
+  per filtering setting,
   alpha, double-sided, parts and their origins); `.obj` parsed back.
 - Scripted UI tests with screenshots into `docs/screenshots/`.
 - Second display and tablet input tested by hand.

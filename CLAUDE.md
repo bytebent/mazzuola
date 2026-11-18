@@ -20,7 +20,8 @@ New session? Also read `docs/HANDOFF.md` (user preferences, past mistakes, works
 
 ## Product rules
 - Static models only: no skeletons, rigging, animation or physics. Don't add or suggest them.
-- The style is low poly, small pixel textures, nearest filtering, vertex colours. Early
+- The style is low poly, small pixel textures, nearest filtering by default (smooth is a
+  per-texture option), vertex colours. Early
   3D games are one inspiration, not a target: nothing has to be period-accurate. Never
   emulate old hardware glitches (no vertex wobble, no affine warping).
 - One window with mouse and keyboard is the complete tool. Second displays, iPad/Sidecar

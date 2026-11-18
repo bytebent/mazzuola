@@ -28,8 +28,8 @@
    panels, status bar, counter); menus (File, Edit, Select, Create, Mesh, Texture, Paint,
    View, Help); Help → Controls.
 5. Views: four views with maximise, direction switching, splitters; 3D orbit around
-   origin / selection and fly mode; pan/zoom; grid with the keys right of P, grid/snap
-   toggles.
+   origin / selection and fly mode; pan/zoom; grid in cm with the keys right of P
+   (steps as in Scalpellino, plus millimetre steps), grid/snap toggles.
 6. Shortcut scheme from ARCHITECTURE §6 wired to menu entries; shown to the user for
    confirmation.
 7. Early check (by hand): a dummy panel pulled out into its own window works on a second
@@ -52,11 +52,11 @@
    with rotate and scale per copy and "scale the offset"; mirror and mirror clone;
    flatten X/Y/Z; move along normal.
 6. Model pivot tool.
-7. `.mazz` reader/writer + round-trip golden tests.
+7. `.mazz` reader/writer (`units cm` header) + round-trip golden tests.
 8. Reference images per view (load, move, rotate, scale, transparency slider,
    front/back switch).
-9. Scale figure toggle.
-10. Export geometry to `.glb`/`.gltf` (units + pivot in `extras`) and `.obj`; read-back
+9. Scale figure toggle (175 cm).
+10. Export geometry to `.glb`/`.gltf` (cm → m; units + pivot in `extras`) and `.obj`; read-back
     tests.
 
 ## Milestone 2 — Modelling
@@ -115,7 +115,8 @@
    crossed pair / crossed three, base, double-sided, trim to alpha; tests.
 8. File watching with reload and conflict question.
 9. Layout image export (×1–×8); import scaled image.
-10. Exports with textures (embedded / beside), nearest samplers, alpha, double-sided.
+10. Per-texture filtering (nearest default, smooth); exports with textures (embedded /
+    beside), samplers per filtering, alpha, double-sided.
 
 ## Milestone 6 — Pixel painting
 
@@ -150,6 +151,8 @@ hand test with a second monitor and an iPad.
 - **Shared texture sheet**: several models using one sheet already works by referencing
   the same PNG; should the texture view also show other models' pieces on it?
 - **N-gons**: triangles and quads only (tools split anything larger). Enough?
+- **Grid steps**: match Scalpellino's cm grid steps once they're set there.
+- **Texel target default**: 0.5 px/cm proposed. Confirm.
 - **Texture sizes**: 16–256 suggested, larger allowed. Enforce anything?
 - **Scalpellino reading `.mazz` directly** (live edits in the level) or `.glb` only?
 - **Double-tap default**: picker or eraser.
@@ -178,3 +181,12 @@ hand test with a second monitor and an iPad.
 - Reference images: transparency slider plus a front/back switch. No scanning import.
 - Wording: low-poly / pixel textures / vertex colours is the style; early 3D games are
   an inspiration, not a target.
+
+### 2026-11-18 — Units and filtering
+
+- 1 unit = 1 cm (Scalpellino is moving to cm). Scale figure 175 cm, `units cm` in
+  `.mazz`, export divides by 100, examples converted.
+- Texture filtering is a per-texture setting (nearest default, smooth option), shown in
+  the 3D views and written to the export samplers. The texture view always shows exact
+  pixels; painting always works on whole pixels.
+- Parked: grid steps (match Scalpellino), texel target default (0.5 px/cm proposed).
