@@ -332,3 +332,19 @@ hand test with a second monitor and an iPad.
   chained to ImGui's own (so ImGui refreshes its monitor list on display changes).
   Undone in v0.0.5 as a test. If v0.0.5 updates on the iPad, that's the cause; if not,
   check whether v0.0.1 still works today (a change in the iPad setup?).
+
+### 2026-11-18 — v0.0.6: iPad test, round 4
+
+- User's test of v0.0.5: no change; **v0.0.1 doesn't update on the iPad now either, nor
+  does Scalpellino**, while Safari, Discord etc. do. So it isn't a Mazzuola change: our
+  OpenGL windows aren't shown on the Sidecar display (the earlier v0.0.1 success remains
+  unexplained).
+- Suspected cause: dual-GPU MacBook Pro; GLFW (and raylib) by default create OpenGL
+  contexts without "offline renderers" and the app doesn't declare automatic graphics
+  switching, so the context stays tied to one GPU and can't present on a display driven
+  differently (Sidecar's virtual display).
+- v0.0.6: `GLFW_COCOA_GRAPHICS_SWITCHING` on (adds `NSOpenGLPFAAllowOfflineRenderers`)
+  for the main and paint windows, and `NSSupportsAutomaticGraphicsSwitching` in
+  Info.plist. The monitor callback stays unchained (as in v0.0.1) until this is settled.
+- If this works, Scalpellino needs the same (raylib sets its own window hints: needs a
+  look there).

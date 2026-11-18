@@ -34,6 +34,7 @@ bool PaintWindow::open(GLFWwindow* mainWindow, bool automated) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
     window_ = glfwCreateWindow(900, 700, "Mazzuola - Paint", nullptr, mainWindow);
     if (!window_) return false;
     int mx = 0, my = 0;

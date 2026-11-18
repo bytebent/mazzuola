@@ -74,6 +74,9 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    // Let macOS move our OpenGL drawing between graphics chips and displays (needed to
+    // show on displays like Sidecar's; also lets the Mac use the lower-power chip).
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
     GLFWwindow* window = glfwCreateWindow(1440, 900, "Mazzuola", nullptr, nullptr);
     if (!window) {
         std::fprintf(stderr, "Mazzuola: could not open an OpenGL 4.1 window.\n");
