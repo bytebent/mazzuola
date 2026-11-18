@@ -27,6 +27,7 @@
 4. ImGui docking with multi-viewport; default layout (four views, texture view, side
    panels, status bar, counter); menus (File, Edit, Select, Create, Mesh, Texture, Paint,
    View, Help); Help → Controls.
+   Light theme with red accent (ARCHITECTURE §6).
 5. Views: four views with maximise, direction switching, splitters; 3D orbit around
    origin / selection and fly mode; pan/zoom; grid in cm with the keys right of P
    (steps as in Scalpellino, plus millimetre steps), grid/snap toggles.
@@ -190,3 +191,8 @@ hand test with a second monitor and an iPad.
   the 3D views and written to the export samplers. The texture view always shows exact
   pixels; painting always works on whole pixels.
 - Parked: grid steps (match Scalpellino), texel target default (0.5 px/cm proposed).
+
+### 2026-11-18 — Look
+
+- UI: light theme with a red accent (Scalpellino is dark with blue). Axis colours stay
+  standard; selection in the views is orange so it isn't confused with the X axis.

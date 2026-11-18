@@ -65,6 +65,7 @@ Read in this order:
   image card, generate texture, tree later). The user is also reading the Bryce docs to
   expand Scalpellino; things that fit Mazzuola may come from there.
 - Create menu holds everything that makes new geometry; Mesh holds editing commands.
+- Look: light theme, red accent (Scalpellino: dark, blue accent).
 - Units: 1 unit = 1 cm (same as Scalpellino), scale figure 175 cm.
 - Nearest filtering is the default, not forced: per-texture setting with smooth as an
   option.

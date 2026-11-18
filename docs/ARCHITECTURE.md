@@ -149,6 +149,12 @@ to the GPU → one redraw of the views that show it.
 - Operations with settings (extrude, bevel, divide…) show a live preview and a panel of
   typed values; Return applies, Esc cancels.
 - No wheel parameter adjustment; the wheel zooms views only.
+- **Look: light theme with a red accent** (Scalpellino is dark with blue, so the two
+  are told apart at a glance). The accent marks the active tool, focused fields,
+  buttons, tabs and selected list rows. Views keep the usual axis colours (X red,
+  Y green, Z blue); selection in the views is drawn in orange so it never reads as the
+  X axis. Model views use a light grey background, the texture view a checkerboard
+  behind transparent pixels.
 - UI font Roboto. Grid halve/double on the two keys right of P; grid and snap toggles.
   Grid steps match Scalpellino's (in cm), plus steps below 1 cm (millimetres) for small
   objects.
