@@ -4,8 +4,9 @@
 
 - **Milestone 0 (skeleton) done: v0.0.0.** Window, views, grid, navigation, menus with
   every planned shortcut. Nothing can be modelled yet.
-- Waiting on the user: confirm the shortcut table (Help → Controls), and try the paint
-  window test (v0.0.2) on the iPad with the Pencil.
+- iPad check done: the whole app and the paint window work on the iPad with the Pencil
+  (v0.0.6, graphics switching). v0.0.7 cleans up after the tests.
+- Waiting on the user: confirm the shortcut table (Help → Controls).
 - **Next: milestone 1 — Mesh basics**, after the user's go-ahead.
 
 ## How to build and test (AI workspace)
@@ -150,11 +151,12 @@ colour display modes, exports with colours (`COLOR_0`, `.obj` extension), unlit 
 parts as nodes or merged. Scatter on faces (Mesh menu): pick target faces, copies,
 spacing, align to surface, spin, size range, sink, avoid overlaps, seed; tests.
 
-## Milestone 8 — Detached paint view + tablets
+## Milestone 8 — Paint window + tablets
 
-Paint view as its own window on any display, position remembered per display (docks back
-if the display is gone), vertex brush available there, pen pressure for the brush's
-reach and colour strength, double-tap action, larger-buttons option, two-finger camera;
+The paint window (a second real window, already working on the iPad since v0.0.6) gets
+the full painting UI: pixel and vertex colour painting, the vertex brush, palette; pen
+pressure for the brush's reach and colour strength; double-tap action; position
+remembered; draw only the window that changed (both windows wait for the display);
 hand test with a second monitor and an iPad.
 
 ## Later
@@ -348,3 +350,20 @@ hand test with a second monitor and an iPad.
   Info.plist. The monitor callback stays unchained (as in v0.0.1) until this is settled.
 - If this works, Scalpellino needs the same (raylib sets its own window hints: needs a
   look there).
+
+### 2026-11-18 — v0.0.6 works; v0.0.7 cleanup
+
+- User's test of v0.0.6: **it works**: the whole app and the paint window update on the
+  iPad, and take the Pencil. Cause confirmed: graphics switching (see ARCHITECTURE §8).
+  Scalpellino has the same problem on Sidecar but the user won't use it there: no change.
+- v0.0.7 cleanup: ImGui multi-viewport off (panels stay in the main window), so the
+  backend size patch, the monitor callback and "bring windows home" are gone; the
+  paint window's test switches (frame counter, sync, refresh, redisplay) and tap test are
+  gone (`platform/window_surface_*` removed). The paint window stays (View → Paint
+  window) as a shell for milestones 6 and 8: tool and palette buttons (not wired), 3D
+  view, pen readout. Help → Pen and mouse test stays.
+- Docs: ARCHITECTURE §8 rewritten (paint window, why no pulled-out panels, graphics
+  switching, pen taps); CLAUDE.md and HANDOFF note the graphics-switching rule.
+- Tests: core 280/280; `m0_views` at 1× and 2×; idle 0 ticks.
+- Milestone 0 is complete (the step 7 check is done). Next: milestone 1 after the user's
+  go-ahead.

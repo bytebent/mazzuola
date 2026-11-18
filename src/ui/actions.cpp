@@ -62,7 +62,7 @@ const ActionInfo kActions[] = {
     {Act::BackToOrigin, "view.origin", "Back to origin", "Cmd+0", 0},
     {Act::MaximiseView, "view.maximise", "Maximise view under the cursor", "", 0},
     {Act::ResetLayout, "view.resetlayout", "Reset layout", "", 0},
-    {Act::PaintWindow, "view.paintwindow", "Paint window (test)", "", 0},
+    {Act::PaintWindow, "view.paintwindow", "Paint window", "", 0},
 
     {Act::Controls, "help.controls", "Controls", "F1", 0},
     {Act::About, "help.about", "About Mazzuola", "", 0},

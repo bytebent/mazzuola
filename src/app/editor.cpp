@@ -61,8 +61,6 @@ std::string Editor::takeScreenshotRequest() {
     return s;
 }
 
-void Editor::bringWindowsHome() { bringHome_ = true; }
-
 void Editor::markViewsDirty() {
     for (View& v : views_) v.dirty = true;
 }
@@ -234,17 +232,6 @@ bool Editor::frame(double dt) {
     aboutWindow();
     gridSizeDialog();
     penTestWindow();
-    if (bringHome_) {
-        bringHome_ = false;
-        const ImGuiViewport* main = ImGui::GetMainViewport();
-        float offset = 0;
-        for (ImGuiWindow* w : ImGui::GetCurrentContext()->Windows) {
-            if (w->ParentWindow || w->Hidden || !w->Viewport || w->Viewport == main) continue;
-            ImGui::SetWindowPos(w, ImVec2(main->WorkPos.x + 60 + offset, main->WorkPos.y + 60 + offset));
-            offset += 30;
-        }
-    }
-
     if (scriptMode_) {
         for (const std::string& dup : takeImGuiIdConflicts()) scriptFail("conflicting widget ID: " + dup);
     }

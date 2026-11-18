@@ -40,6 +40,11 @@ New session? Also read `docs/HANDOFF.md` (user preferences, past mistakes, works
 
 ## Engineering
 - `src/core` must not depend on OpenGL, GLFW or ImGui.
+- Keep `GLFW_COCOA_GRAPHICS_SWITCHING` on every window and
+  `NSSupportsAutomaticGraphicsSwitching` in Info.plist: without them, windows don't
+  update on a Sidecar display (two-GPU Macs).
+- Panels stay inside the main window (no ImGui multi-viewport); extra windows are real
+  GLFW windows with their own ImGui context, like the paint window.
 - Every edit goes through a command (undoable).
 - Work milestone by milestone (see roadmap). Small steps, build and test each one.
 - Code shared with Scalpellino (file dialogs, settings, font embedding, UI script

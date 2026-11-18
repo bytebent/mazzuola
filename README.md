@@ -35,6 +35,8 @@ including the planned ones with the milestone that brings them.
 | Resize the views | drag the bars between them; double-click a bar to centre it |
 | Back to the origin | **Cmd+0** (all views) |
 | Reset the window layout | View → Reset layout |
+| Paint window (a second window, e.g. for an iPad through Sidecar) | View → Paint window; drag on its view to turn it, two-finger scroll zooms (painting arrives in milestone 6) |
+| Check pen and mouse input | Help → Pen and mouse test |
 | Quit | **Cmd+Q** |
 
 Keys are read by physical position, so they work the same on any keyboard layout.

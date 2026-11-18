@@ -50,10 +50,6 @@ public:
     // Pixels per logical pixel for the views (MAZZ_VIEW_SCALE overrides, for tests).
     double viewScale() const;
 
-    // Moves every panel that lives in its own window back over the main window (it then
-    // merges into it). Used when a display goes away.
-    void bringWindowsHome();
-
     void run(Act a);
     bool enabled(Act a) const;
 
@@ -121,7 +117,6 @@ private:
 
     bool resetLayout_ = true;
     bool controlsOpen_ = false, aboutOpen_ = false, gridDialogOpen_ = false, penTestOpen_ = false;
-    bool bringHome_ = false;
     bool paintWanted_ = false, paintOpen_ = false;
     std::string paintShot_;
     double gridDialogValue_ = 8;

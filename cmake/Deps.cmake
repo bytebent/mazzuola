@@ -25,21 +25,6 @@ FetchContent_Declare(stb
 
 FetchContent_MakeAvailable(glfw imgui stb)
 
-# One fix to ImGui's GLFW backend, applied to a copy in the build folder: a window it
-# creates for a panel pulled out of the main window must never be 0 pixels wide or high
-# (GLFW refuses, and the backend then crashed; seen when a Sidecar display went away).
-file(READ ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp MAZZ_IMGUI_GLFW)
-set(MAZZ_FIND "vd->Window = glfwCreateWindow((int)viewport->Size.x, (int)viewport->Size.y,")
-set(MAZZ_REPLACE "vd->Window = glfwCreateWindow((int)viewport->Size.x > 1 ? (int)viewport->Size.x : 1, (int)viewport->Size.y > 1 ? (int)viewport->Size.y : 1,")
-string(FIND "${MAZZ_IMGUI_GLFW}" "${MAZZ_FIND}" MAZZ_FOUND)
-if(MAZZ_FOUND EQUAL -1)
-  message(FATAL_ERROR "imgui_impl_glfw.cpp changed: update the window-size fix in cmake/Deps.cmake")
-endif()
-string(REPLACE "${MAZZ_FIND}" "${MAZZ_REPLACE}" MAZZ_IMGUI_GLFW "${MAZZ_IMGUI_GLFW}")
-file(WRITE ${CMAKE_BINARY_DIR}/generated/imgui_impl_glfw.cpp.tmp "${MAZZ_IMGUI_GLFW}")
-file(COPY_FILE ${CMAKE_BINARY_DIR}/generated/imgui_impl_glfw.cpp.tmp
-     ${CMAKE_BINARY_DIR}/generated/imgui_impl_glfw.cpp ONLY_IF_DIFFERENT)
-
 # ImGui has no CMake build of its own; build it with its backends as one static lib.
 add_library(mazz_imgui STATIC
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -47,7 +32,7 @@ add_library(mazz_imgui STATIC
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
   ${imgui_SOURCE_DIR}/imgui_demo.cpp
-  ${CMAKE_BINARY_DIR}/generated/imgui_impl_glfw.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
 target_include_directories(mazz_imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
 target_link_libraries(mazz_imgui PUBLIC glfw)

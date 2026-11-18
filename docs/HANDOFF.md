@@ -32,6 +32,11 @@ Read in this order:
 
 ## Mistakes already made (don't repeat)
 
+- Spent several test rounds on the iPad (v0.0.2 to v0.0.5) suspecting our own changes,
+  when OpenGL apps in general didn't update on Sidecar (graphics switching was missing).
+  When something fails only on the user's hardware, first ask whether other apps of
+  the same kind (e.g. Scalpellino, also OpenGL) fail too.
+
 - Added a "wobble / affine warping" preview nobody asked for. The look is about the
   models, never hardware glitches.
 - Kept using "PS1" as the yardstick for everything. Early 3D games are one inspiration,
@@ -65,9 +70,8 @@ Read in this order:
   image card, generate texture, tree later). The user is also reading the Bryce docs to
   expand Scalpellino; things that fit Mazzuola may come from there.
 - Create menu holds everything that makes new geometry; Mesh holds editing commands.
-- iPad painting: panels pulled out of the main window (ImGui multi-viewport) don't take
-  the Pencil on the iPad; the whole app window does. Testing a second real window
-  (View → Paint window (test)) as the way to paint on the iPad.
+- iPad painting works through the **paint window** (a second real window, View → Paint
+  window) on Sidecar with the Apple Pencil. Pulled-out ImGui panels are off (fragile).
 - "Bottega" = the user's planned shared asset home (models, textures, palettes), used by
   both Mazzuola and Scalpellino. Not designed yet.
 - Look: light theme, red accent (Scalpellino: dark, blue accent). The accent is for UI

@@ -1,7 +1,6 @@
 #include "app/paint_window.hpp"
 #include "app/screenshot.hpp"
 #include "platform/pen.hpp"
-#include "platform/window_surface.hpp"
 #include "render/gl.hpp"
 #include "ui/theme.hpp"
 
@@ -34,7 +33,7 @@ bool PaintWindow::open(GLFWwindow* mainWindow, bool automated) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
+    glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE); // needed on Sidecar, see main.cpp
     window_ = glfwCreateWindow(900, 700, "Mazzuola - Paint", nullptr, mainWindow);
     if (!window_) return false;
     int mx = 0, my = 0;
@@ -43,8 +42,9 @@ bool PaintWindow::open(GLFWwindow* mainWindow, bool automated) {
 
     ImGuiContext* prevCtx = ImGui::GetCurrentContext();
     glfwMakeContextCurrent(window_);
+    // Waits for the display like the main window. (While both windows draw, each waits:
+    // to optimise in milestone 8 by drawing only the window that changed.)
     glfwSwapInterval(1);
-    syncApplied_ = true;
     ctx_ = ImGui::CreateContext();
     ImGui::SetCurrentContext(ctx_);
     ImGuiIO& io = ImGui::GetIO();
@@ -102,7 +102,6 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     if (!window_) return false;
     glfwMakeContextCurrent(window_);
     ImGui::SetCurrentContext(ctx_);
-    refreshWindowSurface(window_, updateContext_, false);
     if (!drawer_) drawer_ = new ViewDrawer();
     if (grid.size != lastGridSize_ || grid.visible != lastGridVisible_) {
         lastGridSize_ = grid.size;
@@ -122,17 +121,11 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     glClearColor(0.955f, 0.957f, 0.965f, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    if (syncToDisplay_ != syncApplied_) {
-        glfwSwapInterval(syncToDisplay_ ? 1 : 0);
-        syncApplied_ = syncToDisplay_;
-    }
-    ++frames_;
     if (!shot_.empty()) {
         saveScreenshot(window_, shot_);
         shot_.clear();
     }
     glfwSwapBuffers(window_);
-    refreshWindowSurface(window_, false, redisplay_);
 
     ImGui::SetCurrentContext(mainCtx);
     glfwMakeContextCurrent(mainWindow);
@@ -151,7 +144,7 @@ void PaintWindow::ui(const Grid& grid) {
     // ---- left strip: tools, palette, tap test
     const float stripW = 230;
     ImGui::BeginChild("##strip", ImVec2(stripW, 0));
-    ImGui::TextDisabled("Paint window (test)");
+    ImGui::TextDisabled("Painting arrives in milestone 6");
     static const char* tools[] = {"Pencil", "Fill", "Picker", "Eraser"};
     for (int i = 0; i < 4; ++i) {
         const bool on = tool_ == i;
@@ -178,9 +171,6 @@ void PaintWindow::ui(const Grid& grid) {
         ImGui::PopID();
     }
     ImGui::Spacing();
-    if (ImGui::Button("Tap test", ImVec2(-1, 56))) ++taps_;
-    ImGui::Text("Taps: %d", taps_);
-    ImGui::Spacing();
     const ImGuiIO& io = ImGui::GetIO();
     const PenState& p = penState();
     ImGui::TextDisabled("Pen");
@@ -188,12 +178,6 @@ void PaintWindow::ui(const Grid& grid) {
     ImGui::Text("Pressure: %.2f", p.pressure);
     ImGui::Text("Tilt: %.2f, %.2f", p.tiltX, p.tiltY);
     ImGui::TextWrapped("Drag on the view to turn it; scroll (two fingers) to zoom.");
-    ImGui::Spacing();
-    ImGui::TextDisabled("Display test");
-    ImGui::Text("Frames drawn: %llu", frames_);
-    ImGui::Checkbox("Sync to display", &syncToDisplay_);
-    ImGui::Checkbox("Refresh context", &updateContext_);
-    ImGui::Checkbox("Redisplay window", &redisplay_);
     ImGui::EndChild();
 
     // ---- the view: drag orbits (pens have no right button), scroll zooms

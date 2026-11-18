@@ -53,14 +53,6 @@ void onKey(GLFWwindow*, int key, int, int action, int mods) {
 
 // A display was added or removed (e.g. Sidecar turned off): ask the editor to bring
 // panels that live in their own windows back into the main window.
-// Test (v0.0.5): passing display changes on to ImGui's own handler (added in v0.0.2)
-// is the main suspect for the main window no longer updating on the iPad, so it is
-// off again, as in v0.0.1.
-bool gMonitorsChanged = false;
-void onMonitor(GLFWmonitor*, int event) {
-    if (event == GLFW_DISCONNECTED) gMonitorsChanged = true;
-}
-
 void onError(int code, const char* text) { std::fprintf(stderr, "Mazzuola: GLFW error %d: %s\n", code, text); }
 
 } // namespace
@@ -74,8 +66,9 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-    // Let macOS move our OpenGL drawing between graphics chips and displays (needed to
-    // show on displays like Sidecar's; also lets the Mac use the lower-power chip).
+    // Let macOS move our OpenGL drawing between graphics chips and displays. Required:
+    // without it (and NSSupportsAutomaticGraphicsSwitching in Info.plist) our windows
+    // don't update on a Sidecar display on a two-GPU Mac. Keep both.
     glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
     GLFWwindow* window = glfwCreateWindow(1440, 900, "Mazzuola", nullptr, nullptr);
     if (!window) {
@@ -101,9 +94,9 @@ int main(int argc, char** argv) {
     // Windows move only by their title bar: a click or pen touch on a panel's empty
     // space must never drag the window around.
     io.ConfigWindowsMoveFromTitleBarOnly = true;
-    // Panels can be pulled out into their own windows (e.g. onto a second screen).
-    // Automated runs keep everything in one window.
-    if (!opt.automated()) io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    // Panels stay inside the main window (ImGui's "pull a panel out into its own window"
+    // is off: on macOS it was fragile, and didn't take the Apple Pencil on Sidecar).
+    // The paint window is a real second window instead (app/paint_window.hpp).
     static std::string iniPath;
     if (std::string dir = settingsDir(); !dir.empty() && !opt.automated()) {
         iniPath = dir + "/layout.ini";
@@ -119,7 +112,6 @@ int main(int argc, char** argv) {
     }
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
-    glfwSetMonitorCallback(onMonitor);
     installPenInput();
     ImGuiContext* mainCtx = ImGui::GetCurrentContext();
     registerPenContext(mainCtx);
@@ -141,10 +133,6 @@ int main(int argc, char** argv) {
             const double dt = std::min(0.1, now - last);
             last = now;
 
-            if (gMonitorsChanged) {
-                gMonitorsChanged = false;
-                editor.bringWindowsHome();
-            }
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
@@ -162,11 +150,6 @@ int main(int argc, char** argv) {
             const std::string shot = editor.takeScreenshotRequest();
             if (!shot.empty()) saveScreenshot(window, shot);
 
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-                ImGui::UpdatePlatformWindows();
-                ImGui::RenderPlatformWindowsDefault();
-                glfwMakeContextCurrent(window);
-            }
             glfwSwapBuffers(window);
 
             // The paint window: open/close as asked, then draw it.

@@ -135,8 +135,8 @@ to the GPU → one redraw of the views that show it.
   down/up, Shift fast; Z or Esc stops.
 - **2D views**: wheel zooms toward the cursor, middle mouse (or Space + left mouse) pans.
 - **Texture view**: always visible next to the views (§6 Texture coordinates).
-- **Paint view**: an extra 3D view with its own camera, a slim toolbar and a palette
-  strip. Docked as a tab by default; can be pulled out into its own window (§8).
+- **Paint window**: a second app window with its own 3D view and camera, pen-sized tools
+  and palette (§8). Optional; everything it does can also be done in the main window.
 - Display modes per view: wireframe, flat, vertex colours only, texture only,
   texture × vertex colours (normal), texel check; wireframe overlay; show back faces.
   Each texture is shown with its own filtering (nearest by default). The texture view
@@ -409,25 +409,32 @@ Common to rock, tree, jitter, scatter and generate texture:
   texture paths, parts as groups (vertex colours as the common unofficial extension).
 - **Images**: PNG in and out. TGA/BMP/JPG accepted as reference images.
 
-## 8. Detached paint view and tablets (optional)
+## 8. Paint window and tablets (optional)
 
-- The paint view can be pulled out of the main window into its own OS window (Dear
-  ImGui multi-viewport) and placed on any display. Its position is remembered per
-  display; if that display is gone, it docks back into the main window.
-- Typical uses: a second monitor, or an iPad used as a display through macOS Sidecar
-  with Apple Pencil as the pointer. Mazzuola sees an ordinary display and ordinary
-  mouse events; nothing on the iPad is ours.
-- The paint view takes the vertex brush as well as pixel and colour painting.
-- **Pen pressure and tilt** from any macOS tablet input are read in a small
-  Objective-C++ file (`platform/tablet_mac.mm`). Used for the vertex brush's reach and
-  vertex colour strength; pixel tools ignore pressure. Without a tablet, the typed
-  values are used.
+- The **paint window** is a second, real app window (View → Paint window), not a panel
+  pulled out of the main one. Same program, so model, textures and undo are shared and
+  every stroke shows everywhere at once. Put it on any display: a second monitor, or an
+  iPad through macOS Sidecar with the Apple Pencil (nothing on the iPad is ours).
+  Implemented as its own GLFW window with its own ImGui context and its own GL objects
+  (VAOs and framebuffers aren't shared between OpenGL contexts; textures are).
+- Panels can't be pulled out of the main window (ImGui multi-viewport is off). Tried in
+  milestone 0: on macOS it was fragile (a crash when a display went away) and pulled-out
+  panels didn't take the Pencil on Sidecar.
+- **Sidecar needs graphics switching.** On a Mac with two GPUs, OpenGL windows don't
+  update on a Sidecar display unless the context allows offline renderers
+  (`GLFW_COCOA_GRAPHICS_SWITCHING`) and Info.plist has
+  `NSSupportsAutomaticGraphicsSwitching`. Both are set; keep them.
+- **Pen taps**: a pen tap comes without a pointer move first, and GLFW only updates the
+  position on moves. `platform/pen_mac.mm` (a Cocoa event monitor) gives ImGui the real
+  position before each click, marks pen events as pen input, and reads **pressure and
+  tilt** (used for the vertex brush's reach and vertex colour strength; pixel tools
+  ignore pressure; without a tablet the typed values are used).
+- In the paint window a plain drag turns the view (a pen has no right button); two-finger
+  scroll zooms. Buttons are pen-sized.
 - **Pencil double-tap** (when available): switch between the current tool and the
   picker or eraser (a setting).
-- **Two-finger scroll** (trackpad or iPad) moves the paint view's camera.
-- Larger-buttons option for pen use.
-- Windowing: GLFW + OpenGL + ImGui's own backends (multi-viewport needs them; rlImGui
-  doesn't support it).
+- Its position is remembered; if its display is gone, macOS moves it to another one.
+- Windowing: GLFW + OpenGL + ImGui's own backends.
 
 ## 9. Rendering
 
@@ -518,5 +525,5 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 | 5 | Texture coordinates: textures, mapping tool (projections, unfold, flatten), texture view (select, transform, weld/unweld, stitch, regroup, tile), texel check + even out, transparency, image card, file watching, layout image export, scaled import; exports with textures | |
 | 6 | Pixel painting: tools, palette + saved palettes, painting on texture view and model, paint view, stroke undo, moved-paint warning, generate texture | |
 | 7 | Vertex colours: colour brush, fill, split colours; exports with colours, unlit option; scatter on faces | |
-| 8 | Detached paint view + tablets: own window on any display, pen pressure, double-tap, larger buttons; hand test with an iPad | |
+| 8 | Paint window + tablets: the second window's full painting UI (texture and vertex colour painting, vertex brush), pen pressure, double-tap, position remembered; hand test with an iPad | |
 | later | Tree generator | |
