@@ -239,5 +239,9 @@ hand test with a second monitor and an iPad.
 - Screenshots: `m0-01-start.png`, `m0-02-top-zoomed-panned.png`, `m0-03-orbited.png`,
   `m0-04-directions.png`, `m0-05-maximised-3d.png`, `m0-06-flying.png`,
   `m0-07-controls.png`.
-- Not checked here (no Mac in the workspace): the macOS build and look on a Retina
-  screen; CI builds it. The second-screen / iPad check is by hand.
+- CI: the first Mac build failed inside GLFW (its Cocoa `.m` files were compiled as
+  Objective-C++ because only OBJCXX was enabled); fixed by enabling OBJC too. All jobs
+  green afterwards (macOS Intel build, Linux tests); release v0.0.0 published with
+  `Mazzuola-intel.zip`.
+- Not checked here (no Mac in the workspace): the look on a Retina screen. The
+  second-screen / iPad check is by hand.
