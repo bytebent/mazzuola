@@ -71,7 +71,8 @@ if(MAZZ_BUILD_APP)
     add_executable(Mazzuola ${MAZZ_APP_SOURCES})
   endif()
 
-  target_compile_definitions(Mazzuola PRIVATE MAZZ_VERSION="${PROJECT_VERSION}")
+  # GLFW must not pull in the legacy OpenGL header (render/gl.hpp includes the right one).
+  target_compile_definitions(Mazzuola PRIVATE MAZZ_VERSION="${PROJECT_VERSION}" GLFW_INCLUDE_NONE)
   target_include_directories(Mazzuola PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
   target_link_libraries(Mazzuola PRIVATE mazz_core mazz_imgui mazz_stb mazz_assets glfw)
 endif()
