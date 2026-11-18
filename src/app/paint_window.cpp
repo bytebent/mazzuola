@@ -1,6 +1,7 @@
 #include "app/paint_window.hpp"
 #include "app/screenshot.hpp"
 #include "platform/pen.hpp"
+#include "platform/window_surface.hpp"
 #include "render/gl.hpp"
 #include "ui/theme.hpp"
 
@@ -100,6 +101,7 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     if (!window_) return false;
     glfwMakeContextCurrent(window_);
     ImGui::SetCurrentContext(ctx_);
+    refreshWindowSurface(window_, updateContext_, false);
     if (!drawer_) drawer_ = new ViewDrawer();
     if (grid.size != lastGridSize_ || grid.visible != lastGridVisible_) {
         lastGridSize_ = grid.size;
@@ -129,6 +131,7 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
         shot_.clear();
     }
     glfwSwapBuffers(window_);
+    refreshWindowSurface(window_, false, redisplay_);
 
     ImGui::SetCurrentContext(mainCtx);
     glfwMakeContextCurrent(mainWindow);
@@ -188,6 +191,8 @@ void PaintWindow::ui(const Grid& grid) {
     ImGui::TextDisabled("Display test");
     ImGui::Text("Frames drawn: %llu", frames_);
     ImGui::Checkbox("Sync to display", &syncToDisplay_);
+    ImGui::Checkbox("Refresh context", &updateContext_);
+    ImGui::Checkbox("Redisplay window", &redisplay_);
     ImGui::EndChild();
 
     // ---- the view: drag orbits (pens have no right button), scroll zooms

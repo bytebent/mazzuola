@@ -49,6 +49,7 @@ private:
     bool dragging_ = false;
     double lastGridSize_ = -1;
     bool syncToDisplay_ = true;
+    bool updateContext_ = false, redisplay_ = false;
     bool syncApplied_ = false;
     unsigned long long frames_ = 0;
     bool lastGridVisible_ = true;

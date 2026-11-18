@@ -308,3 +308,17 @@ hand test with a second monitor and an iPad.
 - Added to the paint window: a "Frames drawn" counter and a "Sync to display" checkbox
   (on = new behaviour, off = v0.0.2's) so the user can tell a presenting problem from a
   drawing one.
+
+### 2026-11-18 — v0.0.4: paint window display test, round 2
+
+- User's test of v0.0.3: on the iPad the paint window takes taps and keeps drawing (frame
+  counter rises, seen once back on the Mac), but the iPad never shows new frames;
+  "Sync to display" makes no difference. So: a presenting problem for the second
+  window's OpenGL context on the Sidecar display, not a drawing one.
+- Added `platform/window_surface_*` and two switches in the paint window: "Refresh
+  context" (`[NSOpenGLContext update]` before each frame) and "Redisplay window"
+  (`setNeedsDisplay` on its view after each swap). Asked the user to also check whether
+  the main window still updates on the iPad while the paint window is open.
+- If neither helps: the only setup proven to work on the iPad is one app with one window
+  there. Then the fallback is the user's two-apps idea (a paint app whose only window is
+  on the iPad), with syncing through the bottega files.
