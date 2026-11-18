@@ -5,6 +5,8 @@
 // sleeps again. It runs continuously only while the editor says it is busy (flying,
 // dragging a view, scripted runs).
 #include "app/editor.hpp"
+#include "app/paint_window.hpp"
+#include "app/screenshot.hpp"
 #include "app/settings.hpp"
 #include "platform/pen.hpp"
 #include "render/gl.hpp"
@@ -14,9 +16,6 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -55,27 +54,14 @@ void onKey(GLFWwindow*, int key, int, int action, int mods) {
 // A display was added or removed (e.g. Sidecar turned off): ask the editor to bring
 // panels that live in their own windows back into the main window.
 bool gMonitorsChanged = false;
-void onMonitor(GLFWmonitor*, int event) {
+GLFWmonitorfun gPrevMonitorCallback = nullptr; // ImGui's own (keeps its monitor list current)
+void onMonitor(GLFWmonitor* m, int event) {
     if (event == GLFW_DISCONNECTED) gMonitorsChanged = true;
+    if (gPrevMonitorCallback) gPrevMonitorCallback(m, event);
 }
 
 void onError(int code, const char* text) { std::fprintf(stderr, "Mazzuola: GLFW error %d: %s\n", code, text); }
 
-// Saves the main window's back buffer (just drawn) as a PNG.
-void saveScreenshot(GLFWwindow* w, const std::string& path) {
-    int fw = 0, fh = 0;
-    glfwGetFramebufferSize(w, &fw, &fh);
-    std::vector<unsigned char> px((size_t)fw * fh * 4);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, fw, fh, GL_RGBA, GL_UNSIGNED_BYTE, px.data());
-    std::vector<unsigned char> flipped(px.size());
-    for (int y = 0; y < fh; ++y)
-        std::memcpy(&flipped[(size_t)y * fw * 4], &px[(size_t)(fh - 1 - y) * fw * 4], (size_t)fw * 4);
-    for (size_t i = 3; i < flipped.size(); i += 4) flipped[i] = 255;
-    if (!stbi_write_png(path.c_str(), fw, fh, 4, flipped.data(), fw * 4))
-        std::fprintf(stderr, "Mazzuola: could not write %s\n", path.c_str());
-}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -129,12 +115,15 @@ int main(int argc, char** argv) {
     }
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
-    glfwSetMonitorCallback(onMonitor);
+    gPrevMonitorCallback = glfwSetMonitorCallback(onMonitor);
     installPenInput();
+    ImGuiContext* mainCtx = ImGui::GetCurrentContext();
+    registerPenContext(mainCtx);
 
     int exitCode = 0;
     {
         Editor editor(window, opt);
+        PaintWindow paint;
         gEditor = &editor;
         int settle = kSettleFrames;
         bool busy = true;
@@ -176,10 +165,26 @@ int main(int argc, char** argv) {
             }
             glfwSwapBuffers(window);
 
+            // The paint window: open/close as asked, then draw it.
+            if (paint.wantsClose()) {
+                paint.close();
+                editor.paintWindowClosed();
+            }
+            if (editor.paintWindowWanted() && !paint.isOpen() && !paint.open(window, opt.automated()))
+                editor.paintWindowClosed();
+            if (!editor.paintWindowWanted() && paint.isOpen()) paint.close();
+            editor.setPaintWindowOpen(paint.isOpen());
+            if (paint.isOpen()) {
+                const std::string pshot = editor.takePaintShot();
+                if (!pshot.empty()) paint.requestScreenshot(pshot);
+                if (paint.frame(editor.grid(), dt, window, mainCtx)) busy = true;
+            }
+
             if (busy) settle = kSettleFrames;
             else if (settle > 0) --settle;
             else settle = kSettleFrames; // after the wait returns (an event), settle again
         }
+        paint.close();
         exitCode = editor.exitCode();
         gEditor = nullptr;
     }

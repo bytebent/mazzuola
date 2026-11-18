@@ -138,6 +138,7 @@ void Editor::run(Act a) {
         layout_ = ViewsLayout{};
         markViewsDirty();
         break;
+    case Act::PaintWindow: paintWanted_ = !paintWanted_; break;
     case Act::Controls: controlsOpen_ = !controlsOpen_; break;
     case Act::About: aboutOpen_ = true; break;
     default: break;
@@ -397,6 +398,7 @@ void Editor::menuBar() {
     if (ImGui::BeginMenu("View")) {
         menuItem(Act::MaximiseView, layout_.maximised >= 0);
         menuItem(Act::ResetLayout);
+        menuItem(Act::PaintWindow, paintWanted_);
         ImGui::Separator();
         menuItem(Act::GridSmaller);
         menuItem(Act::GridLarger);

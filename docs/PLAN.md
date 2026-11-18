@@ -4,8 +4,8 @@
 
 - **Milestone 0 (skeleton) done: v0.0.0.** Window, views, grid, navigation, menus with
   every planned shortcut. Nothing can be modelled yet.
-- Waiting on the user: confirm the shortcut table (Help → Controls), and re-check
-  Sidecar with v0.0.1 (pen taps, panels on the iPad, turning Sidecar off).
+- Waiting on the user: confirm the shortcut table (Help → Controls), and try the paint
+  window test (v0.0.2) on the iPad with the Pencil.
 - **Next: milestone 1 — Mesh basics**, after the user's go-ahead.
 
 ## How to build and test (AI workspace)
@@ -165,6 +165,9 @@ hand test with a second monitor and an iPad.
 
 ## Open questions (parked)
 
+- **Bottega**: the shared home of all assets (models, textures, palettes, ...), used by
+  Mazzuola and Scalpellino. Layout, how both apps browse it, live updates: to design.
+
 - **Shared texture sheet**: several models using one sheet already works by referencing
   the same PNG; should the texture view also show other models' pieces on it?
 - **N-gons**: triangles and quads only (tools split anything larger). Enough?
@@ -269,3 +272,25 @@ hand test with a second monitor and an iPad.
 - Not testable here (no Mac, no iPad): the user checks the three fixes by hand.
 - User re-test of v0.0.1: with the whole app on the iPad, the Apple Pencil now works.
   Still to report: a panel pulled out onto the iPad, and turning Sidecar off.
+
+### 2026-11-18 — v0.0.2: paint window test
+
+- User's re-test of v0.0.1: with the whole app on the iPad the Pencil works; a panel
+  pulled out onto the iPad still doesn't. User proposed splitting Mazzuola into two
+  apps (a paint app on the iPad, Mazzuola on the Mac) sharing the bottega folders, with
+  live updates. Talked through: two apps need syncing (files or a live link), split
+  undo, two bundles. Middle option chosen for a test first: one app with a **second
+  real window** for painting (shares everything, no syncing).
+- **Bottega** (user's term): where all assets live (models, textures, palettes...),
+  shared with Scalpellino. To be designed; parked below.
+- Built: `app/paint_window.*`, a second GLFW window with its own ImGui context, opened
+  from View → Paint window (test). Pen-sized buttons (tools, palette, tap counter), a 3D
+  view (drag orbits, since pens have no right button; scroll zooms), pen readout. Its
+  own GL objects (VAOs/framebuffers aren't shared between contexts); textures are.
+- The pen fix now covers every ImGui context (main and paint window). The monitor
+  callback now chains to ImGui's own (it was replacing it, so ImGui could miss display
+  changes).
+- Tests: core 280/280; `m0_views` (now also opens/closes the paint window and checks it
+  follows the grid) passes at 1× and 2×; idle 0 ticks. Screenshot `m0-08-paint-window.png`.
+- If the test works on the iPad, milestone 8 uses this second window, and the ImGui
+  "pull a panel out" feature can be switched off (it was the fragile part).

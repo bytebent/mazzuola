@@ -65,6 +65,11 @@ Read in this order:
   image card, generate texture, tree later). The user is also reading the Bryce docs to
   expand Scalpellino; things that fit Mazzuola may come from there.
 - Create menu holds everything that makes new geometry; Mesh holds editing commands.
+- iPad painting: panels pulled out of the main window (ImGui multi-viewport) don't take
+  the Pencil on the iPad; the whole app window does. Testing a second real window
+  (View → Paint window (test)) as the way to paint on the iPad.
+- "Bottega" = the user's planned shared asset home (models, textures, palettes), used by
+  both Mazzuola and Scalpellino. Not designed yet.
 - Look: light theme, red accent (Scalpellino: dark, blue accent). The accent is for UI
   chrome only; selection in the views is pink.
 - Units: 1 unit = 1 cm (same as Scalpellino), scale figure 175 cm.

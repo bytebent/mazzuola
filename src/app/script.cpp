@@ -19,11 +19,12 @@
 //   camera <view> <yaw> <pitch> <distance> <tx> <ty> <tz>   place a 3D view's camera
 //   flymove <forward> <right> <up>     move the flying camera (cm)
 //   shot <file.png>                    screenshot of the whole window after this frame
+//   paintshot <file.png>               screenshot of the paint window after its next frame
 //   expect grid <cm> | gridvisible <0|1> | snap <0|1> | mode <vertices|edges|faces|pieces>
 //   expect viewdir <view> <name> | maximised <view or -1> | flying <0|1>
 //   expect cam <view> <yaw> <pitch> <distance>      (±0.5)
 //   expect ortho <view> <cu> <cv> <zoom>            (±1 %)
-//   expect controls <0|1>
+//   expect controls <0|1> | paintwindow <0|1>
 //   quit
 #include "app/editor.hpp"
 #include <GLFW/glfw3.h>
@@ -159,6 +160,8 @@ void Editor::stepScript() {
             std::string file;
             in >> file;
             screenshotRequest_ = file;
+        } else if (cmd == "paintshot") {
+            in >> paintShot_;
         } else if (cmd == "quit") {
             quit_ = true;
         } else if (cmd == "expect") {
@@ -191,6 +194,10 @@ void Editor::stepScript() {
                 int b = 0;
                 in >> b;
                 if (flying_ != (b != 0)) scriptFail(std::string("flying is ") + (flying_ ? "1" : "0"));
+            } else if (what == "paintwindow") {
+                int b = 0;
+                in >> b;
+                if (paintOpen_ != (b != 0)) scriptFail(std::string("paint window open is ") + (paintOpen_ ? "1" : "0"));
             } else if (what == "controls") {
                 int b = 0;
                 in >> b;

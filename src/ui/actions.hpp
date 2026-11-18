@@ -23,7 +23,7 @@ enum class Act {
     ApplyTexture,
     // View
     GridSmaller, GridLarger, GridSet, ToggleGrid, ToggleSnap, FlyMode, OrbitOrigin,
-    OrbitSelection, FrameSelection, BackToOrigin, MaximiseView, ResetLayout,
+    OrbitSelection, FrameSelection, BackToOrigin, MaximiseView, ResetLayout, PaintWindow,
     // Help
     Controls, About,
     Count

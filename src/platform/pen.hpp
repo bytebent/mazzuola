@@ -9,6 +9,8 @@
 // Elsewhere these are no-ops.
 #include <cstdint>
 
+struct ImGuiContext;
+
 namespace mazz {
 
 struct PenState {
@@ -22,6 +24,9 @@ struct PenState {
 };
 
 void installPenInput();
+// ImGui contexts whose windows receive pen input (the main window's, the paint window's).
+void registerPenContext(ImGuiContext* ctx);
+void unregisterPenContext(ImGuiContext* ctx);
 const PenState& penState();
 
 } // namespace mazz

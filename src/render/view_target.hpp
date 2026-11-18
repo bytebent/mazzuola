@@ -21,9 +21,10 @@ public:
     void end();
 
     unsigned texture() const { return tex_; }
+    // Frees the GPU objects (needs the context they were made in to be current).
+    void release();
 
 private:
-    void release();
     int w_ = 0, h_ = 0;
     unsigned msFbo_ = 0, msColor_ = 0, msDepth_ = 0;
     unsigned fbo_ = 0, tex_ = 0;

@@ -57,6 +57,13 @@ public:
     void run(Act a);
     bool enabled(Act a) const;
 
+    // The paint window (a second app window; main.cpp opens and closes it).
+    bool paintWindowWanted() const { return paintWanted_; }
+    void paintWindowClosed() { paintWanted_ = false; }
+    void setPaintWindowOpen(bool open) { paintOpen_ = open; }
+    std::string takePaintShot() { std::string s; s.swap(paintShot_); return s; }
+    const Grid& grid() const { return grid_; }
+
 private:
     // ---- per-frame parts
     void dockspace();
@@ -115,6 +122,8 @@ private:
     bool resetLayout_ = true;
     bool controlsOpen_ = false, aboutOpen_ = false, gridDialogOpen_ = false, penTestOpen_ = false;
     bool bringHome_ = false;
+    bool paintWanted_ = false, paintOpen_ = false;
+    std::string paintShot_;
     double gridDialogValue_ = 8;
 
     std::deque<Chord> keyQueue_;

@@ -6,5 +6,7 @@ namespace {
 PenState gPen;
 }
 void installPenInput() {}
+void registerPenContext(ImGuiContext*) {}
+void unregisterPenContext(ImGuiContext*) {}
 const PenState& penState() { return gPen; }
 } // namespace mazz
