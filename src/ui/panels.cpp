@@ -102,7 +102,14 @@ void Editor::propertiesPanel() {
     else {
         Vec3 mn, mx;
         selectionBounds(doc_.mesh, doc_.sel, mn, mx);
-        ImGui::Text("%d faces", (int)doc_.sel.faces.size());
+        const SelectMode md = doc_.sel.mode;
+        const int n = md == SelectMode::Vert ? (int)doc_.sel.verts.size()
+                      : md == SelectMode::Edge ? (int)doc_.sel.edges.size()
+                                               : (int)doc_.sel.faces.size();
+        const char* what = md == SelectMode::Vert ? (n == 1 ? "point" : "points")
+                           : md == SelectMode::Edge ? (n == 1 ? "edge" : "edges")
+                                                    : (n == 1 ? "face" : "faces");
+        ImGui::Text("%d %s", n, what);
         ImGui::Text("size %g x %g x %g cm", mx.x - mn.x, mx.y - mn.y, mx.z - mn.z);
     }
     ImGui::SeparatorText("Grid");
@@ -154,7 +161,7 @@ void Editor::controlsWindow() {
             row("Copy the selection", "Shift+drag inside its box", 0);
             row("Resize", "drag a side or corner handle (the opposite side stays)", 0);
             row("Rotate", "Option+drag a corner (15\xC2\xB0 steps, +Shift free); rings in the 3D view", 0);
-            row("Move along one axis", "drag an X/Y/Z arrow (points, edges, faces)", 0);
+            row("Move along one axis", "drag an X/Y/Z arrow in the 3D view (points, edges, faces)", 0);
             row("Drag a point (Vertex tool)", "press on any point and drag", 0);
             row("Edge loop / ring", "double-click an edge / Shift+double-click", 0);
             row("Pan a view", "middle mouse, or Space + left mouse", 0);

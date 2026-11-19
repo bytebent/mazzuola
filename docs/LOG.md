@@ -4,6 +4,18 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — After v0.1.2: arrows in 3D only; views ordered like Scalpellino
+- User (screenshot): the arrows in the 2D views got in the way. They now show in the 3D
+  view only; in 2D the selection box and its handles move things as before.
+- User: default views 3D, Top / Front, Right, as in Scalpellino. View numbers in every
+  UI script moved with them (0 = 3D, 1 Top, 2 Front, 3 Right).
+- The arrow test moved to the 3D view, with a script helper `varrow` (mouse on an
+  arrow). Its first version aimed at the arrow of the already-moving selection, so the
+  mouse ran ahead; it now keeps the arrow where it was when the button went down.
+- Properties counted faces in every mode ("1 faces"); now points / edges / faces.
+- ARCHITECTURE (arrows, layout diagram), README, Help → Controls updated. All UI
+  scripts at 1× and 2× and idle pass. In "latest"; goes out with v0.1.3.
+
 ### 2026-11-20 — v0.1.2, steps E–F: rounded edges; release
 - Rounded edges: box (flat faces + a strip of 1–3 faces along each edge + a corner patch
   of q² triangles, built at the real proportions so the rounding is the same size in cm

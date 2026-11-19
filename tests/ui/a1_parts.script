@@ -1,6 +1,6 @@
 # Alpha 1, v0.1.2: points, edges, faces (ARCHITECTURE §6 Selection, Vertex tool, arrows).
-# Views: 0 Top (x right, y up), 1 Front (x right, z up). Grid 8, snap on.
-vworld 0 0 0 0
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up). Grid 8, snap on.
+vworld 1 0 0 0
 wheel -3
 wait 2
 addbox 0 0 0 64 48 32
@@ -10,13 +10,13 @@ expect selected 6
 key 3
 expect mode faces
 expect selected 6
-vworld 0 -100 100 0
+vworld 1 -100 100 0
 press left
 wait 1
 release left
 wait 1
 expect selected 0
-vworld 0 32 24 0
+vworld 1 32 24 0
 press left
 wait 1
 release left
@@ -35,25 +35,29 @@ expect selbounds 0 0 0 64 48 0
 key 1
 expect mode vertices
 expect selected 4
-vworld 0 72 56 0
+vworld 1 72 56 0
 press left
 wait 1
-vworld 0 66 50 0
+vworld 1 66 50 0
 wait 1
-vworld 0 56 40 0
+vworld 1 56 40 0
 wait 1
 release left
 wait 1
 expect selected 2
 expect selbounds 64 48 0 64 48 32
 
-# ---- the X arrow moves along x only (snapped), whatever the mouse does sideways
-vworld 0 89 48 0
+# ---- in the 2D views there are no arrows: a drag on the stacked points moves them in the
+# view's plane as before. In the 3D view the X arrow moves along x only (snapped: 64 + 17
+# lands on 80).
+camera 0 30 25 400 32 24 16
+wait 2
+varrow 0 0 0
 press left
 wait 1
-vworld 0 97 52 0
+varrow 0 0 10
 wait 1
-vworld 0 105 53 0
+varrow 0 0 17
 wait 1
 release left
 wait 1
@@ -65,12 +69,12 @@ expect selbounds 64 48 0 64 48 32
 key Shift+V
 expect tool Vertex
 expect mode vertices
-vworld 0 0 0 0
+vworld 1 0 0 0
 press left
 wait 1
-vworld 0 -8 -4 0
+vworld 1 -8 -4 0
 wait 1
-vworld 0 -16 -8 0
+vworld 1 -16 -8 0
 wait 1
 release left
 wait 1
@@ -82,12 +86,12 @@ key Cmd+Z
 # ---- a cylinder (8 sides, 3 segments) for loops and rings
 prim Cylinder
 primset segments 3
-vworld 0 -80 -96 0
+vworld 1 -80 -96 0
 press left
 wait 1
-vworld 0 -60 -70 0
+vworld 1 -60 -70 0
 wait 1
-vworld 0 -32 -48 0
+vworld 1 -32 -48 0
 wait 1
 release left
 wait 1
@@ -98,7 +102,7 @@ key Shift+S
 key 2
 expect mode edges
 # double-click a ring edge (Front view, height 32/3): its loop goes all the way round
-vworld 1 -56 0 10.667
+vworld 2 -56 0 10.667
 press left
 release left
 wait 1
@@ -119,7 +123,7 @@ expect selected 4
 
 # ---- grow / shrink (Cmd++ / Cmd+è) from one side face
 key 3
-vworld 1 -56 0 16
+vworld 2 -56 0 16
 press left
 wait 1
 release left

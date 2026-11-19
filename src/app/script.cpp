@@ -91,6 +91,21 @@ void Editor::stepScript() {
                 if (!geom(v).project(w, sx, sy)) scriptFail("point not visible in that view");
                 else io.AddMousePosEvent((float)sx, (float)sy);
             }
+        } else if (cmd == "varrow") {
+            // Mouse on the selection's arrow (axis 0/1/2) in a view, `cm` along it.
+            int v = 0, axis = 0;
+            double cm = 0;
+            in >> v >> axis >> cm;
+            // The arrow as it was when the button went down (the selection moves while
+            // dragging).
+            static Vec3 anchor;
+            Vec3 mn, mx;
+            double sx = 0, sy = 0;
+            if (!io.MouseDown[0] && selectionBounds(doc_.mesh, doc_.sel, mn, mx)) anchor = (mn + mx) / 2;
+            if (viewIndex(v)) {
+                if (doc_.sel.empty() || !arrowPoint(geom(v), anchor, axis, cm, sx, sy)) scriptFail("no such arrow");
+                else io.AddMousePosEvent((float)sx, (float)sy);
+            }
         } else if (cmd == "hold" || cmd == "letgo") {
             // Modifier keys held during mouse actions: shift, cmd, alt (Option).
             std::string k;

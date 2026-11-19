@@ -1,31 +1,31 @@
 # Alpha 1, v0.1.0: making boxes and handling them like brushes (ARCHITECTURE §6).
-# Views: 0 Top (x right, y up), 1 Front (x right, z up), 2 Right, 3 3D. Grid 8, snap on.
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up), 3 Right. Grid 8, snap on.
 
 # ---- draw a box in Top: 0..64 x 0..48; depth from the default last box (z 0..64)
 # zoom the Top view out a little so everything below stays in view
-vworld 0 0 0 0
+vworld 1 0 0 0
 wheel -3
 wait 2
 key Shift+B
 expect tool Primitives
-vworld 0 0 0 0
+vworld 1 0 0 0
 press left
 wait 1
-vworld 0 30 20 0
+vworld 1 30 20 0
 wait 1
-vworld 0 63 49 0
+vworld 1 63 49 0
 wait 1
 release left
 wait 1
 expect preview 1
 expect faces 0
 # ---- the height is visible in Front: pull its top handle down to z 32
-vworld 1 32 0 64
+vworld 2 32 0 64
 press left
 wait 1
-vworld 1 32 0 50
+vworld 2 32 0 50
 wait 1
-vworld 1 32 0 33
+vworld 2 32 0 33
 wait 1
 release left
 wait 1
@@ -39,10 +39,10 @@ expect undo 1
 shot m1-03-box-made.png
 
 # ---- Esc drops a preview
-vworld 0 -100 -100 0
+vworld 1 -100 -100 0
 press left
 wait 1
-vworld 0 -60 -60 0
+vworld 1 -60 -60 0
 wait 1
 release left
 wait 1
@@ -54,13 +54,13 @@ expect faces 6
 # ---- select: empty click, click on the box
 key Shift+S
 expect tool Select
-vworld 0 -100 60 0
+vworld 1 -100 60 0
 press left
 wait 1
 release left
 wait 1
 expect selected 0
-vworld 0 10 10 0
+vworld 1 10 10 0
 press left
 wait 1
 release left
@@ -70,9 +70,9 @@ expect selected 6
 # ---- move by dragging inside (snapped), undo
 press left
 wait 1
-vworld 0 20 10 0
+vworld 1 20 10 0
 wait 1
-vworld 0 26 11 0
+vworld 1 26 11 0
 wait 1
 release left
 wait 1
@@ -83,13 +83,13 @@ expect bounds 0 0 0 64 48 32
 expect selected 6
 
 # ---- Shift+drag copies; the copy is selected
-vworld 0 10 10 0
+vworld 1 10 10 0
 hold shift
 press left
 wait 1
-vworld 0 10 -30 0
+vworld 1 10 -30 0
 wait 1
-vworld 0 10 -70 0
+vworld 1 10 -70 0
 wait 1
 release left
 letgo shift
@@ -99,17 +99,17 @@ expect selected 6
 expect selbounds 0 -80 0 64 -32 32
 
 # ---- rectangle from empty space selects both; Cmd+click removes the copy
-vworld 0 -20 80 0
+vworld 1 -20 80 0
 press left
 wait 1
-vworld 0 40 0 0
+vworld 1 40 0 0
 wait 1
-vworld 0 100 -100 0
+vworld 1 100 -100 0
 wait 1
 release left
 wait 1
 expect selected 12
-vworld 0 10 -50 0
+vworld 1 10 -50 0
 hold cmd
 press left
 wait 1
@@ -120,25 +120,25 @@ expect selected 6
 expect selbounds 0 0 0 64 48 32
 
 # ---- resize: the right side handle pushed from x 64 to x 96; the left side stays
-vworld 0 64 24 0
+vworld 1 64 24 0
 press left
 wait 1
-vworld 0 80 24 0
+vworld 1 80 24 0
 wait 1
-vworld 0 95 25 0
+vworld 1 95 25 0
 wait 1
 release left
 wait 1
 expect selbounds 0 0 0 96 48 32
 
 # ---- Option+drag the top-right corner: a quarter turn about the centre (48, 24)
-vworld 0 96 48 0
+vworld 1 96 48 0
 hold alt
 press left
 wait 1
-vworld 0 70 80 0
+vworld 1 70 80 0
 wait 1
-vworld 0 24 72 0
+vworld 1 24 72 0
 wait 1
 release left
 letgo alt
@@ -146,16 +146,16 @@ wait 1
 expect selbounds 24 -24 0 72 72 32
 
 # ---- the Z ring in the 3D view: another quarter turn (back to 0..96 x 0..48)
-camera 3 30 50 400 48 24 16
+camera 0 30 50 400 48 24 16
 wait 2
 # a point on the Z ring at 45 degrees (radius = half the box diagonal x 1.15 = 64.4),
 # dragged round to 135 degrees
-vworld 3 93.538 69.538 16
+vworld 0 93.538 69.538 16
 press left
 wait 1
-vworld 3 48.000 88.400 16
+vworld 0 48.000 88.400 16
 wait 1
-vworld 3 2.462 69.538 16
+vworld 0 2.462 69.538 16
 wait 1
 release left
 wait 1
@@ -165,12 +165,12 @@ shot m1-04-handles.png
 # ---- moving snaps the box's lowest corner onto the grid (as in Scalpellino)
 addbox -77 30 0 -61 46 16
 expect selbounds -77 30 0 -61 46 16
-vworld 0 -70 38 0
+vworld 1 -70 38 0
 press left
 wait 1
-vworld 0 -60 38 0
+vworld 1 -60 38 0
 wait 1
-vworld 0 -59 38 0
+vworld 1 -59 38 0
 wait 1
 release left
 wait 1
@@ -179,7 +179,7 @@ key Cmd+Z
 expect selbounds -77 30 0 -61 46 16
 key Cmd+Z
 expect faces 12
-vworld 0 48 24 0
+vworld 1 48 24 0
 press left
 wait 1
 release left

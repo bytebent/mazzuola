@@ -40,12 +40,15 @@ Vec3 viewAxisTowardViewer(const ViewGeom& g); // 2D views: the axis rotations tu
 void drawBox2D(ImDrawList* dl, const ViewGeom& g, const Vec3& mn, const Vec3& mx, ImU32 col, bool handles, bool dashed);
 void drawBox3D(ImDrawList* dl, const ViewGeom& g, const Vec3& mn, const Vec3& mx, ImU32 col);
 void drawRings(ImDrawList* dl, const ViewGeom& g, const Vec3& mn, const Vec3& mx, int hotAxis);
-// Arrows: X/Y/Z arrows at the selection's centre (the two in a 2D view's plane; all
-// three in 3D, unless one points almost straight at the viewer). hitArrows gives the
+// Arrows: X/Y/Z arrows at the selection's centre, in the 3D view only (all three,
+// unless one points almost straight at the viewer). hitArrows gives the
 // axis under the cursor or -1; arrowOffset the world offset along that axis for a drag
 // from (x0, y0) to (x1, y1), snapped so the box's lowest corner lands on the grid.
 int hitArrows(const ViewGeom& g, const Vec3& centre, double sx, double sy);
 void drawArrows(ImDrawList* dl, const ViewGeom& g, const Vec3& centre, int hotAxis);
+// Tests: a screen point on an arrow, `cm` further along the axis from where the arrow
+// can be grabbed (false if that arrow isn't shown).
+bool arrowPoint(const ViewGeom& g, const Vec3& centre, int axis, double cm, double& sx, double& sy);
 Vec3 arrowOffset(const ViewGeom& g, const Grid& grid, const Vec3& centre, const Vec3& mn0, int axis, double x0,
                  double y0, double x1, double y1);
 

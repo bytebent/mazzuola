@@ -34,7 +34,7 @@ including the planned ones with the milestone that brings them.
 | Move / copy | drag inside the selection's box in a 2D view (snapped); **Shift+drag** copies |
 | Resize | drag a side or corner handle of the selection's box (the opposite side stays) |
 | Rotate | **Option+drag** a corner handle (15° steps, add **Shift** for free); the rings in the 3D view |
-| Move along one axis | drag an X/Y/Z arrow (points, edges, faces) |
+| Move along one axis | drag an X/Y/Z arrow in the 3D view (points, edges, faces) |
 | Drag a point | Vertex tool: press on any point and drag (in a 2D view all the points stacked there move) |
 | Edge loop / ring | double-click an edge / **Shift**+double-click (also in the Select menu) |
 | Grow / shrink selection | **Cmd++** / **Cmd+è** |

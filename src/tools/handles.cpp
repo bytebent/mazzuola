@@ -269,10 +269,9 @@ namespace {
 constexpr double kArrowLen = 44; // px
 // Screen direction of an axis arrow (false if it points at the viewer).
 bool arrowDir(const ViewGeom& g, const Vec3& centre, int axis, double& cx, double& cy, double& dx, double& dy) {
-    if (!g.is3D()) {
-        const OrthoAxes ax = g.axes();
-        if (axis != ax.u && axis != ax.v) return false;
-    }
+    // Arrows only in the 3D view: in the 2D views they got in the way of the box and its
+    // handles, and dragging there already moves in the view's plane (user, 2026-11-20).
+    if (!g.is3D()) return false;
     double ex, ey;
     if (!g.project(centre, cx, cy)) return false;
     // A step along the axis big enough to measure, whatever the zoom.
@@ -322,6 +321,15 @@ void drawArrows(ImDrawList* dl, const ViewGeom& g, const Vec3& centre, int hotAx
         const ImVec2 l((float)(b.x - dy * 5), (float)(b.y + dx * 5)), r((float)(b.x + dy * 5), (float)(b.y - dx * 5));
         dl->AddTriangleFilled(tip, l, r, kAxisCol[axis]);
     }
+}
+
+bool arrowPoint(const ViewGeom& g, const Vec3& centre, int axis, double cm, double& sx, double& sy) {
+    double cx, cy, dx, dy, ex, ey;
+    if (!arrowDir(g, centre, axis, cx, cy, dx, dy) || !g.project(centre + axisVec(axis), ex, ey)) return false;
+    const double pxPerCm = std::hypot(ex - cx, ey - cy);
+    sx = cx + dx * (kArrowLen * 0.6 + cm * pxPerCm);
+    sy = cy + dy * (kArrowLen * 0.6 + cm * pxPerCm);
+    return true;
 }
 
 Vec3 arrowOffset(const ViewGeom& g, const Grid& grid, const Vec3& centre, const Vec3& mn0, int axis, double x0,

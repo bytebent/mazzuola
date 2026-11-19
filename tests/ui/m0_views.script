@@ -1,10 +1,10 @@
 # Milestone 0: views, grid, selection modes, navigation, fly mode, layout.
 # 2D input uses fractions of a view's image (vmove <view> <fx> <fy>), independent of window size.
 shot m0-01-start.png
-expect viewdir 0 Top
-expect viewdir 1 Front
-expect viewdir 2 Right
-expect viewdir 3 3D
+expect viewdir 1 Top
+expect viewdir 2 Front
+expect viewdir 3 Right
+expect viewdir 0 3D
 expect grid 8
 # grid keys: the two keys right of P (è smaller, + larger)
 key +
@@ -44,30 +44,30 @@ expect mode faces
 key 4
 expect mode pieces
 # zoom the top view toward a point, then pan it with the middle mouse
-vmove 0 0.75 0.25
+vmove 1 0.75 0.25
 wheel 2
 wait 2
-vmove 0 0.5 0.5
+vmove 1 0.5 0.5
 press middle
-vmove 0 0.6 0.5
-vmove 0 0.7 0.5
+vmove 1 0.6 0.5
+vmove 1 0.7 0.5
 release middle
 wait 2
 shot m0-02-top-zoomed-panned.png
 # pan the front view with Space + left drag
-vmove 1 0.5 0.5
+vmove 2 0.5 0.5
 spacedown
 press left
-vmove 1 0.4 0.6
+vmove 2 0.4 0.6
 release left
 spaceup
 wait 2
 # orbit the 3D view (right drag), then zoom it (wheel)
-camera 3 35 25 400 0 0 0
-vmove 3 0.5 0.5
+camera 0 35 25 400 0 0 0
+vmove 0 0.5 0.5
 press right
-vmove 3 0.45 0.5
-vmove 3 0.40 0.45
+vmove 0 0.45 0.5
+vmove 0 0.40 0.45
 release right
 wait 2
 wheel -1
@@ -75,26 +75,26 @@ wait 2
 shot m0-03-orbited.png
 # back to origin restores every view
 key Cmd+0
-expect ortho 0 0 0 2
 expect ortho 1 0 0 2
-expect cam 3 35 25 400
+expect ortho 2 0 0 2
+expect cam 0 35 25 400
 # switch directions
-viewdir 0 Bottom
-viewdir 2 Left
-expect viewdir 0 Bottom
-viewdir 1 3D
+viewdir 1 Bottom
+viewdir 3 Left
+expect viewdir 1 Bottom
+viewdir 2 3D
 shot m0-04-directions.png
-viewdir 0 Top
-viewdir 1 Front
-viewdir 2 Right
+viewdir 1 Top
+viewdir 2 Front
+viewdir 3 Right
 # maximise / restore
-maximise 3
-expect maximised 3
+maximise 0
+expect maximised 0
 shot m0-05-maximised-3d.png
 restore
 expect maximised -1
 # fly mode: Z over the 3D view, move, Esc leaves
-vmove 3 0.5 0.5
+vmove 0 0.5 0.5
 wait 2
 key Z
 expect flying 1
@@ -104,7 +104,7 @@ shot m0-06-flying.png
 key Esc
 expect flying 0
 # Z over a 2D view does nothing
-vmove 0 0.5 0.5
+vmove 1 0.5 0.5
 wait 2
 key Z
 expect flying 0

@@ -83,6 +83,7 @@ saveas <file> | open <file>         save / open without dialogs (relative to the
 addbox <x0 y0 z0 x1 y1 z1>          test helper: add a box as one undo step, selected
 vworld <view> <x> <y> <z>           mouse over a world point as that view shows it
 hold <shift|cmd|alt> / letgo <...>  hold / release a modifier for the next mouse actions
+varrow <view> <axis> <cm>           mouse on the selection's X/Y/Z arrow (0/1/2), cm along it
 expect bounds <x0 y0 z0 x1 y1 z1>   whole model bounds;  selbounds: the selection's
 expect preview <0|1>                the Primitives tool shows a preview box
 expect previewfaces <n>             faces of the previewed shape

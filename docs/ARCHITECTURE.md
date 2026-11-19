@@ -146,14 +146,16 @@ to the GPU → one redraw of the views that show it.
 ### Window layout (default)
 ```
 ┌──┬──────────────┬──────────────┬──────────────────┬─────────┐
-│T │     Top      │    Front     │                  │  Props  │
+│T │      3D      │     Top      │                  │  Props  │
 │o │              │              │   Texture view   │         │
 │o ├──────────────┼──────────────┤  (texture sheet  │  ─────  │
-│l │     Side     │      3D      │   + pixel grid)  │ Groups/ │
+│l │    Front     │    Right     │   + pixel grid)  │ Groups/ │
 │s │              │              │                  │ Palette │
 └──┴──────────────┴──────────────┴──────────────────┴─────────┘
   status bar: tool · selection · cursor position · vertices / triangles
 ```
+- **Views:** 3D top left, Top top right, Front bottom left, Right bottom right, as in
+  Scalpellino (user, 2026-11-20).
 - **Tool bar on the left** (agreed 2026-11-19, as in Scalpellino): the main tools as
   buttons down the left edge. No panel listing every tool. It shows only tools that
   work in the current release (it grows milestone by milestone; menus still list later
@@ -234,8 +236,9 @@ the model gets:
 - **Rotating:** Option+drag a corner handle (15° steps, +Shift free), as in Scalpellino.
   The 3D view shows **rotation rings** (X/Y/Z) around the selection. By default
   everything turns about the selection's centre.
-- **Arrows:** points, edges and faces also get X/Y/Z **arrows** (2D and 3D views):
-  drag one to push the selection along that axis, snapped.
+- **Arrows:** points, edges and faces also get X/Y/Z **arrows**, in the 3D view only
+  (in the 2D views they got in the way; user, 2026-11-20): drag one to push the
+  selection along that axis, snapped.
 - **Moving / copying:** drag to move; Shift+drag makes a copy. Snapping puts the box's
   lowest corner on the grid, as in Scalpellino (something off the grid snaps onto it).
   In the 3D view a drag draws a selection rectangle; moving is done in the 2D views,

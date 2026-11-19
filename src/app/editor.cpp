@@ -33,10 +33,11 @@ const char* selectModeName(SelectMode m) {
 
 Editor::Editor(GLFWwindow* window, const EditorOptions& opt) : window_(window), opt_(opt) {
     // Default views: Top | Front over Right | 3D.
-    views_[0].setDir(ViewDir::Top);
-    views_[1].setDir(ViewDir::Front);
-    views_[2].setDir(ViewDir::Right);
-    views_[3].setDir(ViewDir::Persp);
+    // 3D | Top over Front | Right, as in Scalpellino (user, 2026-11-20).
+    views_[0].setDir(ViewDir::Persp);
+    views_[1].setDir(ViewDir::Top);
+    views_[2].setDir(ViewDir::Front);
+    views_[3].setDir(ViewDir::Right);
     gridDialogValue_ = grid_.size;
     if (!opt_.scriptPath.empty()) {
         scriptMode_ = true;
