@@ -4,6 +4,12 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.1 "All shapes" released
+- Version 0.1.1, release notes, README status and controls, Help → Controls ("Draw a
+  shape"). Parked: rounded edges (box, cylinder) and rock stretch, both in ARCHITECTURE
+  but not built.
+- Checks: core 587; six UI scripts at 1× and 2×; idle 0 ticks.
+
 ### 2026-11-19 — v0.1.1, step C: the rock
 - `core/rock`: points spread on a sphere (Fibonacci) and jittered by roughness, their
   convex hull (incremental, own code); a flat bottom by cutting the hull with a level

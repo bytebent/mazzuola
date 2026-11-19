@@ -29,8 +29,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
-  **v0.1.0 "Boxes" is released.** Building v0.1.1: steps A–C done (all shapes, rock); next D
-  (release).
+  **v0.1.0 "Boxes" is released.** **v0.1.1 "All shapes" is built** (steps A–D); the user tries it
+  before v0.1.2.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
@@ -60,6 +60,8 @@ cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
+- **Rounded edges** for the box and cylinder (ARCHITECTURE lists them) aren't in v0.1.1.
+  Add them later (they make many more faces) or drop them? Ask the user.
 - **Rock stretch X/Y/Z** (ARCHITECTURE lists it): left out of v0.1.1 because the drawn
   box already sets the rock's proportions; stretching would be undone by fitting it to
   the box. Drop it from the design? Ask the user.

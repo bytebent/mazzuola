@@ -144,7 +144,7 @@ void Editor::controlsWindow() {
                 row(info.label, displayKeys(info.keys), info.milestone);
             }
             // Mouse gestures of the tools (ARCHITECTURE §6 "Brush feel").
-            row("Draw a box (Primitives)", "drag in a 2D view; handles adjust; Return creates, Esc cancels", 0);
+            row("Draw a shape (Primitives)", "pick it in Properties; drag in a 2D view; handles adjust; Return creates, Esc cancels", 0);
             row("Select a piece", "click; click again on the same spot for the one underneath", 0);
             row("Add / remove a piece", "Cmd+click", 0);
             row("Select in a rectangle", "drag from empty space", 0);
