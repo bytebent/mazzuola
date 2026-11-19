@@ -14,9 +14,9 @@ namespace {
 // Window titles (also the ImGui IDs the dock layout refers to).
 constexpr const char* kWinViews = "Views";
 constexpr const char* kWinTexture = "Texture view";
-constexpr const char* kWinTools = "Tools";
+constexpr const char* kWinToolbar = "Tool bar";
 constexpr const char* kWinProps = "Properties";
-constexpr const char* kWinParts = "Parts";
+constexpr const char* kWinGroups = "Groups";
 constexpr const char* kWinPalette = "Palette";
 } // namespace
 
@@ -102,8 +102,8 @@ void Editor::run(Act a) {
     case Act::Open: fileOpen(); break;
     case Act::Save: fileSave(false); break;
     case Act::SaveAs: fileSave(true); break;
-    case Act::Undo: if (doc_.undo()) touch(); break;
-    case Act::Redo: if (doc_.redo()) touch(); break;
+    case Act::Undo: cancelTool(); if (doc_.undo()) touch(); break;
+    case Act::Redo: cancelTool(); if (doc_.redo()) touch(); break;
     // Points, edges and faces arrive in v0.1.2 (they convert the selection then).
     case Act::ModePiece: {
         Selection s = doc_.sel;
@@ -112,7 +112,8 @@ void Editor::run(Act a) {
         touch();
         break;
     }
-    case Act::ToolSelect: tool_ = Tool::Select; break;
+    case Act::ToolSelect: setTool(&selectTool_); break;
+    case Act::ToolPrimitives: setTool(&primTool_); break;
     case Act::GridSmaller: grid_.halve(); markViewsDirty(); break;
     case Act::GridLarger: grid_.doubleUp(); markViewsDirty(); break;
     case Act::GridSet: gridDialogValue_ = grid_.size; gridDialogOpen_ = true; break;
@@ -176,6 +177,10 @@ void Editor::handleKeys() {
         if (flying_ && !c.cmd && (c.key == GLFW_KEY_W || c.key == GLFW_KEY_A || c.key == GLFW_KEY_S ||
                                   c.key == GLFW_KEY_D || c.key == GLFW_KEY_Q || c.key == GLFW_KEY_E))
             continue; // movement keys belong to the camera while flying
+        {
+            ToolEnv env = toolEnv();
+            if (tool_->key(env, c.key, c.shift, c.cmd)) continue;
+        }
         for (int i = 0; i < (int)Act::Count; ++i) {
             const Act a = (Act)i;
             if (actionChord(a) == c) {
@@ -231,11 +236,11 @@ bool Editor::frame(double dt) {
     ImGui::End();
     if (ImGui::Begin(kWinTexture, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) textureView();
     ImGui::End();
-    if (ImGui::Begin(kWinTools)) toolsPanel();
+    if (ImGui::Begin(kWinToolbar, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar)) toolBar();
     ImGui::End();
     if (ImGui::Begin(kWinProps)) propertiesPanel();
     ImGui::End();
-    if (ImGui::Begin(kWinParts)) partsPanel();
+    if (ImGui::Begin(kWinGroups)) groupsPanel();
     ImGui::End();
     if (ImGui::Begin(kWinPalette)) palettePanel();
     ImGui::End();
@@ -268,20 +273,24 @@ void Editor::dockspace() {
         ImGui::DockBuilderRemoveNode(id);
         ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_DockSpace);
         ImGui::DockBuilderSetNodeSize(id, vp->WorkSize);
+        // Tool bar | views | texture view | Properties over Groups/Palette.
+        const float barW = std::max(0.04f, std::min(0.2f, 120.0f / std::max(1.0f, vp->WorkSize.x)));
+        ImGuiID bar, main;
+        ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, barW, &bar, &main);
         ImGuiID left, right;
-        ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.17f, &right, &left);
+        ImGui::DockBuilderSplitNode(main, ImGuiDir_Right, 0.17f, &right, &left);
         ImGuiID views, texture;
         ImGui::DockBuilderSplitNode(left, ImGuiDir_Right, 0.30f, &texture, &views);
-        ImGuiID tools, rest, props, bottom;
-        ImGui::DockBuilderSplitNode(right, ImGuiDir_Up, 0.42f, &tools, &rest);
-        ImGui::DockBuilderSplitNode(rest, ImGuiDir_Up, 0.55f, &props, &bottom);
+        ImGuiID props, bottom;
+        ImGui::DockBuilderSplitNode(right, ImGuiDir_Up, 0.62f, &props, &bottom);
+        ImGui::DockBuilderDockWindow(kWinToolbar, bar);
         ImGui::DockBuilderDockWindow(kWinViews, views);
         ImGui::DockBuilderDockWindow(kWinTexture, texture);
-        ImGui::DockBuilderDockWindow(kWinTools, tools);
         ImGui::DockBuilderDockWindow(kWinProps, props);
-        ImGui::DockBuilderDockWindow(kWinParts, bottom);
+        ImGui::DockBuilderDockWindow(kWinGroups, bottom);
         ImGui::DockBuilderDockWindow(kWinPalette, bottom);
         if (ImGuiDockNode* n = ImGui::DockBuilderGetNode(views)) n->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+        if (ImGuiDockNode* n = ImGui::DockBuilderGetNode(bar)) n->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
         ImGui::DockBuilderFinish(id);
     }
     ImGui::DockSpaceOverViewport(id, ImGui::GetMainViewport());
@@ -350,7 +359,7 @@ void Editor::menuBar() {
         for (Act a : {Act::ToolSelect, Act::ToolVertex, Act::ToolPrimitives, Act::ToolDraw, Act::ToolPushPull,
                       Act::ToolExtrude, Act::ToolCut, Act::ToolLatheLoft, Act::ToolBrush, Act::ToolMapping,
                       Act::ToolPaint, Act::ToolColour})
-            menuItem(a, a == Act::ToolSelect && tool_ == Tool::Select);
+            menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Create")) {
@@ -379,7 +388,7 @@ void Editor::menuBar() {
         plannedItem("Divide, cut, slide, merge, weld", 2);
         plannedItem("Mirror mode", 2);
         ImGui::Separator();
-        plannedItem("Parts, smoothing groups", 3);
+        plannedItem("Groups, smoothing groups", 3);
         menuItem(Act::Problems);
         ImGui::Separator();
         plannedItem("Jitter points...", 4);
@@ -433,32 +442,35 @@ void Editor::statusBar() {
     const float h = ImGui::GetFrameHeight();
     if (ImGui::BeginViewportSideBar("##status", ImGui::GetMainViewport(), ImGuiDir_Down, h, f)) {
         if (ImGui::BeginMenuBar()) {
-            ImGui::TextUnformatted("Select tool");
+            // Left: tool and what its gestures do (as in Scalpellino). Right: selection,
+            // cursor, grid, counts.
+            ImGui::TextUnformatted(tool_->name());
             ImGui::TextDisabled("|");
-            if (doc_.sel.empty()) ImGui::Text("%s, nothing selected", selectModeName(doc_.sel.mode));
-            else ImGui::Text("%s, %d faces selected", selectModeName(doc_.sel.mode), (int)doc_.sel.faces.size());
-            ImGui::TextDisabled("|");
-            if (flying_) {
-                ImGui::TextUnformatted("Flying: WASD, Q/E down/up, Shift fast, Z or Esc to stop");
-            } else if (haveCursorWorld_ && cursorView_ >= 0) {
+            if (flying_) ImGui::TextUnformatted("flying: WASD move, Q/E down/up, Shift fast, Z or Esc stops");
+            else ImGui::TextUnformatted(tool_->hint());
+            std::string right;
+            char buf[160];
+            if (doc_.sel.empty()) std::snprintf(buf, sizeof buf, "%s, nothing selected", selectModeName(doc_.sel.mode));
+            else std::snprintf(buf, sizeof buf, "%s, %d faces selected", selectModeName(doc_.sel.mode), (int)doc_.sel.faces.size());
+            right += buf;
+            if (haveCursorWorld_ && cursorView_ >= 0 && !flying_) {
                 const OrthoAxes ax = orthoAxes(views_[cursorView_].dir);
                 static const char* names[] = {"x", "y", "z"};
                 const int a0 = std::min(ax.u, ax.v), a1 = std::max(ax.u, ax.v);
-                ImGui::Text("%s %.2f  %s %.2f cm", names[a0], cursorWorld_[a0], names[a1], cursorWorld_[a1]);
-            } else {
-                ImGui::TextDisabled("-");
+                std::snprintf(buf, sizeof buf, "   |   %s %.2f  %s %.2f cm", names[a0], cursorWorld_[a0], names[a1], cursorWorld_[a1]);
+                right += buf;
             }
-            ImGui::TextDisabled("|");
-            ImGui::Text("grid %g cm%s%s", grid_.size, grid_.snap ? ", snap" : "", grid_.visible ? "" : ", hidden");
+            std::snprintf(buf, sizeof buf, "   |   grid %g cm%s%s", grid_.size, grid_.snap ? ", snap" : "", grid_.visible ? "" : ", hidden");
+            right += buf;
             int tris = 0;
             for (const Face& fc : doc_.mesh.faces) tris += fc.n - 2;
-            char countBuf[96];
-            std::snprintf(countBuf, sizeof countBuf, "%d vertices, %d triangles", (int)doc_.mesh.verts.size(), tris);
-            const char* count = countBuf;
-            const float w = ImGui::CalcTextSize(count).x;
+            std::snprintf(buf, sizeof buf, "   |   %d vertices, %d triangles", (int)doc_.mesh.verts.size(), tris);
+            right += buf;
+            const float w = ImGui::CalcTextSize(right.c_str()).x;
             const float x = ImGui::GetWindowWidth() - w - ImGui::GetStyle().WindowPadding.x - 4;
+            ImGui::SameLine();
             if (x > ImGui::GetCursorPosX()) ImGui::SetCursorPosX(x);
-            ImGui::TextUnformatted(count);
+            ImGui::TextUnformatted(right.c_str());
             ImGui::EndMenuBar();
         }
     }

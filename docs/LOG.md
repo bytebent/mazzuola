@@ -4,6 +4,23 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, step C: tool structure and layout
+- `src/tools/tool.hpp`: the `Tool` interface (press, drag, release, hover, key, overlay,
+  properties, cancel, busy), `Pointer`, `ToolEnv`, `LastBox`; `SelectTool` and
+  `PrimTool` (hints only so far; behaviour in steps E–G). The editor routes left mouse
+  (not Space+left) and keys to the active tool first, draws its overlay over each view
+  image (clipped), shows its Properties section, and cancels it before a tool switch,
+  undo, redo, New and Open (`app/tool_host.cpp`).
+- `core/view_geom`: per-view projection and picking rays (3D agrees with the camera
+  matrices; 2D rays run along the view direction), ray–triangle test. Tested.
+- Layout: the Tools panel is gone; a tool bar on the left (Vert / Edge / Face / Piece at
+  the top, Vert–Face greyed out until v0.1.2; then Select and Primitives). Status bar:
+  tool name and its gestures on the left, selection / cursor / grid / counts on the
+  right. Parts panel renamed Groups. README controls updated.
+- Tests: core 384 checks. UI scripts `a1_files`, `a1_layout` (new: tool switching by
+  key and action, greyed modes), `m0_views` pass at 1× and 2×; idle 0 ticks at 1× and
+  2×. Screenshot `docs/screenshots/m1-01-layout.png`.
+
 ### 2026-11-19 — Alpha 1, step B: `.mazz` files
 - `io/mazz_file` (new `mazz_io` library, pure C++): writer and reader of format 1 (§7
   minus textures/groups/palettes, which come later); plain decimals; attributes and

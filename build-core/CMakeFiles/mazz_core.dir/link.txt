@@ -1,2 +1,2 @@
-/usr/bin/ar qc libmazz_core.a CMakeFiles/mazz_core.dir/src/core/camera.cpp.o CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o CMakeFiles/mazz_core.dir/src/core/selection.cpp.o CMakeFiles/mazz_core.dir/src/core/document.cpp.o
+/usr/bin/ar qc libmazz_core.a CMakeFiles/mazz_core.dir/src/core/camera.cpp.o CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o CMakeFiles/mazz_core.dir/src/core/selection.cpp.o CMakeFiles/mazz_core.dir/src/core/document.cpp.o CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o
 /usr/bin/ranlib libmazz_core.a

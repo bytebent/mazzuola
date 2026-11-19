@@ -128,6 +128,12 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
     dl->AddImage(texId(v.target.texture()), imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, {0, 1}, {1, 0});
     viewInput(i, imgPos, imgSize);
 
+    // The active tool's handles and previews, over the image (a light layer: the
+    // model's drawing isn't rebuilt for them).
+    dl->PushClipRect(imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, true);
+    tool_->overlay(toolEnv(), geom(i), i, dl);
+    dl->PopClipRect();
+
     // An accent frame around the view the fly mode drives.
     if (flying_ && flyView_ == i)
         dl->AddRect(imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, ImGui::GetColorU32(theme::kAccent), 0.0f, 0, 2.0f);
@@ -144,6 +150,26 @@ void Editor::viewInput(int i, ImVec2 imgPos, ImVec2 imgSize) {
     const double w = imgSize.x, h = imgSize.y;
 
     if (flying_ && flyView_ == i) return; // the fly camera owns the mouse
+
+    // Left mouse goes to the active tool (Space + left pans instead).
+    {
+        const bool space = ImGui::IsKeyDown(ImGuiKey_Space);
+        ToolEnv env = toolEnv();
+        if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !space && toolView_ < 0) {
+            toolView_ = i;
+            tool_->press(env, pointer(i));
+        } else if (toolView_ == i && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            toolView_ = -1;
+            tool_->release(env, pointer(i));
+        } else if (toolView_ == i && ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
+                   (io.MouseDelta.x != 0 || io.MouseDelta.y != 0)) {
+            tool_->drag(env, pointer(i));
+        } else if (hovered && toolView_ < 0 && !ImGui::IsAnyMouseDown() &&
+                   (io.MouseDelta.x != 0 || io.MouseDelta.y != 0)) {
+            tool_->hover(env, pointer(i));
+        }
+        if (toolView_ == i) draggingView_ = i;
+    }
 
     // Cursor position readout (2D views).
     if (hovered && !v.is3D()) {

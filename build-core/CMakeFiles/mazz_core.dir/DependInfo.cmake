@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/claude/mazzuola/src/core/mesh.cpp" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o.d"
   "/home/claude/mazzuola/src/core/numbers.cpp" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"
   "/home/claude/mazzuola/src/core/selection.cpp" "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o.d"
+  "/home/claude/mazzuola/src/core/view_geom.cpp" "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

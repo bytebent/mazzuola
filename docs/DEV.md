@@ -77,6 +77,7 @@ expect ortho <view> <cu> <cv> <zoom>            (±1 %)
 expect controls <0|1> | paintwindow <0|1>
 expect dirty <0|1> | undo <steps> | faces <n> | verts <n> | selected <n>
 expect title <text>                 window title
+expect tool <Select|Primitives>     the active tool
 expect fileline <file> <line>       the file contains exactly that line
 saveas <file> | open <file>         save / open without dialogs (relative to the temp folder)
 addbox <x0 y0 z0 x1 y1 z1>          test helper: add a box as one undo step, selected

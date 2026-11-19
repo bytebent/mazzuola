@@ -4,6 +4,8 @@
 #include "core/document.hpp"
 #include "core/grid.hpp"
 #include "render/view_draw.hpp"
+#include "tools/prim_tool.hpp"
+#include "tools/select_tool.hpp"
 #include "ui/actions.hpp"
 #include "imgui.h"
 #include <deque>
@@ -22,8 +24,6 @@ struct EditorOptions {
 };
 
 const char* selectModeName(SelectMode m); // "vertices", "edges", "faces", "pieces"
-
-enum class Tool { Select };
 
 // The 2x2 views area: split position, and which view (if any) fills it.
 struct ViewsLayout {
@@ -71,9 +71,9 @@ private:
     void viewCell(int i, ImVec2 pos, ImVec2 size); // ui/views_panel.cpp
     void viewInput(int i, ImVec2 imgPos, ImVec2 imgSize); // ui/views_panel.cpp
     void textureView();          // ui/panels.cpp
-    void toolsPanel();           // ui/panels.cpp
+    void toolBar();              // ui/panels.cpp (left edge)
     void propertiesPanel();      // ui/panels.cpp
-    void partsPanel();           // ui/panels.cpp
+    void groupsPanel();          // ui/panels.cpp
     void palettePanel();         // ui/panels.cpp
     void controlsWindow();       // ui/panels.cpp
     void aboutWindow();          // ui/panels.cpp
@@ -105,6 +105,13 @@ private:
     // The model changed (geometry or selection): views redraw.
     void touch();
 
+    // ---- tools
+    ToolEnv toolEnv();
+    void setTool(Tool* t);
+    void cancelTool();           // before undo, redo, new, open
+    ViewGeom geom(int view) const;
+    Pointer pointer(int view) const;
+
     // ---- scripting (app/script.cpp)
     void loadScript(const std::string& path);
     void stepScript();
@@ -121,7 +128,11 @@ private:
     Document doc_;
     std::string path_;  // the open model's file ("" = never saved)
     double texel_ = 0.5; // texture pixels per cm, kept from the file (milestone 5)
-    Tool tool_ = Tool::Select;
+    SelectTool selectTool_;
+    PrimTool primTool_;
+    Tool* tool_ = &selectTool_;
+    LastBox lastBox_;
+    int toolView_ = -1; // view where the left button went down (-1 = none)
     bool orbitSelection_ = false; // 3D orbit target: selection (falls back to origin) or origin
 
     // Per-view screen rects of the image area (logical px), for scripts and the cursor readout.

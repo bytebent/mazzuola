@@ -240,6 +240,10 @@ void Editor::stepScript() {
                                    : doc_.sel.mode == SelectMode::Edge ? doc_.sel.edges.size()
                                                                        : doc_.sel.faces.size());
                 if (have != want) scriptFail(what + " is " + std::to_string(have));
+            } else if (what == "tool") {
+                std::string t;
+                in >> t;
+                if (t != tool_->name()) scriptFail(std::string("tool is ") + tool_->name());
             } else if (what == "title") {
                 std::string t;
                 std::getline(in >> std::ws, t);

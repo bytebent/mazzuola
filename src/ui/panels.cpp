@@ -45,52 +45,64 @@ void Editor::textureView() {
     ImGui::PopTextWrapPos();
 }
 
-void Editor::toolsPanel() {
-    // Selection mode: four small toggles.
-    ImGui::TextUnformatted("Select");
-    const Act modes[4] = {Act::ModeVertex, Act::ModeEdge, Act::ModeFace, Act::ModePiece};
-    const char* short4[4] = {"Vert", "Edge", "Face", "Piece"};
-    const float bw = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x * 3) / 4;
-    for (int k = 0; k < 4; ++k) {
-        if (k) ImGui::SameLine();
-        const bool on = (int)doc_.sel.mode == k;
+// The tool bar on the left (ARCHITECTURE §6): selection mode buttons at the top, then
+// the tools that work in this release, as in Scalpellino.
+void Editor::toolBar() {
+    auto accentButton = [](const char* label, bool on, ImVec2 size) {
         if (on) {
             ImGui::PushStyleColor(ImGuiCol_Button, theme::kAccent);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, theme::kAccentHover);
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, theme::kAccentActive);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
         }
-        ImGui::PushID(k);
-        if (ImGui::Button(short4[k], ImVec2(std::max(30.0f, bw), 0))) run(modes[k]);
-        ImGui::PopID();
+        const bool clicked = ImGui::Button(label, size);
         if (on) ImGui::PopStyleColor(4);
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s (%s)", actionInfo(modes[k]).label, actionInfo(modes[k]).keys);
+        return clicked;
+    };
+    auto tip = [](Act a) {
+        const ActionInfo& info = actionInfo(a);
+        if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) return;
+        if (info.milestone) ImGui::SetTooltip("%s (%s) - coming in v0.1.2", info.label, displayKeys(info.keys).c_str());
+        else ImGui::SetTooltip("%s (%s)", info.label, displayKeys(info.keys).c_str());
+    };
+
+    const float full = ImGui::GetContentRegionAvail().x;
+    const float half = (full - ImGui::GetStyle().ItemSpacing.x) / 2;
+    const Act modes[4] = {Act::ModeVertex, Act::ModeEdge, Act::ModeFace, Act::ModePiece};
+    const char* names[4] = {"Vert", "Edge", "Face", "Piece"};
+    for (int k = 0; k < 4; ++k) {
+        if (k % 2) ImGui::SameLine();
+        ImGui::PushID(k);
+        ImGui::BeginDisabled(!enabled(modes[k]));
+        if (accentButton(names[k], (int)doc_.sel.mode == k, ImVec2(half, 0))) run(modes[k]);
+        ImGui::EndDisabled();
+        tip(modes[k]);
+        ImGui::PopID();
     }
     ImGui::Spacing();
     ImGui::Separator();
-    ImGui::TextUnformatted("Tools");
-    const Act tools[] = {Act::ToolSelect, Act::ToolVertex, Act::ToolPrimitives, Act::ToolDraw, Act::ToolPushPull,
-                         Act::ToolExtrude, Act::ToolCut, Act::ToolLatheLoft, Act::ToolBrush, Act::ToolMapping,
-                         Act::ToolPaint, Act::ToolColour};
-    for (Act a : tools) {
-        const ActionInfo& info = actionInfo(a);
-        const bool on = a == Act::ToolSelect && tool_ == Tool::Select;
-        ImGui::BeginDisabled(!enabled(a));
-        if (ImGui::Selectable(info.label, on)) run(a);
-        ImGui::EndDisabled();
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-            if (info.milestone) ImGui::SetTooltip("%s - coming in milestone %d", displayKeys(info.keys).c_str(), info.milestone);
-            else ImGui::SetTooltip("%s", displayKeys(info.keys).c_str());
-        }
-        const std::string keys = displayKeys(info.keys);
-        ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(keys.c_str()).x);
-        ImGui::TextDisabled("%s", keys.c_str());
+    ImGui::Spacing();
+    struct Entry { Act act; const char* label; const Tool* tool; };
+    const Entry tools[] = {{Act::ToolSelect, "Select", &selectTool_}, {Act::ToolPrimitives, "Primitives", &primTool_}};
+    for (const Entry& e : tools) {
+        if (accentButton(e.label, tool_ == e.tool, ImVec2(full, ImGui::GetFrameHeight() * 1.2f))) run(e.act);
+        tip(e.act);
     }
 }
 
 void Editor::propertiesPanel() {
+    {
+        ToolEnv env = toolEnv();
+        tool_->properties(env);
+    }
     ImGui::SeparatorText("Selection");
-    dimText("Nothing selected. Modelling arrives in milestone 1.");
+    if (doc_.sel.empty()) dimText("Nothing selected.");
+    else {
+        Vec3 mn, mx;
+        selectionBounds(doc_.mesh, doc_.sel, mn, mx);
+        ImGui::Text("%d faces", (int)doc_.sel.faces.size());
+        ImGui::Text("size %g x %g x %g cm", mx.x - mn.x, mx.y - mn.y, mx.z - mn.z);
+    }
     ImGui::SeparatorText("Grid");
     ImGui::Text("Size: %g cm", grid_.size);
     ImGui::SameLine();
@@ -104,7 +116,7 @@ void Editor::propertiesPanel() {
     if (ImGui::Checkbox("Snap to grid", &snap)) run(Act::ToggleSnap);
 }
 
-void Editor::partsPanel() { dimText("Parts (named groups of faces, with pivots) arrive in milestone 3."); }
+void Editor::groupsPanel() { dimText("Groups (named sets of faces with their own pivot, Cmd+G) arrive in milestone 3."); }
 
 void Editor::palettePanel() { dimText("The palette and saved palettes arrive in milestone 6."); }
 

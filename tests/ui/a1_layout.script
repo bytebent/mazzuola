@@ -1,0 +1,16 @@
+# Alpha 1, step C: tool bar, tools, selection mode buttons.
+expect tool Select
+expect mode pieces
+key Shift+B
+expect tool Primitives
+key Shift+S
+expect tool Select
+action tool.primitives
+expect tool Primitives
+action tool.select
+# Points, edges, faces stay greyed out until v0.1.2.
+action select.vertices
+expect mode pieces
+wait 3
+shot m1-01-layout.png
+quit

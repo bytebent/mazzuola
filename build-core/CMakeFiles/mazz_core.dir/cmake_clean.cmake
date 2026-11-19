@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o.d"
+  "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o"
+  "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o.d"
   "libmazz_core.a"
   "libmazz_core.pdb"
 )

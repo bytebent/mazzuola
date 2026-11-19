@@ -309,6 +309,30 @@ src/core/selection.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/selection.cpp.s
 .PHONY : src/core/selection.cpp.s
 
+src/core/view_geom.o: src/core/view_geom.cpp.o
+.PHONY : src/core/view_geom.o
+
+# target to build an object file
+src/core/view_geom.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o
+.PHONY : src/core/view_geom.cpp.o
+
+src/core/view_geom.i: src/core/view_geom.cpp.i
+.PHONY : src/core/view_geom.i
+
+# target to preprocess a source file
+src/core/view_geom.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.i
+.PHONY : src/core/view_geom.cpp.i
+
+src/core/view_geom.s: src/core/view_geom.cpp.s
+.PHONY : src/core/view_geom.s
+
+# target to generate assembly for a file
+src/core/view_geom.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.s
+.PHONY : src/core/view_geom.cpp.s
+
 src/io/mazz_file.o: src/io/mazz_file.cpp.o
 .PHONY : src/io/mazz_file.o
 
@@ -435,6 +459,9 @@ help:
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"
+	@echo "... src/core/view_geom.o"
+	@echo "... src/core/view_geom.i"
+	@echo "... src/core/view_geom.s"
 	@echo "... src/io/mazz_file.o"
 	@echo "... src/io/mazz_file.i"
 	@echo "... src/io/mazz_file.s"

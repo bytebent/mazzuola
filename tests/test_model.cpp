@@ -243,9 +243,61 @@ void testDocument() {
 
 } // namespace
 
+void testViewGeom();
+
 void testModel() {
+    testViewGeom();
     testNumbers();
     testBox();
     testPieces();
     testDocument();
+}
+
+// ---------------------------------------------------------------- view geometry
+#include "core/view_geom.hpp"
+
+void testViewGeom() {
+    using namespace mazz;
+    // 3D: project agrees with the camera's own matrices, and a ray through the projected
+    // point passes through the point.
+    ViewGeom g;
+    g.dir = ViewDir::Persp;
+    g.x0 = 100;
+    g.y0 = 50;
+    g.w = 800;
+    g.h = 600;
+    g.cam.yaw = 30;
+    g.cam.pitch = 20;
+    g.cam.distance = 500;
+    const Vec3 p{40, -25, 60};
+    double sx = 0, sy = 0;
+    CHECK(g.project(p, sx, sy));
+    const Mat4 vp = g.cam.projection(g.w / g.h) * g.cam.view();
+    const Vec3 ndc = transformPoint(vp, p);
+    CHECK(near(sx, g.x0 + (ndc.x + 1) / 2 * g.w, 0.05) && near(sy, g.y0 + (1 - ndc.y) / 2 * g.h, 0.05));
+    Vec3 o, d;
+    g.ray(sx, sy, o, d);
+    const Vec3 toP = p - o;
+    CHECK(near(length(cross(normalize(toP), d)), 0, 1e-6) && dot(toP, d) > 0);
+    CHECK(!g.project(g.cam.eye() - g.cam.forward() * 10, sx, sy)); // behind the camera
+
+    // 2D Top view: a ray goes straight down through the point under the cursor.
+    ViewGeom t;
+    t.dir = ViewDir::Top;
+    t.w = 400;
+    t.h = 300;
+    t.ortho.dir = ViewDir::Top;
+    CHECK(t.project({10, 20, 99}, sx, sy));
+    t.ray(sx, sy, o, d);
+    CHECK(nearV(d, {0, 0, -1}) && near(o.x, 10, 1e-6) && near(o.y, 20, 1e-6) && o.z > 1000);
+    // Front view looks along +y.
+    ViewGeom f = t;
+    f.dir = ViewDir::Front;
+    f.ortho.dir = ViewDir::Front;
+    f.ray(200, 150, o, d);
+    CHECK(nearV(d, {0, 1, 0}));
+
+    double tt = 0;
+    CHECK(rayTriangle({0.2, 0.2, 5}, {0, 0, -1}, {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, tt) && near(tt, 5));
+    CHECK(!rayTriangle({2, 2, 5}, {0, 0, -1}, {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, tt));
 }

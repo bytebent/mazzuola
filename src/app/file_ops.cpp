@@ -44,6 +44,7 @@ void Editor::requestQuit() {
 
 void Editor::fileNew() {
     whenSaved([this] {
+        cancelTool();
         doc_.reset();
         path_.clear();
         texel_ = 0.5;
@@ -58,6 +59,7 @@ bool Editor::openPath(const std::string& path) {
         showMessage("Could not open the model", fs::path(path).filename().string() + "\n\n" + err);
         return false;
     }
+    cancelTool();
     doc_.reset(std::move(m.mesh));
     texel_ = m.texel;
     path_ = path;

@@ -22,7 +22,10 @@ including the planned ones with the milestone that brings them.
 
 | Action | Keys |
 |---|---|
-| Selection mode: vertices / edges / faces / pieces | **1** / **2** / **3** / **4** |
+| New / open / save / save as | **Cmd+N** / **Cmd+O** / **Cmd+S** / **Cmd+Shift+S** |
+| Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
+| Tools (also the buttons on the left) | Select **Shift+S**, Primitives **Shift+B** |
+| Selection mode: whole pieces (points, edges, faces in v0.1.2) | **4** (and the buttons at the top of the tool bar) |
 | Smaller / larger grid | **è** / **+** (the two keys right of P) |
 | Set the grid size | View → Set grid size… (1/8 cm to 512 cm; **Return** sets, **Esc** cancels) |
 | Show grid / snap to grid | **Shift+R** / **Shift+W** |

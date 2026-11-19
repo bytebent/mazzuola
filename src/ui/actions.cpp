@@ -32,7 +32,7 @@ const ActionInfo kActions[] = {
 
     {Act::ToolSelect, "tool.select", "Select", "Shift+S", 0},
     {Act::ToolVertex, "tool.vertex", "Vertex", "Shift+V", 1},
-    {Act::ToolPrimitives, "tool.primitives", "Primitives", "Shift+B", 1},
+    {Act::ToolPrimitives, "tool.primitives", "Primitives", "Shift+B", 0},
     {Act::ToolDraw, "tool.draw", "Draw", "Shift+D", 2},
     {Act::ToolPushPull, "tool.pushpull", "Push/pull", "Shift+F", 2},
     {Act::ToolExtrude, "tool.extrude", "Extrude / inset / bevel", "Shift+E", 2},
