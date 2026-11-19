@@ -196,10 +196,27 @@ each tried by the user before the next starts:
    - **D. Release v0.1.1.** UI script drawing each shape in a 2D view and checking its
      box and counts; screenshots; controls, README, release notes. User tries it.
 
-3. **v0.1.2 — Points, edges, faces.** Also: rounded edges for box and cylinder (a hard
-   edge becomes 1–3 faces; user 2026-11-19). Modes 1–4; Vertex tool with direct dragging
-   (stacked points in 2D taken together, as in Scalpellino); arrows; rectangle
-   selection; grow/shrink; edge loop / ring.
+3. **v0.1.2 — Points, edges, faces.** Design: ARCHITECTURE §6 Selection ("Points,
+   edges, faces"), Vertex tool, "Brush feel" (arrows).
+   **Steps of v0.1.2:**
+   - **A. Selection core.** Mode conversion (pieces/faces/edges/points, agreed rules);
+     picking one point / edge / face (2D: stacked points together, nearest face first,
+     click again for the next; 3D: what is hit); rectangle per mode (2D sees through,
+     3D only visible); grow/shrink; edge loop (through four-sided corners) and ring;
+     Delete for every mode (removes the faces using the selection). Core tests.
+   - **B. Select tool in every mode.** Modes 1–4 enabled (tool bar buttons, keys);
+     click / Cmd+click / rectangle / double-click loop / Shift+double-click ring; the
+     selection box works for any selection (move, copy, resize, rotate, rings). Copy
+     (Shift+drag) of points/edges copies the faces they fully cover. Cmd+è / Cmd++.
+   - **C. Arrows.** X/Y/Z arrows at the selection's centre (two per 2D view, three in
+     3D); drag one to move along that axis only, snapped.
+   - **D. Vertex tool (Shift+V).** Press on any point and drag it straight away
+     (stacked points in 2D together; snapped); otherwise like Select in point mode.
+   - **E. Rounded edges.** Box and cylinder: rounded edges with 1–3 faces per edge
+     (and the size of the rounding); still fills its box; tests.
+   - **F. Release v0.1.2.** UI script through all of it; screenshots; controls, README,
+     release notes. User tries it.
+
 4. **v0.1.3 — Typed values.** Transform panel (live preview; copies in a row or circle
    with rotate/scale per copy and "scale the offset"); mirror and mirror clone; flatten;
    move along normal.

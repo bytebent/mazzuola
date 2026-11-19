@@ -205,6 +205,8 @@ to the GPU → one redraw of the views that show it.
 | Tools: Select / Vertex / Primitives / Draw / Push-pull / Extrude / Cut / Lathe-loft / Vertex brush / Mapping / Paint / Vertex colour | **Shift+S** / **Shift+V** / **Shift+B** / **Shift+D** / **Shift+F** / **Shift+E** / **Shift+X** / **Shift+C** / **Shift+G** / **Shift+A** / **Shift+P** / **Shift+O** |
 | Selection mode: vertex / edge / face / piece | **1** / **2** / **3** / **4** |
 | Select all / none | **Cmd+A** / **Esc** |
+| Shrink / grow selection | **Cmd+è** / **Cmd++** (user, 2026-11-19; like the grid keys) |
+| Edge loop / ring | double-click an edge / **Shift**+double-click |
 | Exact move / rotate / scale | **Cmd+T** |
 | Move points exactly (vertex tool) | **Cmd+Shift+T** |
 | Snap points to grid | **Cmd+B** |
@@ -264,6 +266,9 @@ the model gets:
     in the 3D view only what can be seen.
   - Delete removes the faces that use the selected points or edges (dissolving, which
     keeps the surface closed, comes with milestone 2).
+  - Edge loop: double-click an edge (the line of edges continuing straight through
+    four-sided corners, all the way round); edge ring: Shift+double-click (the parallel
+    edges across a strip of quads). Shrink / grow selection: Cmd+è / Cmd++.
 
 ### Vertex tool (Shift+V)
 - **Click and drag one point straight away** (agreed 2026-11-19, as in Scalpellino): no

@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Loops and grow/shrink keys; v0.1.2 planned (docs only)
+- Edge loop = double-click an edge, ring = Shift+double-click (explained to the user with
+  a drawing). Shrink / grow selection = Cmd+è / Cmd++ (user: easier on the Italian
+  keyboard; matches è/+ for the grid). Shortcut table and Selection updated.
+- PLAN: steps of v0.1.2 (A selection core, B Select tool in every mode, C arrows,
+  D Vertex tool, E rounded edges, F release).
+
 ### 2026-11-19 — v0.1.2 design answers (docs only)
 - Rock stretch dropped (the drawn box sets the proportions).
 - Agreed for points/edges/faces: mode switches convert the selection; a click picks one
