@@ -60,9 +60,6 @@ cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
-- **Rock stretch X/Y/Z** (ARCHITECTURE lists it): left out of v0.1.1 because the drawn
-  box already sets the rock's proportions; stretching would be undone by fitting it to
-  the box. Drop it from the design? Ask the user.
 
 
 
@@ -213,6 +210,9 @@ Before each of v0.1.1–v0.1.4 starts, write its steps here the same way as v0.1
 taking in the user's feedback on the release before.
 
 ## Milestone 2 — Modelling
+
+**Reminder (user, 2026-11-19):** consider making Delete in point/edge mode dissolve
+automatically (keep the surface closed) instead of removing the faces around.
 
 1. Shared machinery: live preview + typed-values panel, Return/Esc; automatic splitting
    of faces over four corners; inference snapping with coloured hints and Shift lock.

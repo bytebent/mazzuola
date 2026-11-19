@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.2 design answers (docs only)
+- Rock stretch dropped (the drawn box sets the proportions).
+- Agreed for points/edges/faces: mode switches convert the selection; a click picks one
+  thing (stacked points together in 2D, faces nearest first, click again for the next);
+  rectangle sees through in 2D, only visible in 3D; Vertex tool = grab any point
+  straight away, Select = click first; Delete removes the faces using the selection.
+  Reminder for milestone 2: maybe dissolve automatically on Delete. ARCHITECTURE §6.
+
 ### 2026-11-19 — Rounded edges decided (docs only)
 - User: rounded edges on box and cylinder are fine if small: a hard edge becomes 1–3
   faces, not 8. Planned with v0.1.2; ARCHITECTURE updated.

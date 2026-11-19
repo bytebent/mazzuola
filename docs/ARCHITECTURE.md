@@ -253,10 +253,22 @@ the model gets:
   - Cmd+click adds/removes. Dragging on empty space draws a selection rectangle.
   - Clicking empty space or Esc selects nothing.
   - The selection box ("Brush feel") appears around the selection in every view.
+- Points, edges, faces (agreed 2026-11-19, for v0.1.2):
+  - Switching mode converts the selection: pieces → faces keeps their faces; faces →
+    points/edges takes their corners/sides; points/edges → faces takes the faces whose
+    corners/sides are all selected.
+  - A click picks one point, edge or face. In 2D views a click on a point takes all the
+    points stacked there; on a face, the one nearest the viewer, and clicking again on
+    the same spot steps to the next one underneath.
+  - The rectangle: in 2D views everything inside (front and back, they see through);
+    in the 3D view only what can be seen.
+  - Delete removes the faces that use the selected points or edges (dissolving, which
+    keeps the surface closed, comes with milestone 2).
 
 ### Vertex tool (Shift+V)
 - **Click and drag one point straight away** (agreed 2026-11-19, as in Scalpellino): no
-  need to select it first; snapped to the grid. Selected points move with the arrows;
+  need to select it first; snapped to the grid. That is the difference from the Select tool in
+  point mode, where a point is clicked (selected) first. Selected points move with the arrows;
   rotate and scale with handles; typed values (Cmd+Shift+T).
 - **Soft selection** (on when several points are selected and the toggle is on): typed
   radius and curve (smooth, linear, sharp, constant), shown as a colour gradient; the
@@ -290,7 +302,7 @@ the model gets:
   5. Return creates it, selected; Esc cancels. Corners on the grid, clean numbers.
   After Return it is a plain mesh (settings can't be changed; undo and draw again).
 - **Rock** (Create menu, generator): a random low-poly rock filling a dragged or typed
-  box. Faces (12–60, target triangle count), roughness, stretch X/Y/Z, flat bottom
+  box. Faces (12–60, target triangle count), roughness, flat bottom
   (with height), join into quads, seed. Built from the hull of jittered points on an
   ellipsoid, then pushed in/out along normals without self-intersection. One smoothing
   group or auto smooth; box-projected texture coordinates at the texel target.
