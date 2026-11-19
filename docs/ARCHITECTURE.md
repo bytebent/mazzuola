@@ -202,6 +202,10 @@ the model gets:
 - **Resizing:** dragging a side handle pushes that side while the opposite side stays
   put, snapped to the grid. The points inside stretch between the sides.
 - **Rotating:** Option+drag a corner handle (15° steps, +Shift free), as in Scalpellino.
+  The 3D view shows **rotation rings** (X/Y/Z) around the selection. By default
+  everything turns about the selection's centre.
+- **Arrows:** points, edges and faces also get X/Y/Z **arrows** (2D and 3D views):
+  drag one to push the selection along that axis, snapped.
 - **Moving / copying:** drag to move (snapped); Shift+drag makes a copy.
 - The box handles always act on the whole selection. Pushing one face of a mesh outward
   is push/pull (M2), not the box handles.
@@ -220,16 +224,18 @@ the model gets:
   - The selection box ("Brush feel") appears around the selection in every view.
 
 ### Vertex tool (Shift+V)
-- Move selected points by dragging, with axis arrows in 2D views; rotate and scale with
-  handles; typed values (Cmd+Shift+T).
+- **Click and drag one point straight away** (agreed 2026-11-19, as in Scalpellino): no
+  need to select it first; snapped to the grid. Selected points move with the arrows;
+  rotate and scale with handles; typed values (Cmd+Shift+T).
 - **Soft selection** (on when several points are selected and the toggle is on): typed
   radius and curve (smooth, linear, sharp, constant), shown as a colour gradient; the
   surroundings follow moves, rotations and scales with falloff. Distance measured
   straight or over the surface (a setting).
 
 ### Shaping tools
-- **Transform**: move / rotate / scale with handles in every view; Transform dialog
-  (Cmd+T) with pivot (bounds centre, average, model pivot, group pivot, typed point) and
+- **Transform**: move / rotate / scale with handles in every view; Transform panel
+  (Cmd+T; **stays open, live preview, Return applies, Esc cancels**, like Scalpellino's
+  Multi-Replicate; agreed 2026-11-19) with pivot (bounds centre, average, model pivot, group pivot, typed point) and
   angle snap. **Clone**: N copies at a typed distance or angle (in a row, or in a circle
   around the pivot), spacing given per copy or as a total. Each copy can also add a
   **rotation per copy** (X/Y/Z degrees, about the chosen pivot) and a **scale per copy**

@@ -4,6 +4,15 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Redesign: transform panel, rings, arrows, vertex drag (docs only)
+- Agreed: the Transform dialog becomes a panel that stays open with a live preview
+  (Return applies, Esc cancels), like Scalpellino's Multi-Replicate. Rotation is about
+  the selection's centre by default; rotation rings show in the 3D view too. Points,
+  edges and faces get X/Y/Z arrows to push along an axis. Vertex tool: click and drag
+  one point straight away, as in Scalpellino.
+- Agreed: milestone 1 becomes **alpha 1**, split into a reasonable number of releases
+  (list being agreed).
+
 ### 2026-11-19 — Parts are now "groups" (docs only)
 - User: keep Scalpellino's language. Parts (named face sets with a pivot, visibility,
   exported as nodes) renamed **groups**, made with Cmd+G, removed with Cmd+Shift+G, as in
