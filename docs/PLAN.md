@@ -217,10 +217,27 @@ each tried by the user before the next starts:
    - **F. Release v0.1.2.** UI script through all of it; screenshots; controls, README,
      release notes. User tries it.
 
-4. **v0.1.3 — Typed values.** Also: the Vertex tool works on points only (2/3/4 in it
-   switch to the Select tool; user 2026-11-20). Transform panel (live preview; copies in a row or circle
-   with rotate/scale per copy and "scale the offset"); mirror and mirror clone; flatten;
-   move along normal.
+4. **v0.1.3 — Typed values.** Design: ARCHITECTURE §6 Transform, Multi-Replicate,
+   Duplicate, Mirror, Flatten (agreed 2026-11-20). Also: the Vertex tool works on points
+   only (2/3/4 in it switch to the Select tool).
+   **Steps of v0.1.3:**
+   - **A. Core operations.** Transform about a pivot (move, rotate X/Y/Z, scale X/Y/Z %,
+     move along the selection's normal); replicate (N copies, per-copy offset, turn,
+     scale, scaled offset, pivot travelling / world origin / typed point); duplicate;
+     mirror in place and mirror clone across the world plane (faces turned the right
+     way round); flatten to average / lowest / highest. All on points of any selection
+     mode, clean numbers. Core tests.
+   - **B. Operation windows.** The shared "operation with preview" (ARCHITECTURE §4): a
+     small window that stays open, its values shown live in the views through a live
+     edit, Return applies as one undo step, Esc cancels; only one open at a time. The
+     Transform panel (Cmd+T) on it.
+   - **C. Multi-Replicate** (Cmd+Shift+D) on the same window.
+   - **D. Menu actions.** Cmd+D Duplicate; Mesh → Mirror X/Y/Z, Mirror clone X/Y/Z;
+     Flatten (window: axis, to average / lowest / highest); the Vertex tool points-only
+     rule.
+   - **E. Release v0.1.3.** UI script through all of it; screenshots; controls, README,
+     release notes. User tries it.
+
 5. **v0.1.4 — Out of the app.** `.glb`/`.gltf` + `.obj` export (geometry; origin =
    world origin); reference images; 175 cm figure.
 

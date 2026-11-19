@@ -209,7 +209,8 @@ to the GPU → one redraw of the views that show it.
 | Select all / none | **Cmd+A** / **Esc** |
 | Shrink / grow selection | **Cmd+è** / **Cmd++** (user, 2026-11-19; like the grid keys) |
 | Edge loop / ring | double-click an edge / **Shift**+double-click |
-| Exact move / rotate / scale | **Cmd+T** |
+| Exact move / rotate / scale (Transform panel) | **Cmd+T** |
+| Multi-Replicate | **Cmd+Shift+D** |
 | Move points exactly (vertex tool) | **Cmd+Shift+T** |
 | Snap points to grid | **Cmd+B** |
 | Duplicate / clone | **Cmd+D** / Shift+drag |
@@ -287,16 +288,23 @@ the model gets:
   straight or over the surface (a setting).
 
 ### Shaping tools
-- **Transform**: move / rotate / scale with handles in every view; Transform panel
-  (Cmd+T; **stays open, live preview, Return applies, Esc cancels**, like Scalpellino's
-  Multi-Replicate; agreed 2026-11-19) with pivot (selection centre by default, average, world origin, group pivot, typed point) and
-  angle snap. **Clone**: N copies at a typed distance or angle (in a row, or in a circle
-  around the pivot), spacing given per copy or as a total. Each copy can also add a
-  **rotation per copy** (X/Y/Z degrees, about the chosen pivot) and a **scale per copy**
-  (X/Y/Z %, multiplied each step), with an option to **scale the offset** too: spiral
-  stairs, tapering towers, twisted columns. Copies stay in the original's group.
-- **Mirror** (along X/Y/Z) and **mirror clone**. **Flatten X/Y/Z**: line selected points
-  up on one axis. Move along the selection's normal.
+- **Transform** (agreed 2026-11-20, like Scalpellino): move / rotate / scale with the
+  handles; the **Transform panel** (Cmd+T): relative values, move X/Y/Z cm, rotate
+  X/Y/Z degrees, scale X/Y/Z %, and move along the selection's normal (cm); about the
+  selection's centre (default), the world origin or a typed point (the group pivot
+  joins in milestone 3).
+- **Multi-Replicate** (Cmd+Shift+D, as in Scalpellino): N copies, each one step further:
+  offset (optionally scaled), turn X/Y/Z degrees and scale X/Y/Z % per copy, about the
+  selection (travelling with the copies), the world origin or a typed point: rows,
+  circles, spiral stairs, tapering towers, twisted columns. The copies end up selected.
+  Copies stay in the original's group.
+- Both are **small windows that stay open over the app** (the views stay usable), with
+  a live preview; Return applies (one undo step), Esc cancels.
+- **Duplicate** (Cmd+D): copies the selection in place and selects the copy.
+- **Mirror X/Y/Z** (Mesh menu): flips the selection in place across its own centre.
+  **Mirror clone X/Y/Z**: a mirrored copy across the world origin's plane (the other half
+  of a symmetric model). **Flatten X/Y/Z** (Mesh menu, small window): lines the selected
+  points up on one axis at their average, lowest or highest.
 - **Primitives** (Shift+B): plane (rows, columns, diagonal direction), box (stacks per
   side, optional rounded edges), cylinder (sides, stacks, cap segments, rounded
   edges; rounded edges: a hard edge becomes 1–3 faces, no more; user 2026-11-19), cone, tube (inner/outer sides, length), torus, sphere (sides and

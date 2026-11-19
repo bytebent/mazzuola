@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.3 design agreed; steps planned (docs only)
+- Agreed (user: "yes to all"): Transform panel (Cmd+T) and Multi-Replicate
+  (Cmd+Shift+D) as two windows like Scalpellino's, staying open with a live preview,
+  Return / Esc; relative values about the selection centre, world origin or a typed
+  point; Mirror X/Y/Z in place, Mirror clone X/Y/Z across the world plane; Flatten to
+  average / lowest / highest; move along normal in the Transform panel; Cmd+D Duplicate.
+  ARCHITECTURE §6 and the shortcut table updated; PLAN: steps of v0.1.3 (A–E).
+
 ### 2026-11-20 — Vertex tool: points only (docs only)
 - User: in the Vertex tool with a face selected, pressing a corner handle grabbed the
   corner point (points come first in that tool) instead of resizing. Decided: the
