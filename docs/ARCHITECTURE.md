@@ -111,7 +111,7 @@ to the GPU → one redraw of the views that show it.
   real size). A 175 cm human figure can be shown for scale (same as Scalpellino's).
 - **Pivot**: the **world origin is the model's pivot** (agreed 2026-11-19): build the
   model with its base on the origin; that's where Scalpellino holds it and the export's
-  zero point. No pivot tool. (Groups have their own pivots, alpha 3.)
+  zero point. No pivot tool. (Groups have their own pivots, milestone 3.)
 - **Mirror mode**: optional symmetry plane (X by default). Edits, brush strokes and soft
   selection on one side are repeated on the other; vertices on the plane stay on it.
 - **Settings per model**: texel target (pixels per cm, optional; 0.5 suggested for
