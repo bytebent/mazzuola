@@ -246,8 +246,10 @@ void testDocument() {
 void testViewGeom();
 void testDrawData();
 void testTransformPick();
+void testPrimitives();
 
 void testModel() {
+    testPrimitives();
     testViewGeom();
     testDrawData();
     testTransformPick();
@@ -439,4 +441,90 @@ void testTransformPick() {
     g.project({5, 5, 10}, sx, sy); // top of the low box, seen from above at an angle
     under = piecesAt(m, g, sx, sy);
     CHECK(under.size() == 1);
+}
+
+// ---------------------------------------------------------------- primitives
+#include "core/primitives.hpp"
+
+void testPrimitives() {
+    using namespace mazz;
+    const Vec3 mn{-24, 8, 0}, mx{40, 56, 32};
+    for (int k = 0; k < kPrimKindCount; ++k)
+        for (int axis = 0; axis < 3; ++axis)
+            for (int variant = 0; variant < 3; ++variant) {
+                PrimParams p;
+                p.kind = (PrimKind)k;
+                p.sides = variant == 0 ? 8 : variant == 1 ? 6 : 5; // also odd counts and non-multiples of 4
+                p.tubeSides = variant == 0 ? 6 : 7;
+                p.stacks = variant == 2 ? 5 : 6;
+                p.segments = variant + 1;
+                p.capRings = variant + 1;
+                p.segX = variant + 1;
+                p.segY = 2;
+                p.segZ = variant == 2 ? 3 : 1;
+                p.rows = variant + 1;
+                p.cols = 2;
+                p.iterations = variant;
+                const Mesh m = makePrimitive(p, mn, mx, axis);
+                const char* name = primKindName(p.kind);
+                bool ok = !m.faces.empty();
+                for (const Face& f : m.faces)
+                    for (int c = 0; c < f.n; ++c) ok = ok && f.v[c] >= 0 && f.v[c] < (int)m.verts.size();
+                bool clean_ = true;
+                for (const Vec3& q : m.verts)
+                    for (int a = 0; a < 3; ++a) clean_ = clean_ && isClean(q[a]);
+                Vec3 bmn, bmx;
+                m.bounds(bmn, bmx);
+                Vec3 want = mx;
+                if (p.kind == PrimKind::Plane) want[axis] = mn[axis];
+                const bool fits = nearV(bmn, mn, 0) && nearV(bmx, want, 0);
+                bool noFlat = true; // no face with zero area
+                for (int f = 0; f < (int)m.faces.size(); ++f) noFlat = noFlat && length(faceNormal(m, f)) > 0.5;
+                const bool closed = p.kind == PrimKind::Plane || closedAndConsistent(m);
+                const bool outward = p.kind == PrimKind::Plane || signedVolume(m) > 0;
+                CHECK(ok && clean_ && fits && noFlat && closed && outward);
+                if (!(ok && clean_ && fits && noFlat && closed && outward))
+                    std::fprintf(stderr, "  %s axis %d variant %d: ok %d clean %d fits %d noFlat %d closed %d outward %d\n",
+                                 name, axis, variant, ok, clean_, fits, noFlat, closed, outward);
+                std::vector<int> piece;
+                CHECK(pieceIds(m, piece) == 1);
+            }
+
+    // Counts, and a plane faces along +axis.
+    PrimParams p;
+    p.kind = PrimKind::Cylinder;
+    p.sides = 8;
+    p.segments = 2;
+    p.capRings = 1;
+    Mesh m = makePrimitive(p, {0, 0, 0}, {10, 10, 10}, 2);
+    CHECK(m.faces.size() == 8 * 2 + 8 * 2); // walls + two fans
+    CHECK(m.verts.size() == 8 * 3 + 2);
+    p.kind = PrimKind::Box;
+    p.segX = 2;
+    p.segY = 3;
+    p.segZ = 1;
+    m = makePrimitive(p, {0, 0, 0}, {10, 10, 10}, 2);
+    CHECK(m.faces.size() == (size_t)(2 * (2 * 3 + 2 * 1 + 3 * 1)));
+    p.kind = PrimKind::Plane;
+    p.rows = 2;
+    p.cols = 3;
+    m = makePrimitive(p, {0, 0, 5}, {30, 20, 9}, 2);
+    CHECK(m.faces.size() == 6 && faceNormal(m, 0).z > 0.99 && m.verts[0].z == 5);
+    p.kind = PrimKind::Sphere;
+    p.sides = 8;
+    p.stacks = 4;
+    m = makePrimitive(p, {0, 0, 0}, {10, 10, 10}, 2);
+    CHECK(m.faces.size() == 8 * 4 && m.verts.size() == 8 * 3 + 2);
+    p.kind = PrimKind::Geosphere;
+    p.iterations = 1;
+    m = makePrimitive(p, {0, 0, 0}, {10, 10, 10}, 2);
+    CHECK(m.faces.size() == 80 && m.verts.size() == 42);
+    // Smoothing: round walls in a group, caps flat.
+    p.kind = PrimKind::Cylinder;
+    m = makePrimitive(p, {0, 0, 0}, {10, 10, 10}, 2);
+    int walls = 0, caps = 0;
+    for (const Face& f : m.faces) (f.sg ? walls : caps)++;
+    CHECK(walls == 8 * 2 && caps == 16);
+    PrimKind k;
+    CHECK(primKindFromName("torus", k) && k == PrimKind::Torus && !primKindFromName("teapot", k));
 }

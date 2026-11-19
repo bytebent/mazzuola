@@ -446,6 +446,7 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
   /home/claude/mazzuola/src/core/mesh.hpp \
   /home/claude/mazzuola/src/core/numbers.hpp \
   /home/claude/mazzuola/src/core/pick.hpp \
+  /home/claude/mazzuola/src/core/primitives.hpp \
   /home/claude/mazzuola/src/core/selection.hpp \
   /home/claude/mazzuola/src/core/transform.hpp \
   /home/claude/mazzuola/src/core/view_geom.hpp \
@@ -893,6 +894,8 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
 /usr/include/c++/13/pstl/glue_memory_defs.h:
 
 /usr/include/c++/13/exception:
+
+/home/claude/mazzuola/src/core/primitives.hpp:
 
 /usr/include/c++/13/algorithm:
 

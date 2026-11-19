@@ -333,6 +333,30 @@ src/core/pick.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/pick.cpp.s
 .PHONY : src/core/pick.cpp.s
 
+src/core/primitives.o: src/core/primitives.cpp.o
+.PHONY : src/core/primitives.o
+
+# target to build an object file
+src/core/primitives.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o
+.PHONY : src/core/primitives.cpp.o
+
+src/core/primitives.i: src/core/primitives.cpp.i
+.PHONY : src/core/primitives.i
+
+# target to preprocess a source file
+src/core/primitives.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/primitives.cpp.i
+.PHONY : src/core/primitives.cpp.i
+
+src/core/primitives.s: src/core/primitives.cpp.s
+.PHONY : src/core/primitives.s
+
+# target to generate assembly for a file
+src/core/primitives.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/primitives.cpp.s
+.PHONY : src/core/primitives.cpp.s
+
 src/core/selection.o: src/core/selection.cpp.o
 .PHONY : src/core/selection.o
 
@@ -534,6 +558,9 @@ help:
 	@echo "... src/core/pick.o"
 	@echo "... src/core/pick.i"
 	@echo "... src/core/pick.s"
+	@echo "... src/core/primitives.o"
+	@echo "... src/core/primitives.i"
+	@echo "... src/core/primitives.s"
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"

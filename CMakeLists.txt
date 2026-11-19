@@ -31,7 +31,8 @@ add_library(mazz_core STATIC
   src/core/view_geom.cpp
   src/core/draw_data.cpp
   src/core/transform.cpp
-  src/core/pick.cpp)
+  src/core/pick.cpp
+  src/core/primitives.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.

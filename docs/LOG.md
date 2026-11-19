@@ -4,6 +4,26 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.1, steps A–B: all primitive shapes
+- `core/primitives`: box (segments per side), plane (rows, columns, flipped
+  diagonals), cylinder and cone (sides, segments, cap rings), tube (sides, segments,
+  hole %), torus (sides, tube sides, tube width %), sphere (sides, stacks), geosphere
+  (iterations). Each is built in its own unit space, then mapped exactly onto the drawn
+  box, so every shape fills its box for any number of sides (the old torus didn't).
+  Polygons have flats facing the axes when the sides are a multiple of 4. Round sides
+  share a smoothing group, caps are flat. A plane lies on the box's floor, facing +axis.
+- Primitives tool: shape list and the shape's settings in Properties, remembered per
+  shape; the preview is the real shape (edges in all views) with the box handles;
+  Create → Primitives opens the tool with a shape. Depth from the last shape, but a flat
+  last shape (a plane) gives the default 64 cm (found by the new script: after a plane,
+  every shape came out flat).
+- Script commands `prim`, `primset`, `expect previewfaces`.
+- Tests: core 564 checks: every shape × every axis × three settings variants fits its box
+  exactly, is closed (not the plane), faces outward, has clean numbers, no zero-area
+  faces, one piece; counts. New UI script `a1_shapes` draws every shape and checks box
+  and face count, a 12-sided cylinder, a torus drawn in Front; all scripts pass.
+  Screenshot `m1-05-shapes.png`.
+
 ### 2026-11-19 — Move snaps the corner onto the grid; v0.1.1 planned
 - User tried v0.1.0: "looks good". Decided: a drag in the 3D view stays a selection
   rectangle; moving keeps things on the grid: the selection box's lowest corner snaps

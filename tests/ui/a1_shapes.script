@@ -1,0 +1,178 @@
+# Alpha 1, v0.1.1: every primitive shape, drawn in the Top view, fills its box.
+# (Top view zoomed out; each shape 48 x 48, depth z 0..64 from the default last box.)
+vworld 0 0 0 0
+wheel -3
+wait 2
+prim Box
+expect tool Primitives
+vworld 0 -128 16 0
+press left
+wait 1
+vworld 0 -108 36 0
+wait 1
+vworld 0 -80 64 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 6
+key Return
+wait 1
+expect selbounds -128 16 0 -80 64 64
+expect faces 6
+prim Plane
+expect tool Primitives
+vworld 0 -64 16 0
+press left
+wait 1
+vworld 0 -44 36 0
+wait 1
+vworld 0 -16 64 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 1
+key Return
+wait 1
+expect selbounds -64 16 0 -16 64 0
+expect faces 7
+prim Cylinder
+expect tool Primitives
+vworld 0 0 16 0
+press left
+wait 1
+vworld 0 20 36 0
+wait 1
+vworld 0 48 64 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 24
+key Return
+wait 1
+expect selbounds 0 16 0 48 64 64
+expect faces 31
+prim Cone
+expect tool Primitives
+vworld 0 64 16 0
+press left
+wait 1
+vworld 0 84 36 0
+wait 1
+vworld 0 112 64 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 16
+key Return
+wait 1
+expect selbounds 64 16 0 112 64 64
+expect faces 47
+prim Tube
+expect tool Primitives
+vworld 0 -128 -96 0
+press left
+wait 1
+vworld 0 -108 -76 0
+wait 1
+vworld 0 -80 -48 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 32
+key Return
+wait 1
+expect selbounds -128 -96 0 -80 -48 64
+expect faces 79
+prim Torus
+expect tool Primitives
+vworld 0 -64 -96 0
+press left
+wait 1
+vworld 0 -44 -76 0
+wait 1
+vworld 0 -16 -48 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 48
+key Return
+wait 1
+expect selbounds -64 -96 0 -16 -48 64
+expect faces 127
+prim Sphere
+expect tool Primitives
+vworld 0 0 -96 0
+press left
+wait 1
+vworld 0 20 -76 0
+wait 1
+vworld 0 48 -48 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 48
+key Return
+wait 1
+expect selbounds 0 -96 0 48 -48 64
+expect faces 175
+prim Geosphere
+expect tool Primitives
+vworld 0 64 -96 0
+press left
+wait 1
+vworld 0 84 -76 0
+wait 1
+vworld 0 112 -48 0
+wait 1
+release left
+wait 1
+expect preview 1
+expect previewfaces 80
+key Return
+wait 1
+expect selbounds 64 -96 0 112 -48 64
+expect faces 255
+# settings change the shape: a 12-sided cylinder with 3 segments
+prim Cylinder
+primset sides 12
+primset segments 3
+vworld 0 -128 80 0
+press left
+wait 1
+vworld 0 -100 100 0
+wait 1
+vworld 0 -80 112 0
+wait 1
+release left
+wait 1
+expect previewfaces 60
+key Esc
+expect preview 0
+# a torus drawn in Front stands facing you (its axis along y; its depth, y, comes
+# from the last shape, the geosphere)
+prim Torus
+vworld 1 -80 0 80
+press left
+wait 1
+vworld 1 -60 0 100
+wait 1
+vworld 1 -32 0 128
+wait 1
+release left
+wait 1
+key Return
+wait 1
+expect selbounds -80 -96 80 -32 -48 128
+# each shape keeps its own settings: the torus still has 8 sides (48 faces)
+expect selected 48
+camera 3 35 30 600 0 0 40
+wait 3
+shot m1-05-shapes.png
+quit

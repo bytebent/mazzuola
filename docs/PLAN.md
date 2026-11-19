@@ -29,8 +29,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
-  **v0.1.0 "Boxes" is released** (steps A–H). Waiting on the user: try it; their
-  feedback comes before v0.1.1.
+  **v0.1.0 "Boxes" is released.** Building v0.1.1: steps A–B done (all shapes); next C
+  (rock).
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7

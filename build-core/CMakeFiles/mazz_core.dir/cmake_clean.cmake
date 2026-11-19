@@ -13,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o.d"
+  "CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o"
+  "CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/transform.cpp.o"

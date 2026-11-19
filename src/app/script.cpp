@@ -167,6 +167,36 @@ void Editor::stepScript() {
             if (path.empty()) scriptFail(cmd + " needs a path");
             else if (cmd == "saveas") savePath(path);
             else openPath(path);
+        } else if (cmd == "prim") {
+            // prim <shape>: the Primitives tool with that shape (as the Create menu does).
+            std::string name;
+            in >> name;
+            PrimKind k;
+            if (!primKindFromName(name, k)) scriptFail("unknown shape " + name);
+            else { primTool_.setShape(k); setTool(&primTool_); }
+        } else if (cmd == "primset") {
+            // primset <setting> <value>: as typed in Properties.
+            std::string what;
+            double val = 0;
+            in >> what >> val;
+            PrimParams& p = primTool_.params();
+            const int iv = (int)val;
+            if (what == "segx") p.segX = iv;
+            else if (what == "segy") p.segY = iv;
+            else if (what == "segz") p.segZ = iv;
+            else if (what == "rows") p.rows = iv;
+            else if (what == "cols") p.cols = iv;
+            else if (what == "sides") p.sides = iv;
+            else if (what == "segments") p.segments = iv;
+            else if (what == "caprings") p.capRings = iv;
+            else if (what == "hole") p.inner = val;
+            else if (what == "tubesides") p.tubeSides = iv;
+            else if (what == "tubewidth") p.tubeWidth = val;
+            else if (what == "stacks") p.stacks = iv;
+            else if (what == "iterations") p.iterations = iv;
+            else scriptFail("unknown setting " + what);
+            p = clampParams(p);
+            touch();
         } else if (cmd == "addbox") {
             // Test helper (until the box tool exists): adds a box as one undo step and
             // selects it.
@@ -270,6 +300,10 @@ void Editor::stepScript() {
                     else std::snprintf(buf, sizeof buf, "%s: nothing there", what.c_str());
                     scriptFail(buf);
                 }
+            } else if (what == "previewfaces") {
+                int n = 0;
+                in >> n;
+                if (primTool_.previewFaces() != n) scriptFail("preview has " + std::to_string(primTool_.previewFaces()) + " faces");
             } else if (what == "preview") {
                 int b = 0;
                 in >> b;

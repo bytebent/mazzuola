@@ -85,6 +85,10 @@ vworld <view> <x> <y> <z>           mouse over a world point as that view shows 
 hold <shift|cmd|alt> / letgo <...>  hold / release a modifier for the next mouse actions
 expect bounds <x0 y0 z0 x1 y1 z1>   whole model bounds;  selbounds: the selection's
 expect preview <0|1>                the Primitives tool shows a preview box
+expect previewfaces <n>             faces of the previewed shape
+prim <shape> / primset <setting> <value>   choose a shape / set a setting (as in Properties):
+                                    segx segy segz rows cols sides segments caprings hole
+                                    tubesides tubewidth stacks iterations
 ```
 
 Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.

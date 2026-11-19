@@ -5,15 +5,25 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace mazz {
 
 namespace {
+bool nearV0(const Vec3& a, const Vec3& b) { return a.x == b.x && a.y == b.y && a.z == b.z; }
+
 ImU32 previewColour() {
     const Rgba c = viewcol::kSelection;
     return IM_COL32(c.r, c.g, c.b, 255);
 }
 } // namespace
+
+void PrimTool::setShape(PrimKind k) {
+    if (k == params_.kind) return;
+    saved_[(int)params_.kind] = params_;
+    params_ = saved_[(int)k];
+    params_.kind = k;
+}
 
 const char* PrimTool::hint() const {
     return "drag in a 2D view: draw a box  handles: adjust  Return: create  Esc: cancel";
@@ -34,11 +44,13 @@ void PrimTool::press(ToolEnv& env, const Pointer& p) {
             return;
         }
     }
-    // A new rectangle: its depth comes from the last shape made or selected.
+    // A new rectangle: its depth comes from the last shape made or selected; round
+    // shapes stand along the view's depth axis.
     mode_ = Mode::Drawing;
     box_.reset();
     const OrthoAxes ax = p.g.axes();
     const int depth = 3 - ax.u - ax.v;
+    axis_ = depth;
     anchor_ = p.g.ortho.planeToWorld(env.grid.snapValue(u), env.grid.snapValue(v));
     anchor_[depth] = 0;
     env.touch();
@@ -57,8 +69,10 @@ void PrimTool::drag(ToolEnv& env, const Pointer& p) {
             b.mn[a] = clean(std::min(anchor_[a], cur[a]));
             b.mx[a] = clean(std::max(anchor_[a], cur[a]));
         }
+        // Depth from the last shape; a flat one (a plane) gives no depth, so then the
+        // default 64 cm from the same level.
         b.mn[depth] = env.lastBox.mn[depth];
-        b.mx[depth] = env.lastBox.mx[depth];
+        b.mx[depth] = env.lastBox.mx[depth] > env.lastBox.mn[depth] ? env.lastBox.mx[depth] : b.mn[depth] + 64;
         if (b.mx[ax.u] > b.mn[ax.u] && b.mx[ax.v] > b.mn[ax.v]) box_ = b;
         else box_.reset();
     } else {
@@ -96,9 +110,9 @@ bool PrimTool::key(ToolEnv& env, int key, bool shift, bool cmd) {
 bool PrimTool::create(ToolEnv& env) {
     if (!box_) return false;
     const Box b = *box_;
-    env.doc.apply("New box", [&](MeshEdit& e, Selection& s) {
-        Mesh box;
-        addBox(box, b.mn, b.mx);
+    const std::string what = std::string("New ") + primKindName(params_.kind);
+    env.doc.apply(what, [&](MeshEdit& e, Selection& s) {
+        const Mesh box = makePrimitive(params_, b.mn, b.mx, axis_);
         const int base = (int)e.mesh().verts.size();
         for (const Vec3& v : box.verts) e.addVert(v);
         s = Selection();
@@ -126,24 +140,106 @@ void PrimTool::cancel(ToolEnv& env) {
     env.touch();
 }
 
+const Mesh& PrimTool::previewMesh() const {
+    const bool same = previewValid_ && previewAxis_ == axis_ && nearV0(previewMn_, box_->mn) && nearV0(previewMx_, box_->mx) &&
+                      previewParams_ == params_;
+    if (!same) {
+        preview_ = makePrimitive(params_, box_->mn, box_->mx, axis_);
+        previewValid_ = true;
+        previewAxis_ = axis_;
+        previewMn_ = box_->mn;
+        previewMx_ = box_->mx;
+        previewParams_ = params_;
+        std::set<Edge> edges;
+        for (const Face& f : preview_.faces)
+            for (int k = 0; k < f.n; ++k) edges.insert(makeEdge(f.v[k], f.v[(k + 1) % f.n]));
+        previewEdges_.assign(edges.begin(), edges.end());
+    }
+    return preview_;
+}
+
+int PrimTool::previewFaces() const { return box_ ? (int)previewMesh().faces.size() : 0; }
+
 void PrimTool::overlay(const ToolEnv&, const ViewGeom& g, int, ImDrawList* dl) const {
     if (!box_) return;
-    if (g.is3D()) drawBox3D(dl, g, box_->mn, box_->mx, previewColour());
-    else drawBox2D(dl, g, box_->mn, box_->mx, previewColour(), true, true);
+    // The shape itself, as lines (each edge once), then the box and its handles.
+    const Mesh& m = previewMesh();
+    const ImU32 col = previewColour();
+    std::vector<ImVec2> pts(m.verts.size());
+    std::vector<char> seen(m.verts.size());
+    for (size_t i = 0; i < m.verts.size(); ++i) {
+        double x, y;
+        seen[i] = g.project(m.verts[i], x, y);
+        pts[i] = ImVec2((float)x, (float)y);
+    }
+    for (const Edge& e : previewEdges_)
+        if (seen[e.first] && seen[e.second]) dl->AddLine(pts[e.first], pts[e.second], col, 1.0f);
+    if (g.is3D()) drawBox3D(dl, g, box_->mn, box_->mx, IM_COL32(150, 150, 160, 160));
+    else drawBox2D(dl, g, box_->mn, box_->mx, col, true, true);
 }
 
 void PrimTool::properties(ToolEnv& env) {
     ImGui::SeparatorText("Primitive");
-    // v0.1.0 has the box; the round shapes follow in v0.1.1.
     ImGui::TextUnformatted("Shape");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(-1);
-    if (ImGui::BeginCombo("##shape", "Box")) {
-        ImGui::Selectable("Box", true);
-        ImGui::BeginDisabled();
-        for (const char* s : {"Plane", "Cylinder", "Cone", "Tube", "Torus", "Sphere", "Geosphere"}) ImGui::Selectable(s);
-        ImGui::EndDisabled();
+    if (ImGui::BeginCombo("##shape", primKindName(params_.kind))) {
+        for (int k = 0; k < kPrimKindCount; ++k)
+            if (ImGui::Selectable(primKindName((PrimKind)k), (int)params_.kind == k)) {
+                setShape((PrimKind)k);
+                env.touch();
+            }
         ImGui::EndCombo();
+    }
+    // The shape's settings (remembered between uses).
+    bool changed = false;
+    const float w = ImGui::GetContentRegionAvail().x * 0.45f;
+    auto intField = [&](const char* label, int& v) {
+        ImGui::SetNextItemWidth(w);
+        if (ImGui::InputInt(label, &v)) changed = true;
+    };
+    auto pctField = [&](const char* label, double& v) {
+        ImGui::SetNextItemWidth(w);
+        if (ImGui::InputDouble(label, &v, 5, 10, "%.0f %%")) changed = true;
+    };
+    switch (params_.kind) {
+    case PrimKind::Box:
+        intField("Segments x", params_.segX);
+        intField("Segments y", params_.segY);
+        intField("Segments z", params_.segZ);
+        break;
+    case PrimKind::Plane:
+        intField("Rows", params_.rows);
+        intField("Columns", params_.cols);
+        if (ImGui::Checkbox("Flip diagonals", &params_.flipDiagonals)) changed = true;
+        break;
+    case PrimKind::Cylinder:
+    case PrimKind::Cone:
+        intField("Sides", params_.sides);
+        intField("Segments", params_.segments);
+        intField("Cap rings", params_.capRings);
+        break;
+    case PrimKind::Tube:
+        intField("Sides", params_.sides);
+        intField("Segments", params_.segments);
+        pctField("Hole", params_.inner);
+        break;
+    case PrimKind::Torus:
+        intField("Sides", params_.sides);
+        intField("Tube sides", params_.tubeSides);
+        pctField("Tube width", params_.tubeWidth);
+        break;
+    case PrimKind::Sphere:
+        intField("Sides", params_.sides);
+        intField("Stacks", params_.stacks);
+        break;
+    case PrimKind::Geosphere:
+        intField("Iterations", params_.iterations);
+        break;
+    }
+    if (changed) {
+        params_ = clampParams(params_);
+        env.touch();
     }
     if (!box_) {
         ImGui::TextDisabled("Drag a rectangle in a 2D view.");

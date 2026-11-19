@@ -393,8 +393,13 @@ void Editor::menuBar() {
     }
     if (ImGui::BeginMenu("Create")) {
         if (ImGui::BeginMenu("Primitives")) {
-            for (const char* p : {"Plane", "Box", "Cylinder", "Cone", "Tube", "Torus", "Sphere", "Geosphere"})
-                plannedItem(p, 1);
+            // Each opens the Primitives tool with that shape: then drag in a 2D view.
+            for (int k = 0; k < kPrimKindCount; ++k)
+                if (ImGui::MenuItem(primKindName((PrimKind)k), nullptr, tool_ == &primTool_ && (int)primTool_.params().kind == k)) {
+                    primTool_.setShape((PrimKind)k);
+                    setTool(&primTool_);
+                    touch();
+                }
             ImGui::EndMenu();
         }
         plannedItem("Rock...", 1);
