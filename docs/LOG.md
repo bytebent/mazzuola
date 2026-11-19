@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Parts are now "groups" (docs only)
+- User: keep Scalpellino's language. Parts (named face sets with a pivot, visibility,
+  exported as nodes) renamed **groups**, made with Cmd+G, removed with Cmd+Shift+G, as in
+  Scalpellino. No separate visgroups. "Piece" (everything connected) keeps its name.
+  Renamed throughout ARCHITECTURE, PLAN and README; the code (empty Parts panel, `part=`
+  in the planned file format) follows when it's next touched.
+
 ### 2026-11-19 — Redesign: making a shape (docs only)
 - Agreed: primitives click by click like Scalpellino's Block tool (shape and settings in
   Properties; drag a rectangle, depth from the last shape; preview with brush handles in

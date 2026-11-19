@@ -24,9 +24,11 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Selecting click by click; main tools as buttons on the left (ARCHITECTURE §6).
   Tool bar details and gesture hints in the status bar agreed.
   Making a shape agreed (plain mesh after Return).
+  Parts renamed **groups** (Cmd+G), as in Scalpellino; the M0 "Parts" panel gets
+  renamed in code with milestone 1.
   Next to agree: moving, resizing and rotating in detail; the Transform dialog.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
-- **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
+- **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
   vertex colours → M8 paint window + tablets; later: tree generator. Details below and in
   ARCHITECTURE §14.
@@ -102,7 +104,7 @@ Delivered: CMake project and pinned deps; `mazz_core` (grid in cm, view directio
 and 3D cameras, grid lines) with tests; light theme with red accent; menus with every
 planned shortcut (later ones disabled, labelled with their milestone) and Help →
 Controls; four views with direction menus, maximise and splitters; texture view, Tools,
-Properties, Parts and Palette panels (empty until their milestones); status bar;
+Properties, Groups and Palette panels (empty until their milestones); status bar;
 navigation (2D zoom/pan, 3D orbit/zoom/pan, fly mode, back to origin); grid keys and
 typed grid size; scripted UI tests, idle check, CI and releases.
 After the user's iPad tests (v0.0.1 … v0.0.7): pen taps click where the pen touches;
@@ -115,7 +117,7 @@ of the main window. See LOG.md and ARCHITECTURE §8.
 **Being redesigned** (first attempt withdrawn, see LOG.md 2026-11-19). The list below is
 the old plan, to be revised.
 
-1. Core mesh (vertices, tri/quad faces, per-corner texture coordinate and colour, part,
+1. Core mesh (vertices, tri/quad faces, per-corner texture coordinate and colour, group,
    smoothing group, double-sided, diagonal) and document with command-based undo.
 2. Primitives: plane, box (stacks, rounded edges), cylinder, cone, tube, torus, sphere,
    geosphere; drag in a view, typed values, live preview, Return/Esc.
@@ -147,22 +149,22 @@ the old plan, to be revised.
 5. Bridge, shell.
 6. Divide: subdivide (2×2, N×M; plain or smoothed), divide edges, poke, connect.
 7. Cut (knife), loop cut, slide.
-8. Merge, collapse edge, weld by distance, dissolve, fill, split, separate into part,
+8. Merge, collapse edge, weld by distance, dissolve, fill, split, separate into group,
    delete, flip, flip diagonal, triangulate / join into quads, double-sided toggle.
 9. Mirror mode + apply mirror.
 10. Tests: validity per tool, closure tests, draw-on-face planarity, push/pull holes.
 
-## Milestone 3 — Lathe, loft, parts, smoothing, problems
+## Milestone 3 — Lathe, loft, groups, smoothing, problems
 
 1. Lathe: profile, axis (vertical/horizontal, movable), sides, angle and slice caps,
    smoothing group per profile segment.
 2. Loft: path, section (circle or edited), rounded corners, section scale/twist along
    the path, open/closed, caps.
-3. Parts panel: assign, rename, hide/show/isolate, select, isolate copy; part pivots
+3. Groups panel: assign, rename, hide/show/isolate, select, isolate copy; group pivots
    (placed by click or typed, used as transform centre, exported as node origin).
 4. Smoothing groups panel: new, remove, auto smooth by angle; primitives assign groups.
 5. Problems list: detection, jump, per-problem Fix, Fix all (one undo step).
-6. Tests for all of the above, including part pivots round trip and export origins.
+6. Tests for all of the above, including group pivots round trip and export origins.
 
 ## Milestone 4 — Soft selection + vertex brush
 
@@ -170,11 +172,11 @@ the old plan, to be revised.
    distance, gradient display; used by move/rotate/scale.
 2. Vertex brush: drag moves points within the radius with falloff; surface circle;
    optional axis/normal lock.
-3. Respects selection, hidden parts and mirror mode; one stroke = one undo step; Esc
+3. Respects selection, hidden groups and mirror mode; one stroke = one undo step; Esc
    cancels.
 4. Jitter points (Mesh menu): amount, direction, keep on grid, keep open edges, seed;
    welded corners stay welded, mirror-aware.
-5. Tests: falloff, distance modes, locks, mirror, hidden parts, undo; jitter limits,
+5. Tests: falloff, distance modes, locks, mirror, hidden groups, undo; jitter limits,
    locks, mirror, seed.
 
 ## Milestone 5 — Texture coordinates
@@ -206,7 +208,7 @@ dither, tileable, seed; new PNG or replace current texture (one undo step).
 
 Colour brush (typed radius and strength), fill selected, picker, split colours, vertex
 colour display modes, exports with colours (`COLOR_0`, `.obj` extension), unlit option,
-parts as nodes or merged. Scatter on faces (Mesh menu): pick target faces, copies,
+groups as nodes or merged. Scatter on faces (Mesh menu): pick target faces, copies,
 spacing, align to surface, spin, size range, sink, avoid overlaps, seed; tests.
 
 ## Milestone 8 — Paint window + tablets
@@ -220,8 +222,8 @@ hand test with a second monitor and an iPad.
 ## Later
 
 - Tree generator (Create menu): trunk and branches from tapered lofts, foliage as cards,
-  crossed cards or clumps; two parts (trunk, foliage); see ARCHITECTURE §6. Needs loft
-  (M3), parts (M3) and textures (M5).
+  crossed cards or clumps; two groups (trunk, foliage); see ARCHITECTURE §6. Needs loft
+  (M3), groups (M3) and textures (M5).
 
 ## Log
 

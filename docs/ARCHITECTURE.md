@@ -76,13 +76,13 @@ to the GPU → one redraw of the views that show it.
 
 ## 5. Core data model
 
-- **Model**: one document. Vertices, faces, parts, smoothing groups, textures, pivot,
+- **Model**: one document. Vertices, faces, groups, smoothing groups, textures, pivot,
   mirror setting, palette.
 - **Vertex**: a position (doubles in core, floats for rendering).
 - **Face**: a triangle or a quad. Each face has:
   - its corner vertices,
   - one **texture** index (or none),
-  - one **part** (or none),
+  - one **group** (or none),
   - one **smoothing group** (or none = flat),
   - **double-sided** on/off,
   - per corner: a **texture coordinate** in texture pixels and a **vertex colour**
@@ -94,9 +94,10 @@ to the GPU → one redraw of the views that show it.
   triangles/quads automatically, with a preview.
 - **Smoothing group**: faces in the same group meeting at an edge look smooth there;
   different groups (or none) give a hard edge. Used for exported normals.
-- **Part**: a named group of faces (lid, body, handle) with a visibility flag and its
+- **Group** (called "part" until 2026-11-19; Scalpellino's word): a named set of faces
+  (lid, body, handle), made with Cmd+G, removed with Cmd+Shift+G, with a visibility flag and its
   own **pivot** (e.g. a lid's hinge), usable as the rotate/scale centre and exported as
-  the part's node origin.
+  the group's node origin.
 - **Texture**: a PNG file next to the model (relative path), power-of-two sides from 16
   to 256 suggested, with a **filtering** setting: nearest (default) or smooth. A model
   may use several textures. Fully transparent pixels are cut
@@ -120,7 +121,7 @@ to the GPU → one redraw of the views that show it.
 │T │     Top      │    Front     │                  │  Props  │
 │o │              │              │   Texture view   │         │
 │o ├──────────────┼──────────────┤  (texture sheet  │  ─────  │
-│l │     Side     │      3D      │   + pixel grid)  │ Parts / │
+│l │     Side     │      3D      │   + pixel grid)  │ Groups/ │
 │s │              │              │                  │ Palette │
 └──┴──────────────┴──────────────┴──────────────────┴─────────┘
   status bar: tool · selection · cursor position · vertices / triangles
@@ -207,7 +208,7 @@ the model gets:
 
 ### Selection
 - Vertices, edges, faces, or connected pieces (1–4). Select similar (texture, smoothing
-  group, direction), grow/shrink, edge loop / ring, select part. "Whole faces only"
+  group, direction), grow/shrink, edge loop / ring, select group. "Whole faces only"
   option for box select.
 - Click by click (agreed 2026-11-19):
   - By default a click picks a **whole shape** (connected piece), like a brush; 1–3
@@ -228,12 +229,12 @@ the model gets:
 
 ### Shaping tools
 - **Transform**: move / rotate / scale with handles in every view; Transform dialog
-  (Cmd+T) with pivot (bounds centre, average, model pivot, part pivot, typed point) and
+  (Cmd+T) with pivot (bounds centre, average, model pivot, group pivot, typed point) and
   angle snap. **Clone**: N copies at a typed distance or angle (in a row, or in a circle
   around the pivot), spacing given per copy or as a total. Each copy can also add a
   **rotation per copy** (X/Y/Z degrees, about the chosen pivot) and a **scale per copy**
   (X/Y/Z %, multiplied each step), with an option to **scale the offset** too: spiral
-  stairs, tapering towers, twisted columns. Copies stay in the original's part.
+  stairs, tapering towers, twisted columns. Copies stay in the original's group.
 - **Mirror** (along X/Y/Z) and **mirror clone**. **Flatten X/Y/Z**: line selected points
   up on one axis. Move along the selection's normal.
 - **Primitives** (Shift+B): plane (rows, columns, diagonal direction), box (stacks per
@@ -282,7 +283,7 @@ the model gets:
 - **Slide** a point along an edge or an edge loop along its neighbours.
 - **Merge** (to centre / to last selected), **collapse edge**, **weld by distance**,
   **dissolve**, **fill** (face from 3 or 4 points), **split** (detach), **separate into
-  part**, **delete**, **flip faces**, **flip quad diagonal**, **triangulate / join into
+  group**, **delete**, **flip faces**, **flip quad diagonal**, **triangulate / join into
   quads**, **double-sided on/off**.
 - **Lathe** (Shift+C): draw a profile in a 2D view, move the axis (vertical or
   horizontal), typed sides and angle (less than 360 gives a slice, capped or open),
@@ -292,11 +293,11 @@ the model gets:
   rotate). Rounded path corners with typed segments; section scale and twist along the
   path; closed or open path; capped ends optional.
 - **Mirror mode** toggle and **Apply mirror**.
-- **Pivots**: place the model's pivot or the selected part's pivot by click (snaps to
+- **Pivots**: place the model's pivot or the selected group's pivot by click (snaps to
   points, edge midpoints, face centres, bottom centre of the bounds) or typed position.
-- **Parts**: assign selected faces to a part; hide, show, isolate, select, rename;
-  **isolate copy** (a part that shares no points with others). Exported as separate
-  nodes (origin at the part's pivot) or merged (an export option).
+- **Groups** (Cmd+G / Cmd+Shift+G): assign selected faces to a group; hide, show, isolate, select, rename;
+  **isolate copy** (a group that shares no points with others). Exported as separate
+  nodes (origin at the group's pivot) or merged (an export option).
 - **Smoothing groups**: new group from selection, remove smoothing, **auto smooth**
   (typed angle: sharper edges become hard). Primitives get sensible groups when made.
 
@@ -313,14 +314,14 @@ Common to rock, tree, jitter, scatter and generate texture:
 - **Jitter points** (Mesh menu): move the selected points by random amounts. Amount
   (largest move), direction (any / along normal / X / Y / Z), keep on grid, keep open
   edges still, seed. Stacked points move together (welded corners stay welded); hidden
-  parts untouched; mirror mode mirrors the jitter and keeps plane points on the plane;
+  groups untouched; mirror mode mirrors the jitter and keeps plane points on the plane;
   texture coordinates stay as they are.
 - **Scatter on faces** (Mesh menu): select a piece (a leaf card, a rivet), choose the
   command, pick target faces in any view (click, Shift+click). Copies, spacing (evenly by
   area / random), align to surface, random spin and spin step around the normal, size
   range, sink, avoid overlaps (reports "placed 8 of 10"), seed. The piece's pivot (or
   bottom centre) sits on the surface; mirror mode places on one side and mirrors; copies
-  join the source's part.
+  join the source's group.
 - **Image card** (Create menu): a quad sized from a PNG, with its transparency. Size from
   the texel target or a typed width (height follows the image), facing (front / side /
   top / current view), style (single / crossed pair at 90° / crossed three at 60°), base
@@ -337,7 +338,7 @@ Common to rock, tree, jitter, scatter and generate texture:
     the last level), size, count per tip, texture (alpha cut-out on for cards), clump
     faces (clumps are softer rocks).
   - Click a point for the base; branches overlap their parent instead of being welded
-    (fewer faces). Output: two parts, **trunk** (pivot at the base, one smoothing group
+    (fewer faces). Output: two groups, **trunk** (pivot at the base, one smoothing group
     per branch, cylindrical texture coordinates along each branch with the seam at the
     back) and **foliage** (double-sided cards, texture coordinates filling the texture).
     The counter shows the preview's counts.
@@ -347,7 +348,7 @@ Common to rock, tree, jitter, scatter and generate texture:
   near the centre fully and the ones near the edge less (typed radius and falloff curve;
   a circle on the surface shows the radius). Optional lock to an axis or the normal.
 - Only existing points move. Affects the selection if one exists, otherwise everything
-  visible; hidden parts are never touched. Mirror mode applies. Pen pressure (when a
+  visible; hidden groups are never touched. Mirror mode applies. Pen pressure (when a
   tablet is used) scales the reach.
 - One stroke = one undo step; Esc during a stroke cancels it.
 
@@ -426,13 +427,13 @@ Common to rock, tree, jitter, scatter and generate texture:
   pivot 0 0 0
   texel 0.5
   texture 0 "lamp.png" 64 64 filter=nearest
-  part 0 "body" pivot=0,0,0
-  part 1 "shade" pivot=0,0,100
+  group 0 "body" pivot=0,0,0
+  group 1 "shade" pivot=0,0,100
   sgroup 1 "round"
   v 0 0 0
   v 40 0 0
   ...
-  f 0 1 2 3 tex=0 part=0 sg=1 two=0 diag=0
+  f 0 1 2 3 tex=0 group=0 sg=1 two=0 diag=0
     uv 0 0 / 16 0 / 16 16 / 0 16
     col ffffff ffffff c0c0c0 c0c0c0
   ref front "lamp-front.png" x=-80 y=0 rot=0 scale=0.5 alpha=0.4 layer=back
@@ -442,11 +443,11 @@ Common to rock, tree, jitter, scatter and generate texture:
 - **Export `.glb` / `.gltf`**: positions, normals (from smoothing groups), texture
   coordinates, vertex colours (`COLOR_0`), textures (embedded in `.glb`, beside `.gltf`)
   with samplers matching each texture's filtering, alpha cut-out, double-sided materials, optional
-  `KHR_materials_unlit`, parts as separate nodes (origin at the part pivot) or merged.
+  `KHR_materials_unlit`, groups as separate nodes (origin at the group pivot) or merged.
   Converted to Y-up and meters (÷ 100); units (cm) and pivot in `extras` so Scalpellino
   converts back exactly.
 - **Export `.obj` + `.mtl`**: positions, normals, texture coordinates, materials with
-  texture paths, parts as groups (vertex colours as the common unofficial extension).
+  texture paths, groups as OBJ groups (vertex colours as the common unofficial extension).
 - **Images**: PNG in and out. TGA/BMP/JPG accepted as reference images.
 
 ## 8. Paint window and tablets (optional)
@@ -504,14 +505,14 @@ pointers is loaded at start-up (`render/gl.hpp`), so no loader library is needed
 ## 12. Repo layout
 
 ```
-src/core/      mesh, edit ops, smoothing groups, soft selection and falloff, parts,
+src/core/      mesh, edit ops, smoothing groups, soft selection and falloff, groups,
                texture coords (projection, unwrap, weld), images, painting, problems,
                document, commands
 src/io/        .mazz reader/writer, .glb/.gltf and .obj export, PNG, layout image
 src/render/    GL setup, shaders, model views, texture view, picking buffer
 src/tools/     select, vertex, primitives, draw, push/pull, extrude, cut, lathe, loft,
                vertex brush, mapping, paint, colour, pivots
-src/ui/        layout, panels, menus, palette, parts, smoothing groups, problems list
+src/ui/        layout, panels, menus, palette, groups, smoothing groups, problems list
 src/platform/  file dialogs, tablet input, file watching
 src/app/       main loop, settings, startup
 cmake/         dependency pins, file embedding, Info.plist
@@ -535,7 +536,7 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
   clone counts and spacing; weld, mirror and flatten tests.
 - Smoothing tests: normals per group, auto smooth by angle.
 - Soft selection and vertex brush tests: falloff values, distance modes, locks, mirror
-  symmetry, hidden parts untouched, undo exact.
+  symmetry, hidden groups untouched, undo exact.
 - Texture coordinate tests: each projection, unfold/flatten on known shapes, pixel
   snapping, weld/unweld, stitch, even out, coordinates kept by extrude and divide.
 - Painting tests: screen point → face → texture pixel; stroke fill-in; undo exact.
@@ -550,7 +551,7 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
   the centre line; generated textures use only the chosen colours and tile cleanly.
 - Export tests: `.glb`/`.gltf` read back with cgltf (counts, cm → m, colours, samplers
   per filtering setting,
-  alpha, double-sided, parts and their origins); `.obj` parsed back.
+  alpha, double-sided, groups and their origins); `.obj` parsed back.
 - Scripted UI tests with screenshots into `docs/screenshots/`; an idle CPU check with
   everything open (see DEV.md).
 - Second display and tablet input tested by hand.
@@ -562,7 +563,7 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 | 0 | Skeleton: GLFW + OpenGL + ImGui docking, idle = zero, Roboto, menus, four views + maximise, 3D orbit/fly, grid keys, counter, shortcut scheme, CI | done (v0.0.0) |
 | 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), rock, selection modes, transform + clone (with rotate/scale per copy), mirror, flatten, model pivot, undo, `.mazz`, reference images (transparency, front/back), scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
 | 2 | Modelling: draw on faces + polygon tool, push/pull, inference snapping, extrude/inset/bevel, bridge, shell, divide (subdivide plain/smoothed, edges, poke, connect), cut, loop cut, slide, merge/collapse/weld, dissolve, fill, split, flip, diagonals, double-sided, mirror mode | |
-| 3 | Lathe + loft, parts with pivots, smoothing groups + auto smooth, problems list with fixes | |
+| 3 | Lathe + loft, groups with pivots, smoothing groups + auto smooth, problems list with fixes | |
 | 4 | Vertex tool soft selection + vertex brush, jitter points | |
 | 5 | Texture coordinates: textures, mapping tool (projections, unfold, flatten), texture view (select, transform, weld/unweld, stitch, regroup, tile), texel check + even out, transparency, image card, file watching, layout image export, scaled import; exports with textures | |
 | 6 | Pixel painting: tools, palette + saved palettes, painting on texture view and model, paint view, stroke undo, moved-paint warning, generate texture | |
