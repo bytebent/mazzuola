@@ -126,6 +126,49 @@ each tried by the user before the next starts:
    undo, selection with its mode); left tool bar and status hints; Primitives tool with
    box only; selecting whole shapes; selection box: move, resize, rotate (corners in 2D,
    rings in 3D), Shift+drag copy; delete; undo; save and open `.mazz`.
+   **Steps of v0.1.0** (each one built, tested and committed before the next; see
+   "How to check each step" below):
+   - **A. Core foundations.** Clean-number rule (1/1000 cm; exact sines/cosines at
+     multiples of 90°); mesh (points, tri/quad faces with the fields of §5); selection
+     with its mode; pieces (connected faces); document with commands that store only
+     what they change, plus the selection before/after; saved/unsaved marker that undo
+     respects. Core tests for all of it.
+   - **B. `.mazz` files.** Writer and reader in the §5 number format (plain decimals,
+     never `1e+02`); clear errors with line numbers for bad files; File → New / Open /
+     Save / Save as, with "save changes?" when needed. Round-trip test, and open a
+     written file and read it by eye.
+   - **C. Tool structure and layout.** `Tool` interface and routing (§4); remove the
+     Tools panel; left tool bar with Select and Primitives only; Vert / Edge / Face /
+     Piece buttons at its top (Piece on; the other three greyed out until v0.1.2);
+     status bar shows the active tool's hint. Rename the Parts panel to Groups.
+   - **D. Drawing the model.** Drawing data built once per change and shared by the
+     views (shaded faces in 3D, edges in 2D); selection and handles as a separate
+     overlay. Idle check stays at zero.
+   - **E. Box primitive.** Primitives tool with box only: drag a rectangle in a 2D view
+     (snapped); depth from the last shape made or selected (none yet: 64 cm, starting
+     at 0 on that axis, so a box drawn in Top stands on the ground); preview in all
+     views with the brush handles in every 2D view; width/depth/height typed in
+     Properties; Return creates it (selected), Esc cancels. Box is closed, faces point
+     outward, corners on the grid.
+   - **F. Select tool.** A click picks a whole piece (2D: on its outline or inside;
+     clicking again on the same spot steps to the next one underneath; 3D: the one in
+     front); Cmd+click adds/removes; drag on empty space = rectangle; empty click or
+     Esc = nothing.
+   - **G. Selection box.** Shared handles (§4): always visible in 2D views; drag inside
+     moves (snapped); side handles push one side, opposite side fixed (snapped);
+     Option+drag a corner rotates about the selection centre (15° steps, +Shift free);
+     rings in the 3D view; Shift+drag copies; Delete. Each action is one undo step.
+   - **H. Release.** Help → Controls and README in sync, release notes
+     `docs/releases/v0.1.0.md`, screenshots, LOG. The withdrawn v0.1.0 release and tag
+     must be gone from GitHub first (the user deletes them; otherwise CI won't make the
+     release). Then the user tries it; their feedback comes before v0.1.1.
+
+   **How to check each step:** DEV.md's per-step checklist (build, core tests, UI
+   scripts at 1× and 2×, idle check), plus: look at real output by eye (a saved
+   `.mazz`, a screenshot of the views), and never loosen a test to make it pass — fix
+   the code. Questions that come up while building go to "Open questions" below and
+   the work continues.
+
 2. **v0.1.1 — All shapes.** Cylinder, cone, tube, torus, sphere, geosphere, plane; rock
    (same flow, its settings, New seed).
 3. **v0.1.2 — Points, edges, faces.** Modes 1–4; Vertex tool with direct dragging
@@ -136,6 +179,9 @@ each tried by the user before the next starts:
    move along normal.
 5. **v0.1.4 — Out of the app.** `.glb`/`.gltf` + `.obj` export (geometry; origin =
    world origin); reference images; 175 cm figure.
+
+Before each of v0.1.1–v0.1.4 starts, write its steps here the same way as v0.1.0's,
+taking in the user's feedback on the release before.
 
 ## Milestone 2 — Modelling
 

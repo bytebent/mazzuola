@@ -19,8 +19,9 @@ the notes for each version.
 - Released: v0.0.0 (milestone 0, the skeleton) … **v0.0.7** (fixes and cleanup after the
   user's iPad tests). Milestone 0 is complete.
 - A first milestone 1 (v0.1.0) was withdrawn and reverted on 2026-11-19 (LOG.md).
-  **Next: redesign milestone 1 with the user**, click by click, before any code. They
-  still have to confirm the shortcut table.
+  It was redesigned with the user click by click (ARCHITECTURE §4–§6, §9, §10) and is
+  now **alpha 1**: five releases v0.1.0–v0.1.4. The steps of v0.1.0 (A–H) are in
+  PLAN.md. They still have to confirm the shortcut table.
 - Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
   Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 
