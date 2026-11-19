@@ -53,7 +53,7 @@ Personal tool. Not distributed. Lightweight; does what it does well.
 
 ```
 ┌──────────────────────────────────────────────┐
-│ UI  (Dear ImGui, docking + multi-viewport)   │  menus, panels, texture view,
+│ UI  (Dear ImGui, docking; no multi-viewport) │  menus, panels, texture view,
 │                                              │  paint view, palette, problems
 ├──────────────────────────────────────────────┤
 │ Tools                                        │  select, vertex, draw, push/pull,
@@ -73,6 +73,21 @@ Each layer only talks to the one below it.
 **Edit flow:** input → active tool builds a command → command changes the document and
 marks what changed (mesh, a texture rectangle, vertex colours) → only that is re-uploaded
 to the GPU → one redraw of the views that show it.
+
+### Tools (agreed for alpha 1)
+- Each tool is its own class behind one `Tool` interface, as in Scalpellino
+  (`src/tools/`): press, drag, release, hover, key, draw its own overlay and preview,
+  its Properties panel, its status-bar hint, cancel. The editor only routes input to the
+  active tool; it has no per-tool code.
+- Tools never change the document directly: only through commands (undoable) or
+  selection changes.
+- While a tool is in the middle of something (a drag, a preview), it owns the mouse and
+  keys; a tool switch, undo or file load first calls its cancel.
+- **One shared "operation with preview"** for everything with settings (primitives, rock,
+  Transform panel, later extrude, bevel…): settings → preview computed from them →
+  Return applies it as one command, Esc drops it. Written once, used by every such tool.
+- Box handles, rings and arrows are one shared piece, used by every tool that shows a
+  selection box.
 
 ## 5. Core data model
 
@@ -106,12 +121,21 @@ to the GPU → one redraw of the views that show it.
   front, right…), chosen from that view itself (its header), not from the View menu.
   Options in a pop-up panel from the view: position and size with the brush handles
   (proportions kept; real width typable in cm), rotation, transparency, in front of /
-  behind the model. Not selectable while modelling. **Not saved in the `.mazz`.**
+  behind the model. Not selectable while modelling. **Not saved** (not in the `.mazz`,
+  not remembered by the app).
 - **Units / axes**: 1 unit = 1 cm, Z-up (matches Scalpellino, so models place at their
   real size). A 175 cm human figure can be shown for scale (same as Scalpellino's).
 - **Pivot**: the **world origin is the model's pivot** (agreed 2026-11-19): build the
   model with its base on the origin; that's where Scalpellino holds it and the export's
   zero point. No pivot tool. (Groups have their own pivots, milestone 3.)
+- **Clean numbers** (agreed for alpha 1): positions are rounded to **1/1000 cm**
+  whenever a command creates or changes them, so the model never holds rounding noise
+  (`3e-15` is 0, `62.499999999999986` is 62.5). Sines and cosines of multiples of 90°
+  are exact. Grid steps (down to 0.125 cm) fit this exactly. The `.mazz` writes plain
+  decimals, at most 3 after the point, trailing zeros dropped, never `1e+02`; what is
+  written is exactly what the model holds, so files round-trip exactly.
+- **Selection** holds its **mode** (points / edges / faces / pieces) together with what
+  is selected, so undo and redo always bring back a selection that makes sense.
 - **Mirror mode**: optional symmetry plane (X by default). Edits, brush strokes and soft
   selection on one side are repeated on the other; vertices on the plane stay on it.
 - **Settings per model**: texel target (pixels per cm, optional; 0.5 suggested for
@@ -492,11 +516,20 @@ Common to rock, tree, jitter, scatter and generate texture:
   hints, and a picking pass (face IDs to an offscreen buffer for exact 3D picking, the
   brush and painting). Double-sided faces drawn without culling.
 - No lighting effects beyond the display modes. No post-processing.
+- The model's drawing data (triangles, normals, edges) is built **once per change** and
+  shared by all views. Selection, hover, handles and previews are drawn on top as a
+  separate light layer, so a click or a hover never rebuilds the model. A view redraws
+  only when its camera, the model or an overlay it shows has changed.
 
 ## 10. Undo
 
-Each command stores before/after copies of what it touches: the mesh, the changed
-rectangle of a texture, or the changed vertex colours.
+Each command stores before/after copies of **only what it touches**: the moved points,
+the changed faces, the changed rectangle of a texture, or the changed vertex colours;
+plus the selection (with its mode) before and after. Never a copy of the whole model,
+and never whole textures for a small change. A drag keeps only the starting positions
+of the points it moves and becomes one command on release (or on Return for previews).
+The history is limited by memory use rather than a fixed step count. Undo marks the file
+unsaved or saved exactly as it was at that step.
 
 ## 11. Dependencies
 

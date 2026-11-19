@@ -4,6 +4,15 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Foundations for alpha 1 written down (docs only)
+- Reference images are not remembered at all (user): gone when the app closes.
+- ARCHITECTURE: tool classes behind one `Tool` interface (as in Scalpellino), one
+  shared "operation with preview", shared handles/rings/arrows (§4); clean numbers
+  (1/1000 cm, plain decimals in `.mazz`) and selection holding its mode (§5); drawing
+  data built once per change and shared by the views, overlays separate (§9); undo
+  storing only what changed, history limited by memory (§10). Fixed §4's diagram (no
+  multi-viewport).
+
 ### 2026-11-19 — Redesign: pivot, reference images, alpha 1 releases (docs only)
 - Vertex drag in 2D takes all stacked points, as in Scalpellino.
 - No model pivot tool: the world origin is the model's pivot (and the export's origin).
