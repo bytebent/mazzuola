@@ -40,6 +40,13 @@ int buttonFromName(const std::string& s) {
 bool near(double a, double b, double tol) { return std::fabs(a - b) <= tol; }
 } // namespace
 
+// Paths starting with "@/" are relative to the script's folder (test data).
+static std::string scriptPath(const std::string& p, const std::string& script) {
+    if (p.rfind("@/", 0) != 0) return p;
+    const size_t slash = script.find_last_of('/');
+    return (slash == std::string::npos ? std::string(".") : script.substr(0, slash)) + p.substr(1);
+}
+
 void Editor::stepScript() {
     if (scriptWait_ > 0) { --scriptWait_; return; }
     ImGuiIO& io = ImGui::GetIO();
@@ -80,6 +87,20 @@ void Editor::stepScript() {
             if (viewIndex(v))
                 io.AddMousePosEvent(viewImgPos_[v].x + (float)(fx * viewImgSize_[v].x),
                                     viewImgPos_[v].y + (float)(fy * viewImgSize_[v].y));
+        } else if (cmd == "vworld") {
+            // vworld <view> <x> <y> <z>: the mouse to where that world point shows in the view
+            int v = 0;
+            Vec3 p;
+            in >> v >> p.x >> p.y >> p.z;
+            double x, y, d;
+            if (!viewIndex(v)) {
+            } else if (!projector(v).project(p, x, y, d)) scriptFail("point is not in the view");
+            else io.AddMousePosEvent(viewImgPos_[v].x + (float)x, viewImgPos_[v].y + (float)y);
+        } else if (cmd == "nudge") {
+            // nudge <dx> <dy>: moves the mouse by logical pixels
+            float dx = 0, dy = 0;
+            in >> dx >> dy;
+            io.AddMousePosEvent(io.MousePos.x + dx, io.MousePos.y + dy);
         } else if (cmd == "press" || cmd == "release") {
             std::string b;
             in >> b;
@@ -138,6 +159,94 @@ void Editor::stepScript() {
             screenshotRequest_ = file;
         } else if (cmd == "paintshot") {
             in >> paintShot_;
+        } else if (cmd == "open") {
+            std::string f;
+            in >> f;
+            f = scriptPath(f, opt_.scriptPath);
+            if (!openPath(f)) scriptFail("cannot open " + f);
+        } else if (cmd == "saveas") {
+            std::string f;
+            in >> f;
+            if (!savePath(f)) scriptFail("cannot save " + f);
+        } else if (cmd == "export") {
+            std::string f;
+            in >> f;
+            if (!exportPath(f)) scriptFail("cannot export " + f);
+        } else if (cmd == "new") {
+            fileNew();
+        } else if (cmd == "prim") {
+            std::string k;
+            in >> k;
+            PrimKind pk;
+            if (!primKindFromName(k, pk)) scriptFail("unknown primitive " + k);
+            else startPrimitive(pk);
+        } else if (cmd == "primset") {
+            std::string key;
+            in >> key;
+            double a = 0, b = 0, c = 0;
+            in >> a;
+            if (key == "size") { in >> b >> c; prim_.size = {a, b, c}; }
+            else if (key == "centre") { in >> b >> c; prim_.centre = {a, b, c}; }
+            else if (key == "axis") prim_.axis = (int)a;
+            else if (key == "sides") prim_.sides = (int)a;
+            else if (key == "stacks") prim_.stacks = (int)a;
+            else if (key == "segs") { in >> b >> c; prim_.segX = (int)a; prim_.segY = (int)b; prim_.segZ = (int)c; }
+            else if (key == "rows") { in >> b; prim_.rows = (int)a; prim_.cols = (int)b; }
+            else if (key == "faces") prim_.faces = (int)a;
+            else if (key == "seed") prim_.seed = (uint32_t)a;
+            else if (key == "iterations") prim_.iterations = (int)a;
+            else if (key == "rings") prim_.rings = (int)a;
+            else if (key == "round") prim_.round = a;
+            else { scriptFail("unknown primitive setting " + key); }
+            prim_ = clampParams(prim_);
+            if (primActive_) updatePrimPreview();
+        } else if (cmd == "ref") {
+            // ref <view direction> <image path> <width cm>
+            std::string dir, file;
+            double width = 100;
+            in >> dir >> file >> width;
+            file = scriptPath(file, opt_.scriptPath);
+            ViewDir d;
+            if (!viewDirFromName(dir.c_str(), d) || d == ViewDir::Persp) scriptFail("bad reference direction " + dir);
+            else {
+                RefImage r;
+                r.dir = d;
+                r.path = file;
+                r.width = width;
+                edit("Add reference image", [&](Model& m, Selection&) { m.refs.push_back(r); return true; });
+            }
+        } else if (cmd == "dialog") {
+            // Opens a dialog the way its menu item does (the dialogs then take typed input).
+            std::string which;
+            in >> which;
+            if (which == "pivotplace") { pivotOpen_ = true; pivotPlacing_ = true; }
+            else scriptFail("unknown dialog " + which);
+        } else if (cmd == "transform") {
+            // transform move x y z | rotate x y z | scale x y z | normal d | copies n | apply
+            std::string what;
+            in >> what;
+            if (what == "move") in >> tf_.move.x >> tf_.move.y >> tf_.move.z;
+            else if (what == "rotate") in >> tf_.rotate.x >> tf_.rotate.y >> tf_.rotate.z;
+            else if (what == "scale") in >> tf_.scale.x >> tf_.scale.y >> tf_.scale.z;
+            else if (what == "normal") in >> tf_.alongNormal;
+            else if (what == "copies") in >> tf_.copies;
+            else if (what == "apply") applyTransform();
+            else if (what == "reset") tf_ = TransformState{};
+            else scriptFail("unknown transform setting " + what);
+        } else if (cmd == "mirror") {
+            int axis = 0, copy = 0;
+            in >> axis >> copy;
+            mirror_.axis = axis;
+            mirror_.copy = copy != 0;
+            applyMirror();
+        } else if (cmd == "flatten") {
+            int axis = 2, where = 0;
+            double at = 0;
+            in >> axis >> where >> at; // flatten <axis> <0 lowest|1 middle|2 highest|3 at> [cm]
+            flatten_.axis = axis;
+            flatten_.where = where;
+            flatten_.typed = at;
+            applyFlatten();
         } else if (cmd == "quit") {
             quit_ = true;
         } else if (cmd == "expect") {
@@ -203,6 +312,56 @@ void Editor::stepScript() {
                         scriptFail(b);
                     }
                 }
+            } else if (what == "faces" || what == "verts" || what == "tris" || what == "selected" || what == "refs" ||
+                       what == "dirty" || what == "hidden" || what == "undo") {
+                long n = 0;
+                in >> n;
+                const Mesh& m = doc_.model.mesh;
+                long have = 0;
+                if (what == "faces") have = (long)m.faces.size();
+                else if (what == "verts") have = (long)m.verts.size();
+                else if (what == "tris") have = m.triangleCount();
+                else if (what == "refs") have = (long)doc_.model.refs.size();
+                else if (what == "dirty") have = doc_.dirty ? 1 : 0;
+                else if (what == "undo") have = doc_.canUndo() ? 1 : 0;
+                else if (what == "hidden") { for (const Face& f : m.faces) have += f.hidden ? 1 : 0; }
+                else {
+                    const Selection& sel = doc_.sel;
+                    have = mode_ == SelectMode::Vertex ? (long)sel.verts.size()
+                         : mode_ == SelectMode::Edge   ? (long)sel.edges.size()
+                                                       : (long)sel.faces.size();
+                }
+                if (have != n) scriptFail(what + " is " + std::to_string(have));
+            } else if (what == "bounds") {
+                Vec3 a, b, mn, mx;
+                in >> a.x >> a.y >> a.z >> b.x >> b.y >> b.z;
+                if (!doc_.model.mesh.bounds(mn, mx)) scriptFail("model is empty");
+                else if (length(mn - a) > 0.01 || length(mx - b) > 0.01) {
+                    char t[200];
+                    std::snprintf(t, sizeof t, "bounds are %g %g %g  %g %g %g", mn.x, mn.y, mn.z, mx.x, mx.y, mx.z);
+                    scriptFail(t);
+                }
+            } else if (what == "pivot") {
+                Vec3 p;
+                in >> p.x >> p.y >> p.z;
+                if (length(p - doc_.model.pivot) > 0.01) {
+                    char t[120];
+                    std::snprintf(t, sizeof t, "pivot is %g %g %g", doc_.model.pivot.x, doc_.model.pivot.y, doc_.model.pivot.z);
+                    scriptFail(t);
+                }
+            } else if (what == "tool") {
+                std::string t;
+                in >> t;
+                if (t != toolName(tool_)) scriptFail(std::string("tool is ") + toolName(tool_));
+            } else if (what == "preview") {
+                int b = 0;
+                in >> b;
+                if (primActive_ != (b != 0)) scriptFail(std::string("preview is ") + (primActive_ ? "1" : "0"));
+            } else if (what == "handles") {
+                std::string h;
+                in >> h;
+                const char* have = handleMode_ == HandleMode::Scale ? "scale" : "rotate";
+                if (h != have) scriptFail(std::string("handles are ") + have);
             } else {
                 scriptFail("unknown expectation " + what);
             }

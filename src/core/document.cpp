@@ -24,6 +24,17 @@ bool Document::change(const std::string& what, const std::function<bool(Model&, 
     return true;
 }
 
+bool Document::commitFrom(const Snapshot& before, const std::string& what) {
+    Snapshot now{model, sel};
+    model = before.model;
+    sel = before.sel;
+    return change(what, [&](Model& m, Selection& s) {
+        m = now.model;
+        s = now.sel;
+        return true;
+    });
+}
+
 bool Document::undo() {
     if (undo_.empty()) return false;
     Step s = std::move(undo_.back());

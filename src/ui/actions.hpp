@@ -9,21 +9,26 @@ namespace mazz {
 
 enum class Act {
     // File
-    New, Open, Save, SaveAs, Quit,
+    New, Open, Save, SaveAs, ExportGlb, ExportGltf, ExportObj, Quit,
     // Edit
     Undo, Redo, Duplicate, Delete, SelectAll, SelectNone,
     // Select
-    ModeVertex, ModeEdge, ModeFace, ModePiece, Hide, HideOthers, ShowAll,
+    ModeVertex, ModeEdge, ModeFace, ModePiece, Grow, Shrink, SimilarTexture, SimilarSmoothing,
+    SimilarDirection, EdgeLoop, EdgeRing, Hide, HideOthers, ShowAll,
+    // Create
+    CreatePlane, CreateBox, CreateCylinder, CreateCone, CreateTube, CreateTorus, CreateSphere,
+    CreateGeosphere, CreateRock,
     // Tools
     ToolSelect, ToolVertex, ToolPrimitives, ToolDraw, ToolPushPull, ToolExtrude, ToolCut,
     ToolLatheLoft, ToolBrush, ToolMapping, ToolPaint, ToolColour,
     // Mesh
-    Transform, MovePoints, SnapToGrid, Problems,
+    Transform, MovePoints, SnapToGrid, Mirror, Flatten, SetPivot, Problems,
     // Texture
     ApplyTexture,
     // View
     GridSmaller, GridLarger, GridSet, ToggleGrid, ToggleSnap, FlyMode, OrbitOrigin,
     OrbitSelection, FrameSelection, BackToOrigin, MaximiseView, ResetLayout, PaintWindow,
+    RefImages, ScaleFigure, WireOverlay, ShowRefs,
     // Help
     Controls, About,
     Count

@@ -55,6 +55,9 @@ public:
     void clearHistory() { undo_.clear(); redo_.clear(); }
     // Marks the current state as saved.
     void markSaved() { dirty = false; savedSerial_ = serial_; }
+    // For live edits (dragging a handle, a slider): the model was changed directly from
+    // `before`; record that as one undo step (nothing if it didn't change).
+    bool commitFrom(const Snapshot& before, const std::string& what);
     void reset();             // empty model, no history
 
 private:

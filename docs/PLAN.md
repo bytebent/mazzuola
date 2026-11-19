@@ -10,12 +10,15 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 
 ## Current status
 
-- **Released:** v0.0.0 … v0.0.7. Milestone 0 (skeleton) is done, including the iPad
-  check: the whole app and the paint window work on the iPad with the Pencil (v0.0.6,
-  graphics switching); v0.0.7 cleaned up after the tests.
-- **Waiting on the user:** confirm the shortcut table (Help → Controls).
-- **Working on:** **milestone 1 — Mesh basics** (user said go, 2026-11-19). Step 1 done:
-  core and files (see LOG). Next: drawing models in the views, then tools and dialogs.
+- **Released:** v0.0.0 … v0.0.7 (milestone 0, skeleton) and **v0.1.0 (milestone 1,
+  mesh basics)**.
+- **Waiting on the user:** try v0.1.0; confirm the shortcut table (Help → Controls);
+  say go for milestone 2.
+- **Next:** milestone 2 — Modelling (only when the user says so).
+- **Left out of M1 on purpose, parked:** handles in the 3D view (moving / scaling /
+  rotating by dragging works in the 2D views; the 3D view selects, orbits and flies);
+  cylinder/cone rounded edges (box has them); rock texture coordinates (M5) and rock
+  smoothing beyond one group (M3); `.mtl` beside `.obj` (with textures, M5).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
   vertex colours → M8 paint window + tablets; later: tree generator. Details below and in

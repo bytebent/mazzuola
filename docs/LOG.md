@@ -4,6 +4,40 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Milestone 1 done: mesh basics (v0.1.0)
+- **Views** draw the model: lit faces in 3D with lines over them (toggle), edges in 2D,
+  selection pink (faces filled, edges and points), the primitive preview cyan, reference
+  images behind or in front, the 175 cm scale figure, the model pivot. Views still draw
+  only when something changes.
+- **Tools:** Select (click, Cmd+click, box from empty space; drag the selection to move
+  in grid steps; scale handles, click the selection for rotate handles, 15° steps with
+  snap; Esc during a drag puts it back), Vertex (points mode), Primitives (drag a box in
+  a 2D view or type values; all eight primitives and the rock with seed / New seed;
+  Return creates, Esc cancels).
+- **Menus and dialogs:** Move / rotate / scale / copy (Cmd+T: around selection, model
+  pivot, origin or a typed point; along the normal; copies in a row, circle or spiral,
+  with scale per copy), Move points exactly, Snap to grid, Mirror (copy), Flatten,
+  Model pivot (typed, presets, or click in a 2D view), Reference images window
+  (per direction; centre, width, rotation, opacity, in front / behind; paths kept
+  relative to the model file), Select menu (grow, shrink, similar, loop, ring, hide,
+  hide others, show all), duplicate, delete, select all / none, frame selection,
+  undo / redo with step names, status bar counter (vertices, triangles, selected,
+  hidden).
+- **Files:** New / Open / Save / Save as with the unsaved-changes question (also on
+  quit and closing the window), Export `.glb` / `.gltf` / `.obj`; typed-path dialog
+  where native dialogs don't exist (Linux tests). `--open <file>`. Title shows the file
+  and `*` when changed. Reference images reload when the app comes back to the front.
+- **Tests:** core 1176 checks pass. New UI script `tests/ui/m1_model.script` (draws a
+  box, moves, scales, rotate-handle switch, Esc cancel, typed copies and rotation,
+  mirror copy, hide/show, duplicate, delete, undo/redo, box-select points and flatten,
+  pivot by click, save / new / open / export, reference image, scale figure, rock):
+  PASS at 1× and 2×; m0 script still PASS. Idle scene now has a model, a waiting
+  preview, a reference image, the figure and the reference window open: 0 ticks at 1×
+  and 2×; control 887 ticks.
+- **Screenshots:** `m1-01-box.png`, `m1-02-mirror.png`, `m1-03-rock-refs-figure.png`.
+- Docs: README controls, Help → Controls rows, DEV script commands, ARCHITECTURE
+  (picking on the CPU, preview colour, source layout).
+
 ### 2026-11-19 — Milestone 1, step 1: core and files (no release)
 - **Core** (`src/core`, no graphics): `mesh` (points, tri/quad faces with per-corner
   texture coordinates and colours, texture, part, smoothing group, two-sided, diagonal,

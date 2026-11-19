@@ -98,7 +98,7 @@ void PaintWindow::close() {
 
 bool PaintWindow::wantsClose() const { return window_ && glfwWindowShouldClose(window_); }
 
-bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImGuiContext* mainCtx) {
+bool PaintWindow::frame(const Grid& grid, const Scene& scene, double dt, GLFWwindow* mainWindow, ImGuiContext* mainCtx) {
     if (!window_) return false;
     glfwMakeContextCurrent(window_);
     ImGui::SetCurrentContext(ctx_);
@@ -112,7 +112,7 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ui(grid);
+    ui(grid, scene);
     ImGui::Render();
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(window_, &fw, &fh);
@@ -133,7 +133,7 @@ bool PaintWindow::frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImG
     return dragging_;
 }
 
-void PaintWindow::ui(const Grid& grid) {
+void PaintWindow::ui(const Grid& grid, const Scene& scene) {
     const ImGuiViewport* vp = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(vp->WorkPos);
     ImGui::SetNextWindowSize(vp->WorkSize);
@@ -185,7 +185,7 @@ void PaintWindow::ui(const Grid& grid) {
     const ImVec2 pos = ImGui::GetCursorScreenPos();
     const ImVec2 size = ImGui::GetContentRegionAvail();
     const double scale = io.DisplayFramebufferScale.x > 0 ? io.DisplayFramebufferScale.x : 1.0;
-    drawer_->draw(view_, grid, std::max(1.0f, size.x), std::max(1.0f, size.y), scale);
+    drawer_->draw(view_, grid, scene, std::max(1.0f, size.x), std::max(1.0f, size.y), scale);
     ImGui::InvisibleButton("##view", ImVec2(std::max(1.0f, size.x), std::max(1.0f, size.y)));
     ImGui::GetWindowDrawList()->AddImage(texId(view_.target.texture()), pos, {pos.x + size.x, pos.y + size.y}, {0, 1}, {1, 0});
     dragging_ = ImGui::IsItemActive();

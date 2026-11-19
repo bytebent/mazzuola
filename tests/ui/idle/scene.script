@@ -1,5 +1,14 @@
 # Idle check scene: the app with everything it can show so far, then no `quit`, so it
 # goes idle. The screenshot at the end is the harness's "ready" signal.
+# A model with a selection, a primitive preview waiting for Return, a reference image,
+# the scale figure and the reference images window.
+prim box
+key Return
+prim rock
+primset centre 0 -90 20
+ref Front @/../data/ref_front.png 120
+action view.figure
+action view.refimages
 grid 4
 key Shift+W
 viewdir 1 Back

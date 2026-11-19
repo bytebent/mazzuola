@@ -75,12 +75,28 @@ expect viewdir <view> <name> | maximised <view or -1> | flying <0|1>
 expect cam <view> <yaw> <pitch> <distance>      (±0.5)
 expect ortho <view> <cu> <cv> <zoom>            (±1 %)
 expect controls <0|1> | paintwindow <0|1>
+vworld <view> <x> <y> <z>          move the mouse to where a world point shows in a view
+nudge <dx> <dy>                    move the mouse by logical pixels (e.g. onto a handle)
+open <file.mazz> / saveas <file> / export <file.glb|.gltf|.obj> / new
+                                   files without dialogs; "@/..." = relative to the script
+prim <Plane|Box|...|Rock>          start a primitive preview (Return creates it)
+primset <key> <values>             size x y z | centre x y z | axis n | sides n | stacks n |
+                                   segs x y z | rows r c | faces n | seed n | iterations n | rings n | round cm
+ref <direction> <image> <width cm> add a reference image
+transform move|rotate|scale x y z | normal d | copies n | apply | reset
+mirror <axis 0-2> <copy 0|1>       mirror the selection across the model pivot
+flatten <axis> <0 lowest|1 middle|2 highest|3 at> [cm]
+dialog pivotplace                  open Model pivot with "place by clicking" on
+expect faces|verts|tris|selected|hidden|refs|dirty|undo <n>
+expect bounds <minx miny minz maxx maxy maxz>   (±0.01) | pivot <x y z>
+expect tool <Select|Vertex|Primitives> | preview <0|1> | handles <scale|rotate>
 ```
 
 Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.
 
 ## Command line
 
+- `--open <file.mazz>`: open a model at start.
 - `--script <file>`: run a script. `--screenshot <png>`: render a few frames, save a PNG
   in the current folder, exit.
 - Automated runs never read or write the user's layout settings.
@@ -93,8 +109,9 @@ The app must cost ~zero CPU when nothing happens (`src/app/main.cpp` describes t
 policy), with everything it can show open, not only an empty app.
 
 - `tests/ui/idle.sh <absolute path to Mazzuola> [seconds]` (Linux, needs Xvfb): starts the
-  app on its own virtual screen with `tests/ui/idle/scene.script`, which changes the
-  views, opens the Controls window and the paint window, and has no `quit`, so the app
+  app on its own virtual screen with `tests/ui/idle/scene.script`, which makes a model,
+  leaves a primitive preview waiting, adds a reference image and the scale figure,
+  changes the views, opens the Controls, Reference images and paint windows, and has no `quit`, so the app
   goes idle. The screenshot at the end is the "ready" signal; the harness waits 3 s more,
   then reads the process's CPU time (user + system, all threads, from `/proc`) twice,
   10 s apart.

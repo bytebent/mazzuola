@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <set>
 
 #ifndef MAZZ_VERSION
 #define MAZZ_VERSION "dev"
@@ -74,7 +75,8 @@ void Editor::toolsPanel() {
                          Act::ToolPaint, Act::ToolColour};
     for (Act a : tools) {
         const ActionInfo& info = actionInfo(a);
-        const bool on = a == Act::ToolSelect && tool_ == Tool::Select;
+        const bool on = (a == Act::ToolSelect && tool_ == Tool::Select) || (a == Act::ToolVertex && tool_ == Tool::Vertex) ||
+                        (a == Act::ToolPrimitives && tool_ == Tool::Primitives);
         ImGui::BeginDisabled(!enabled(a));
         if (ImGui::Selectable(info.label, on)) run(a);
         ImGui::EndDisabled();
@@ -89,8 +91,28 @@ void Editor::toolsPanel() {
 }
 
 void Editor::propertiesPanel() {
-    ImGui::SeparatorText("Selection");
-    dimText("Nothing selected. Modelling arrives in milestone 1.");
+    if (tool_ == Tool::Primitives) {
+        primitivePanel();
+    } else {
+        ImGui::SeparatorText("Selection");
+        Vec3 mn, mx;
+        if (selectionBounds(mn, mx)) {
+            const std::set<int> v = movingVerts();
+            ImGui::Text("%zu points", v.size());
+            const Vec3 c = (mn + mx) / 2, sz = mx - mn;
+            ImGui::Text("Centre  %g, %g, %g cm", c.x, c.y, c.z);
+            ImGui::Text("Size    %g x %g x %g cm", sz.x, sz.y, sz.z);
+            if (ImGui::Button("Move / rotate / scale...")) run(Act::Transform);
+            ImGui::SameLine();
+            if (ImGui::Button("Move points...")) run(Act::MovePoints);
+            if (tool_ == Tool::Select && !views_[0].is3D())
+                dimText(handleMode_ == HandleMode::Scale ? "Handles: scale. Click the selection for rotate handles."
+                                                         : "Handles: rotate. Click the selection for scale handles.");
+        } else {
+            dimText(doc_.model.mesh.faces.empty() ? "The model is empty. Create > Primitives, or the Primitives tool (Shift+B)."
+                                                  : "Nothing selected. Click or drag a box in a view.");
+        }
+    }
     ImGui::SeparatorText("Grid");
     ImGui::Text("Size: %g cm", grid_.size);
     ImGui::SameLine();
@@ -102,6 +124,114 @@ void Editor::propertiesPanel() {
     bool show = grid_.visible, snap = grid_.snap;
     if (ImGui::Checkbox("Show grid", &show)) run(Act::ToggleGrid);
     if (ImGui::Checkbox("Snap to grid", &snap)) run(Act::ToggleSnap);
+}
+
+void Editor::primitivePanel() {
+    ImGui::SeparatorText("Primitive");
+    int k = (int)prim_.kind;
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::BeginCombo("##primkind", primKindName(prim_.kind))) {
+        for (int i = 0; i < kPrimKindCount; ++i)
+            if (ImGui::Selectable(primKindName((PrimKind)i), k == i)) {
+                prim_.kind = (PrimKind)i;
+                if (primActive_) updatePrimPreview();
+            }
+        ImGui::EndCombo();
+    }
+    bool changed = false;
+    auto num3 = [&](const char* label, Vec3& v) {
+        double a[3] = {v.x, v.y, v.z};
+        ImGui::SetNextItemWidth(-90);
+        if (ImGui::InputScalarN(label, ImGuiDataType_Double, a, 3, nullptr, nullptr, "%g")) {
+            v = {a[0], a[1], a[2]};
+            changed = true;
+        }
+    };
+    auto integer = [&](const char* label, int& v) {
+        ImGui::SetNextItemWidth(110);
+        if (ImGui::InputInt(label, &v)) changed = true;
+    };
+    auto real = [&](const char* label, double& v) {
+        ImGui::SetNextItemWidth(110);
+        if (ImGui::InputDouble(label, &v, 0, 0, "%g")) changed = true;
+    };
+    num3("Centre", prim_.centre);
+    num3("Size", prim_.size);
+    const PrimKind pk = prim_.kind;
+    if (pk != PrimKind::Box && pk != PrimKind::Plane && pk != PrimKind::Rock) {
+        ImGui::TextUnformatted("Stands along");
+        for (int a = 0; a < 3; ++a) {
+            ImGui::SameLine();
+            static const char* n[3] = {"X##ax", "Y##ax", "Z##ax"};
+            if (ImGui::RadioButton(n[a], prim_.axis == a)) { prim_.axis = a; changed = true; }
+        }
+    }
+    switch (pk) {
+    case PrimKind::Plane:
+        integer("Rows", prim_.rows);
+        integer("Columns", prim_.cols);
+        if (ImGui::Checkbox("Flip diagonals", &prim_.flipDiagonals)) changed = true;
+        break;
+    case PrimKind::Box:
+        integer("Segments X", prim_.segX);
+        integer("Segments Y", prim_.segY);
+        integer("Segments Z", prim_.segZ);
+        real("Rounded edges (cm)", prim_.round);
+        if (prim_.round > 0) integer("Rounding steps", prim_.roundSegs);
+        break;
+    case PrimKind::Cylinder:
+    case PrimKind::Cone:
+        integer("Sides", prim_.sides);
+        integer("Segments", prim_.stacks);
+        integer("Cap rings", prim_.capRings);
+        break;
+    case PrimKind::Tube:
+        integer("Sides", prim_.sides);
+        integer("Segments", prim_.stacks);
+        real("Inner (0..1)", prim_.inner);
+        break;
+    case PrimKind::Torus:
+        integer("Sides", prim_.sides);
+        integer("Tube sides", prim_.rings);
+        real("Inner (0..1)", prim_.inner);
+        break;
+    case PrimKind::Sphere:
+        integer("Sides", prim_.sides);
+        integer("Segments", prim_.stacks);
+        break;
+    case PrimKind::Geosphere:
+        integer("Divisions", prim_.iterations);
+        break;
+    case PrimKind::Rock: {
+        integer("Triangles", prim_.faces);
+        real("Roughness %", prim_.roughness);
+        num3("Stretch %", prim_.stretch);
+        if (ImGui::Checkbox("Flat bottom", &prim_.flatBottom)) changed = true;
+        if (prim_.flatBottom) real("Cut off %", prim_.bottomHeight);
+        if (ImGui::Checkbox("Join into quads", &prim_.joinQuads)) changed = true;
+        if (ImGui::Checkbox("Smooth", &prim_.smooth)) changed = true;
+        int seed = (int)prim_.seed;
+        ImGui::SetNextItemWidth(110);
+        if (ImGui::InputInt("Seed", &seed)) { prim_.seed = (uint32_t)std::max(1, seed); changed = true; }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("New seed")) newSeed();
+        break;
+    }
+    }
+    if (changed) {
+        prim_ = clampParams(prim_);
+        if (primActive_) updatePrimPreview();
+    }
+    ImGui::Spacing();
+    if (!primActive_) {
+        dimText("Drag a box in a 2D view, or press Show to start from these values.");
+        if (ImGui::Button("Show")) startPrimitive(prim_.kind);
+    } else {
+        ImGui::Text("%d triangles", primPreview_.triangleCount());
+        if (ImGui::Button("Create (Return)")) createPrimitive();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel (Esc)")) cancelPrimitive();
+    }
 }
 
 void Editor::partsPanel() { dimText("Parts (named groups of faces, with pivots) arrive in milestone 3."); }
@@ -131,6 +261,11 @@ void Editor::controlsWindow() {
                 if (!*info.keys) continue;
                 row(info.label, displayKeys(info.keys), info.milestone);
             }
+            row("Select", displayKeys("click; Cmd+click adds or removes; drag a box from empty space"), 0);
+            row("Move the selection (2D views)", "drag it", 0);
+            row("Scale / rotate (2D views)", "drag the handles; click the selection to switch them", 0);
+            row("Cancel a drag", "Esc", 0);
+            row("Create the primitive shown", "Return (Esc cancels)", 0);
             row("Pan a view", "middle mouse, or Space + left mouse", 0);
             row("Zoom a view", "mouse wheel (2D: toward the cursor)", 0);
             row("Orbit the 3D view", "right mouse drag", 0);

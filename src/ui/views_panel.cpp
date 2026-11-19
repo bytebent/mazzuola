@@ -122,11 +122,12 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
     const ImVec2 imgSize{size.x, std::max(1.0f, size.y - headerH)};
     viewImgPos_[i] = imgPos;
     viewImgSize_[i] = imgSize;
-    drawer_.draw(v, grid_, imgSize.x, imgSize.y, viewScale());
+    drawer_.draw(v, grid_, scene(true), imgSize.x, imgSize.y, viewScale());
     ImGui::SetCursorScreenPos(imgPos);
     ImGui::InvisibleButton("##view", imgSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
     dl->AddImage(texId(v.target.texture()), imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, {0, 1}, {1, 0});
     viewInput(i, imgPos, imgSize);
+    drawOverlay(i, dl, imgPos, imgSize);
 
     // An accent frame around the view the fly mode drives.
     if (flying_ && flyView_ == i)
@@ -159,6 +160,15 @@ void Editor::viewInput(int i, ImVec2 imgPos, ImVec2 imgSize) {
         if (v.is3D()) v.cam3d.dolly(std::pow(0.87, (double)io.MouseWheel));
         else v.ortho.zoomAt(std::pow(1.15, (double)io.MouseWheel), mx, my, w, h);
         v.dirty = true;
+    }
+
+    // Left mouse: the current tool (select, move, scale, rotate, draw a primitive...).
+    // Space + left pans instead.
+    viewMouse(i, mx, my, hovered, active);
+    if (hovered && drag_ == DragKind::None && !ImGui::IsKeyDown(ImGuiKey_Space)) {
+        int h = -1;
+        if (handleAt(i, mx, my, h)) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        else if (tool_ != Tool::Primitives && insideSelection(i, mx, my)) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
     }
 
     if (!active) return;
