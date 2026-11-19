@@ -4,6 +4,11 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.0 "Boxes" published
+- The user deleted the withdrawn v0.1.0 tag (and with it the release); this push lets CI
+  publish the new v0.1.0 from `docs/releases/v0.1.0.md`. (Deleting releases isn't
+  allowed from the AI workspace: HTTP 403. Ask the user, as here.)
+
 ### 2026-11-19 — Alpha 1, step H: v0.1.0 "Boxes" prepared
 - Version 0.1.0; release notes `docs/releases/v0.1.0.md`; README status and controls,
   Help → Controls (mouse gestures of the tools added) in sync.

@@ -10,7 +10,7 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 
 ## Current status
 
-- **Released:** v0.0.0 … v0.0.7; v0.1.0 "Boxes" built, publishing waits on the old tag. Milestone 0 (skeleton) is done, including the iPad
+- **Released:** v0.0.0 … v0.0.7; v0.1.0 "Boxes" (alpha 1, first release). Milestone 0 (skeleton) is done, including the iPad
   check: the whole app and the paint window work on the iPad with the Pencil (v0.0.6,
   graphics switching); v0.0.7 cleaned up after the tests.
 - **Milestone 1 was built once and withdrawn** (v0.1.0, reverted 2026-11-19; see
@@ -29,9 +29,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
-  **v0.1.0 "Boxes" is built** (steps A–H). Waiting on the user: try it ("latest" on
-  the Releases page) and decide about the withdrawn v0.1.0 release/tag on GitHub (CI
-  publishes the new one once it's gone). Their feedback comes before v0.1.1.
+  **v0.1.0 "Boxes" is released** (steps A–H). Waiting on the user: try it; their
+  feedback comes before v0.1.1.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7

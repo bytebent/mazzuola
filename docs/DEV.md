@@ -155,6 +155,8 @@ blocked in the AI workspace, so this file-driven route is the one to use.
 
 - `gh` GraphQL commands (e.g. `gh release list`) are refused. Use REST:
   `gh api repos/bytebent/mazzuola/releases`, `gh api repos/bytebent/mazzuola/actions/runs`.
+- Creating, editing or deleting releases through the API is refused here (HTTP 403):
+  ask the user to do it on GitHub.
 - Use `mktemp -d` for scratch work.
 - There is no Mac or iPad here: anything macOS-only (pen input, Sidecar, Retina look) is
   compiled by CI and checked by the user by hand.
