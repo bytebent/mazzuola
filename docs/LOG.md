@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, step H: v0.1.0 "Boxes" prepared
+- Version 0.1.0; release notes `docs/releases/v0.1.0.md`; README status and controls,
+  Help → Controls (mouse gestures of the tools added) in sync.
+- The withdrawn v0.1.0 release and tag are still on GitHub, so CI won't publish this one
+  yet: once they're deleted, the next push to `main` creates it. Meanwhile the "latest"
+  pre-release has this build.
+- Checks: core 412; all five UI scripts at 1× and 2×; idle 0 ticks.
+
 ### 2026-11-19 — Alpha 1, steps E–G: box primitive, select tool, selection box
 - `core/transform`: stretch points between box sides, turn about a centre (exact at
   90°), angle snapping, copy faces. `core/pick`: pieces under a point (2D: inside a face

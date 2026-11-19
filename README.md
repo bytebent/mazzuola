@@ -7,8 +7,10 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** milestone 0 (the skeleton): the window, views, grid and navigation. Nothing
-can be modelled yet; that starts in milestone 1.
+**Status:** alpha 1 (milestone 1, redone), first release v0.1.0 "Boxes": draw boxes,
+select them, move, copy, resize and rotate them like brushes, undo, save and open
+`.mazz`. Round shapes, points/edges/faces, typed transforms and export follow in
+v0.1.1 – v0.1.4.
 
 ## Download
 
@@ -26,6 +28,12 @@ including the planned ones with the milestone that brings them.
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
 | Tools (also the buttons on the left) | Select **Shift+S**, Primitives **Shift+B** |
 | Selection mode: whole pieces (points, edges, faces in v0.1.2) | **4** (and the buttons at the top of the tool bar) |
+| Draw a box | Primitives tool: drag a rectangle in a 2D view, adjust with the handles in any 2D view (or type the size in Properties); **Return** creates, **Esc** cancels |
+| Select | Select tool: click a piece (again on the same spot: the one underneath); **Cmd+click** adds/removes; drag from empty space for a rectangle; **Esc** selects nothing; **Cmd+A** all |
+| Move / copy | drag inside the selection's box in a 2D view (snapped); **Shift+drag** copies |
+| Resize | drag a side or corner handle of the selection's box (the opposite side stays) |
+| Rotate | **Option+drag** a corner handle (15° steps, add **Shift** for free); the rings in the 3D view |
+| Delete | **Delete** |
 | Smaller / larger grid | **è** / **+** (the two keys right of P) |
 | Set the grid size | View → Set grid size… (1/8 cm to 512 cm; **Return** sets, **Esc** cancels) |
 | Show grid / snap to grid | **Shift+R** / **Shift+W** |

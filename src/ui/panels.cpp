@@ -143,6 +143,15 @@ void Editor::controlsWindow() {
                 if (!*info.keys) continue;
                 row(info.label, displayKeys(info.keys), info.milestone);
             }
+            // Mouse gestures of the tools (ARCHITECTURE §6 "Brush feel").
+            row("Draw a box (Primitives)", "drag in a 2D view; handles adjust; Return creates, Esc cancels", 0);
+            row("Select a piece", "click; click again on the same spot for the one underneath", 0);
+            row("Add / remove a piece", "Cmd+click", 0);
+            row("Select in a rectangle", "drag from empty space", 0);
+            row("Move the selection", "drag inside its box (2D views)", 0);
+            row("Copy the selection", "Shift+drag inside its box", 0);
+            row("Resize", "drag a side or corner handle (the opposite side stays)", 0);
+            row("Rotate", "Option+drag a corner (15\xC2\xB0 steps, +Shift free); rings in the 3D view", 0);
             row("Pan a view", "middle mouse, or Space + left mouse", 0);
             row("Zoom a view", "mouse wheel (2D: toward the cursor)", 0);
             row("Orbit the 3D view", "right mouse drag", 0);
