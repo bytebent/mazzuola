@@ -4,6 +4,10 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Rounded edges decided (docs only)
+- User: rounded edges on box and cylinder are fine if small: a hard edge becomes 1–3
+  faces, not 8. Planned with v0.1.2; ARCHITECTURE updated.
+
 ### 2026-11-19 — v0.1.1 "All shapes" released
 - Version 0.1.1, release notes, README status and controls, Help → Controls ("Draw a
   shape"). Parked: rounded edges (box, cylinder) and rock stretch, both in ARCHITECTURE

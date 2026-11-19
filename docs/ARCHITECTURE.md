@@ -275,8 +275,8 @@ the model gets:
 - **Mirror** (along X/Y/Z) and **mirror clone**. **Flatten X/Y/Z**: line selected points
   up on one axis. Move along the selection's normal.
 - **Primitives** (Shift+B): plane (rows, columns, diagonal direction), box (stacks per
-  side, optional rounded edges with segments), cylinder (sides, stacks, cap segments,
-  rounded edges), cone, tube (inner/outer sides, length), torus, sphere (sides and
+  side, optional rounded edges), cylinder (sides, stacks, cap segments, rounded
+  edges; rounded edges: a hard edge becomes 1–3 faces, no more; user 2026-11-19), cone, tube (inner/outer sides, length), torus, sphere (sides and
   stacks) and geosphere (iterations). Click by click (agreed 2026-11-19, like
   Scalpellino's Block tool):
   1. Primitives tool (left bar or Shift+B); Properties shows the shape list and the

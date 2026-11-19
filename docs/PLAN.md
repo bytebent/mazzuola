@@ -60,8 +60,6 @@ cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
-- **Rounded edges** for the box and cylinder (ARCHITECTURE lists them) aren't in v0.1.1.
-  Add them later (they make many more faces) or drop them? Ask the user.
 - **Rock stretch X/Y/Z** (ARCHITECTURE lists it): left out of v0.1.1 because the drawn
   box already sets the rock's proportions; stretching would be undone by fitting it to
   the box. Drop it from the design? Ask the user.
@@ -201,7 +199,8 @@ each tried by the user before the next starts:
    - **D. Release v0.1.1.** UI script drawing each shape in a 2D view and checking its
      box and counts; screenshots; controls, README, release notes. User tries it.
 
-3. **v0.1.2 — Points, edges, faces.** Modes 1–4; Vertex tool with direct dragging
+3. **v0.1.2 — Points, edges, faces.** Also: rounded edges for box and cylinder (a hard
+   edge becomes 1–3 faces; user 2026-11-19). Modes 1–4; Vertex tool with direct dragging
    (stacked points in 2D taken together, as in Scalpellino); arrows; rectangle
    selection; grow/shrink; edge loop / ring.
 4. **v0.1.3 — Typed values.** Transform panel (live preview; copies in a row or circle
