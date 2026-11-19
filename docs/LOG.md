@@ -4,61 +4,23 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
-### 2026-11-19 — Milestone 1 done: mesh basics (v0.1.0)
-- **Views** draw the model: lit faces in 3D with lines over them (toggle), edges in 2D,
-  selection pink (faces filled, edges and points), the primitive preview cyan, reference
-  images behind or in front, the 175 cm scale figure, the model pivot. Views still draw
-  only when something changes.
-- **Tools:** Select (click, Cmd+click, box from empty space; drag the selection to move
-  in grid steps; scale handles, click the selection for rotate handles, 15° steps with
-  snap; Esc during a drag puts it back), Vertex (points mode), Primitives (drag a box in
-  a 2D view or type values; all eight primitives and the rock with seed / New seed;
-  Return creates, Esc cancels).
-- **Menus and dialogs:** Move / rotate / scale / copy (Cmd+T: around selection, model
-  pivot, origin or a typed point; along the normal; copies in a row, circle or spiral,
-  with scale per copy), Move points exactly, Snap to grid, Mirror (copy), Flatten,
-  Model pivot (typed, presets, or click in a 2D view), Reference images window
-  (per direction; centre, width, rotation, opacity, in front / behind; paths kept
-  relative to the model file), Select menu (grow, shrink, similar, loop, ring, hide,
-  hide others, show all), duplicate, delete, select all / none, frame selection,
-  undo / redo with step names, status bar counter (vertices, triangles, selected,
-  hidden).
-- **Files:** New / Open / Save / Save as with the unsaved-changes question (also on
-  quit and closing the window), Export `.glb` / `.gltf` / `.obj`; typed-path dialog
-  where native dialogs don't exist (Linux tests). `--open <file>`. Title shows the file
-  and `*` when changed. Reference images reload when the app comes back to the front.
-- **Tests:** core 1176 checks pass. New UI script `tests/ui/m1_model.script` (draws a
-  box, moves, scales, rotate-handle switch, Esc cancel, typed copies and rotation,
-  mirror copy, hide/show, duplicate, delete, undo/redo, box-select points and flatten,
-  pivot by click, save / new / open / export, reference image, scale figure, rock):
-  PASS at 1× and 2×; m0 script still PASS. Idle scene now has a model, a waiting
-  preview, a reference image, the figure and the reference window open: 0 ticks at 1×
-  and 2×; control 887 ticks.
-- **Screenshots:** `m1-01-box.png`, `m1-02-mirror.png`, `m1-03-rock-refs-figure.png`.
-- Docs: README controls, Help → Controls rows, DEV script commands, ARCHITECTURE
-  (picking on the CPU, preview colour, source layout).
-
-### 2026-11-19 — Milestone 1, step 1: core and files (no release)
-- **Core** (`src/core`, no graphics): `mesh` (points, tri/quad faces with per-corner
-  texture coordinates and colours, texture, part, smoothing group, two-sided, diagonal,
-  hidden; checks: valid, closed, volume), `primitives` (plane, box with segments and
-  rounded edges, cylinder, cone, tube, torus, sphere, geosphere; any axis), `rock`
-  (seeded hull of jittered sphere points, flat-bottom cut, roughness with a no
-  self-crossing guard, optional quads), `rng` (PCG32: same results on every platform),
-  `ops` (selection modes and conversion, pieces, edge loop / ring, grow / shrink,
-  similar, transforms, clone with rotate/scale per copy, mirror (copy), flatten, snap,
-  delete, duplicate, hide, join triangles into quads, normals from smoothing groups),
-  `pick` (face / point / edge under the cursor, points hidden behind faces skipped in 3D;
-  box select), `document` (snapshot undo/redo, saved state).
-- **Files** (`src/io`): `.mazz` read/write (exact round trip, shortest numbers, errors
-  name the line, save via a temporary file); export `.glb`, `.gltf` + `.bin`, `.obj`
-  (Y up, metres, pivot as origin; units and pivot in glTF extras; quads written with
-  their diagonal first for `.obj`). cgltf v1.15 (tests only) reads exports back.
-- **Tests:** 1176 checks, 0 failed: every primitive on every axis is valid, closed,
-  outward and fills its box; 1000 rocks (12–60 faces, with/without flat bottom, any
-  roughness) valid, closed, no self-crossing, triangle count within ±20 %; clone, mirror,
-  transform, flatten, snap, delete, hide, join, normals, picking in 2D and 3D, undo,
-  `.mazz` golden round trip and error lines, glTF validated by cgltf.
+### 2026-11-19 — Milestone 1 withdrawn (v0.1.0), back to the design
+- Milestone 1 (`43e0a5d`, `0b93748`, released as v0.1.0) was built by Claude Sonnet by
+  mistake instead of Opus. The user tried it: apart from the basic UI elements
+  (dropdowns, selecting, typing), everything felt wrong. Both commits reverted; the code
+  is back to `5aa4703` (end of milestone 0). The old code stays in history for parts
+  worth reusing (glTF/OBJ export, `.mazz` reader, picking maths).
+- Found in review (to avoid next time): no tool structure (all tools in one `Editor`
+  class, unlike Scalpellino's `Tool` classes); undo kept two full copies of the model per
+  step; the selection mode lived outside undo (undo after a mode switch lost the
+  selection); hiding faces was saved and undoable; every change rebuilt all four views;
+  dialogs with no live preview; the `.mazz` writer wrote 100 as `1e+02` and kept
+  rounding noise (`3e-15` instead of 0); the torus didn't fill its box; round shapes
+  faced the view they were drawn in, with the depth taken from a size you can't see;
+  tests were loosened to fit the code instead of the other way round.
+- Next: design first, with the user (how each basic action works, click by click),
+  then foundations, then small releases the user tries. The v0.1.0 release on GitHub
+  has to be removed by hand (the workspace can't).
 
 ### 2026-11-19 — Two decisions (docs only)
 - Textures painted in another app reload when switching back to Mazzuola, as designed

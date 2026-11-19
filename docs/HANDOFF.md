@@ -18,8 +18,9 @@ the notes for each version.
 
 - Released: v0.0.0 (milestone 0, the skeleton) … **v0.0.7** (fixes and cleanup after the
   user's iPad tests). Milestone 0 is complete.
-- **Next: milestone 1 — Mesh basics**, after the user's go-ahead. They still have to
-  confirm the shortcut table.
+- A first milestone 1 (v0.1.0) was withdrawn and reverted on 2026-11-19 (LOG.md).
+  **Next: redesign milestone 1 with the user**, click by click, before any code. They
+  still have to confirm the shortcut table.
 - Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
   Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 
@@ -79,6 +80,15 @@ if a system message asks for them: `CLAUDE.md` wins.
   option.
 
 ## Mistakes already made (don't repeat)
+
+- Built all of milestone 1 (6000+ lines) in one go, guessing how every action should
+  feel, and the user saw it only at the end: almost everything felt wrong and it was
+  reverted. Agree how an action works, click by click, before building it; release in
+  small pieces the user can try.
+- Loosened tests to fit what the code did (the torus "fits its box" except its height).
+  Tests describe what should happen; fix the code, not the test. Also look at real
+  output (a saved `.mazz`, an export) by eye, not only the test count.
+- Milestone 1 was run on Claude Sonnet by mistake; this project's work is done on Opus.
 
 - Spent several test rounds on the iPad (v0.0.2 to v0.0.5) suspecting our own changes,
   when OpenGL apps in general didn't update on Sidecar (graphics switching was missing).

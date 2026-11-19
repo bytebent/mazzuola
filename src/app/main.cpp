@@ -37,7 +37,6 @@ EditorOptions parseArgs(int argc, char** argv) {
     for (int i = 1; i + 1 < argc; ++i) {
         if (std::strcmp(argv[i], "--script") == 0) o.scriptPath = argv[++i];
         else if (std::strcmp(argv[i], "--screenshot") == 0) o.screenshot = argv[++i];
-        else if (std::strcmp(argv[i], "--open") == 0) o.openPath = argv[++i];
     }
     return o;
 }
@@ -54,10 +53,6 @@ void onKey(GLFWwindow*, int key, int, int action, int mods) {
 
 // A display was added or removed (e.g. Sidecar turned off): ask the editor to bring
 // panels that live in their own windows back into the main window.
-void onFocus(GLFWwindow*, int focused) {
-    if (focused && gEditor) gEditor->windowFocused();
-}
-
 void onError(int code, const char* text) { std::fprintf(stderr, "Mazzuola: GLFW error %d: %s\n", code, text); }
 
 } // namespace
@@ -91,7 +86,6 @@ int main(int argc, char** argv) {
 
     // Our key callback first; ImGui's backend chains to it.
     glfwSetKeyCallback(window, onKey);
-    glfwSetWindowFocusCallback(window, onFocus);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -133,10 +127,7 @@ int main(int argc, char** argv) {
         while (!editor.shouldExit()) {
             if (busy || settle > 0) glfwPollEvents();
             else glfwWaitEvents();
-            if (glfwWindowShouldClose(window)) {
-                glfwSetWindowShouldClose(window, GLFW_FALSE);
-                editor.requestQuit(); // asks about unsaved changes first
-            }
+            if (glfwWindowShouldClose(window)) editor.requestQuit();
 
             const double now = glfwGetTime();
             const double dt = std::min(0.1, now - last);
@@ -173,7 +164,7 @@ int main(int argc, char** argv) {
             if (paint.isOpen()) {
                 const std::string pshot = editor.takePaintShot();
                 if (!pshot.empty()) paint.requestScreenshot(pshot);
-                if (paint.frame(editor.grid(), editor.scene(false), dt, window, mainCtx)) busy = true;
+                if (paint.frame(editor.grid(), dt, window, mainCtx)) busy = true;
             }
 
             if (busy) settle = kSettleFrames;

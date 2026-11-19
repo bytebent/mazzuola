@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Mazzuola VERSION 0.1.0 LANGUAGES C CXX)
+project(Mazzuola VERSION 0.0.7 LANGUAGES C CXX)
 # Objective-C++ (native macOS file dialogs, tablet input later) and Objective-C (GLFW's
 # Cocoa files; without OBJC enabled, CMake would compile those .m files as Objective-C++,
 # which fails). Must be enabled here, at the top level, before any dependency is added.
@@ -23,34 +23,13 @@ endif()
 # Pure C++: no OpenGL, GLFW or ImGui. Must stay that way (see CLAUDE.md).
 add_library(mazz_core STATIC
   src/core/camera.cpp
-  src/core/grid_lines.cpp
-  src/core/mesh.cpp
-  src/core/primitives.cpp
-  src/core/rock.cpp
-  src/core/ops.cpp
-  src/core/pick.cpp
-  src/core/document.cpp)
+  src/core/grid_lines.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-# ---------------------------------------------------------------- io
-# Files and exports. Also no graphics.
-add_library(mazz_io STATIC
-  src/io/mazz_file.cpp
-  src/io/export.cpp)
-target_link_libraries(mazz_io PUBLIC mazz_core)
-target_compile_definitions(mazz_io PRIVATE MAZZ_VERSION="${PROJECT_VERSION}")
 
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  # cgltf reads exported glTF files back in the tests.
-  include(FetchContent)
-  FetchContent_Declare(cgltf
-    URL https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
-  FetchContent_MakeAvailable(cgltf)
-  add_executable(mazz_core_tests tests/test_core.cpp tests/test_m1.cpp tests/test_io.cpp)
-  target_include_directories(mazz_core_tests PRIVATE tests ${cgltf_SOURCE_DIR})
-  target_link_libraries(mazz_core_tests PRIVATE mazz_core mazz_io)
+  add_executable(mazz_core_tests tests/test_core.cpp)
+  target_link_libraries(mazz_core_tests PRIVATE mazz_core)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()
 
@@ -61,8 +40,6 @@ if(MAZZ_BUILD_APP)
   set(MAZZ_APP_SOURCES
     src/app/main.cpp
     src/app/editor.cpp
-    src/app/tools.cpp
-    src/app/file_ops.cpp
     src/app/script.cpp
     src/app/paint_window.cpp
     src/app/screenshot.cpp
@@ -71,13 +48,10 @@ if(MAZZ_BUILD_APP)
     src/render/lines.cpp
     src/render/view_target.cpp
     src/render/view_draw.cpp
-    src/render/mesh_draw.cpp
-    src/render/stb_image_impl.cpp
     src/ui/actions.cpp
     src/ui/theme.cpp
     src/ui/views_panel.cpp
     src/ui/panels.cpp
-    src/ui/dialogs.cpp
     src/ui/imgui_checks.cpp
   )
   if(APPLE)
@@ -103,11 +77,11 @@ if(MAZZ_BUILD_APP)
   # GLFW must not pull in the legacy OpenGL header (render/gl.hpp includes the right one).
   target_compile_definitions(Mazzuola PRIVATE MAZZ_VERSION="${PROJECT_VERSION}" GLFW_INCLUDE_NONE)
   target_include_directories(Mazzuola PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  target_link_libraries(Mazzuola PRIVATE mazz_core mazz_io mazz_imgui mazz_stb mazz_assets glfw)
+  target_link_libraries(Mazzuola PRIVATE mazz_core mazz_imgui mazz_stb mazz_assets glfw)
 endif()
 
 # Warnings for our own code only (not third-party).
-foreach(t mazz_core mazz_io mazz_core_tests Mazzuola)
+foreach(t mazz_core mazz_core_tests Mazzuola)
   if(TARGET ${t})
     target_compile_options(${t} PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wno-unused-parameter>)
   endif()

@@ -8,11 +8,20 @@
 
 using namespace mazz;
 
-#include "check.hpp"
+static int gFailures = 0;
+static int gChecks = 0;
 
-int gFailures = 0;
-int gChecks = 0;
+#define CHECK(cond)                                                              \
+    do {                                                                         \
+        ++gChecks;                                                               \
+        if (!(cond)) {                                                           \
+            ++gFailures;                                                         \
+            std::fprintf(stderr, "%s:%d: CHECK failed: %s\n", __FILE__, __LINE__, #cond); \
+        }                                                                        \
+    } while (0)
 
+static bool near(double a, double b, double tol = 1e-9) { return std::fabs(a - b) <= tol; }
+static bool nearV(const Vec3& a, const Vec3& b, double tol = 1e-9) { return length(a - b) <= tol; }
 
 static void testGrid() {
     Grid g;
@@ -179,12 +188,7 @@ static void testGridLines() {
     for (const GridLine3D& l : l3) CHECK(l.a.z == 0 && l.b.z == 0);
 }
 
-void runM1Tests();
-void runIoTests();
-
 int main() {
-    runM1Tests();
-    runIoTests();
     testGrid();
     testOrthoAxes();
     testOrthoCamera();

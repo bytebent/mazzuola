@@ -440,13 +440,8 @@ Common to rock, tree, jitter, scatter and generate texture:
 
 - OpenGL core profile (4.1 on macOS). A small shader set: textured × vertex colour with
   alpha cut-out, flat, texel check, soft-selection gradient, lines, grid, inference
-  hints. Picking (faces, points, edges, box select) is done on the CPU in `core/pick`
-  against the same matrices the views draw with; points hidden behind faces are skipped
-  in 3D. A GPU face-ID buffer stays an option for painting (M6) if the CPU path is too
-  slow there. Double-sided faces drawn without culling.
-- Views draw only when what they show changes (a scene version number), into their own
-  offscreen images. Selection is pink; what a creation tool is about to make (the
-  preview, before Return) is cyan.
+  hints, and a picking pass (face IDs to an offscreen buffer for exact 3D picking, the
+  brush and painting). Double-sided faces drawn without culling.
 - No lighting effects beyond the display modes. No post-processing.
 
 ## 10. Undo
@@ -473,9 +468,9 @@ src/core/      mesh, edit ops, smoothing groups, soft selection and falloff, par
                texture coords (projection, unwrap, weld), images, painting, problems,
                document, commands
 src/io/        .mazz reader/writer, .glb/.gltf and .obj export, PNG, layout image
-src/render/    GL setup, shaders, model views, texture view, reference images
-src/app/       editor (frame, actions, menus), tools (select, vertex, primitives, handles,
-               pivot), files, scripts; later tools get their own files here
+src/render/    GL setup, shaders, model views, texture view, picking buffer
+src/tools/     select, vertex, primitives, draw, push/pull, extrude, cut, lathe, loft,
+               vertex brush, mapping, paint, colour, pivots
 src/ui/        layout, panels, menus, palette, parts, smoothing groups, problems list
 src/platform/  file dialogs, tablet input, file watching
 src/app/       main loop, settings, startup

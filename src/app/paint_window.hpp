@@ -32,13 +32,13 @@ public:
 
     // Draws one frame (makes its own context current, then restores the main one).
     // Returns true while it needs continuous frames (a drag in progress).
-    bool frame(const Grid& grid, const Scene& scene, double dt, GLFWwindow* mainWindow, ImGuiContext* mainCtx);
+    bool frame(const Grid& grid, double dt, GLFWwindow* mainWindow, ImGuiContext* mainCtx);
 
     // Screenshot of this window after its next frame (for scripted tests).
     void requestScreenshot(const std::string& path) { shot_ = path; }
 
 private:
-    void ui(const Grid& grid, const Scene& scene);
+    void ui(const Grid& grid);
     GLFWwindow* window_ = nullptr;
     ImGuiContext* ctx_ = nullptr;
     View view_;

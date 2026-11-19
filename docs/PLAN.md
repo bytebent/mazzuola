@@ -10,15 +10,18 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 
 ## Current status
 
-- **Released:** v0.0.0 … v0.0.7 (milestone 0, skeleton) and **v0.1.0 (milestone 1,
-  mesh basics)**.
-- **Waiting on the user:** try v0.1.0; confirm the shortcut table (Help → Controls);
-  say go for milestone 2.
-- **Next:** milestone 2 — Modelling (only when the user says so).
-- **Left out of M1 on purpose, parked:** handles in the 3D view (moving / scaling /
-  rotating by dragging works in the 2D views; the 3D view selects, orbits and flies);
-  cylinder/cone rounded edges (box has them); rock texture coordinates (M5) and rock
-  smoothing beyond one group (M3); `.mtl` beside `.obj` (with textures, M5).
+- **Released:** v0.0.0 … v0.0.7. Milestone 0 (skeleton) is done, including the iPad
+  check: the whole app and the paint window work on the iPad with the Pencil (v0.0.6,
+  graphics switching); v0.0.7 cleaned up after the tests.
+- **Milestone 1 was built once and withdrawn** (v0.1.0, reverted 2026-11-19; see
+  LOG.md). Everything but the basic UI elements felt wrong to the user.
+- **Next: redesign milestone 1 with the user** before any code: how each basic action
+  works, click by click (pictures from the user), written into ARCHITECTURE. Then the
+  foundations (tool structure like Scalpellino's, clean numbers, undo, selection), then
+  small releases the user tries one by one.
+- **Open design question:** primitives should act like Scalpellino's brushes (user,
+  2026-11-19). What that means exactly is being worked out.
+- **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
   vertex colours → M8 paint window + tablets; later: tree generator. Details below and in
@@ -42,8 +45,8 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 | GLFW | 3.4 |
 | Dear ImGui | v1.93.0-docking (with its GLFW and OpenGL 3 backends) |
 | stb | commit 9600522de53973336fa033a289858a4354cbb04c |
-| cgltf | v1.15 (tests only, reads exports back) |
 
+cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
@@ -104,6 +107,9 @@ the Pencil; graphics switching is on (required for Sidecar); panels can't be pul
 of the main window. See LOG.md and ARCHITECTURE §8.
 
 ## Milestone 1 — Mesh basics
+
+**Being redesigned** (first attempt withdrawn, see LOG.md 2026-11-19). The list below is
+the old plan, to be revised.
 
 1. Core mesh (vertices, tri/quad faces, per-corner texture coordinate and colour, part,
    smoothing group, double-sided, diagonal) and document with command-based undo.
