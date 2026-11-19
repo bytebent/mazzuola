@@ -13,7 +13,7 @@ enum class Act {
     // Edit
     Undo, Redo, Duplicate, Delete, SelectAll, SelectNone,
     // Select
-    ModeVertex, ModeEdge, ModeFace, ModePiece, Hide, HideOthers, ShowAll,
+    ModeVertex, ModeEdge, ModeFace, ModePiece, SelectGrow, SelectShrink, SelectLoop, SelectRing, Hide, HideOthers, ShowAll,
     // Tools
     ToolSelect, ToolVertex, ToolPrimitives, ToolDraw, ToolPushPull, ToolExtrude, ToolCut,
     ToolLatheLoft, ToolBrush, ToolMapping, ToolPaint, ToolColour,

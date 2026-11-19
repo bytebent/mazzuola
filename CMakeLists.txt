@@ -33,7 +33,8 @@ add_library(mazz_core STATIC
   src/core/transform.cpp
   src/core/pick.cpp
   src/core/primitives.cpp
-  src/core/rock.cpp)
+  src/core/rock.cpp
+  src/core/select_ops.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -60,6 +61,7 @@ if(MAZZ_BUILD_APP)
     src/tools/select_tool.cpp
     src/tools/prim_tool.cpp
     src/tools/handles.cpp
+    src/tools/vertex_tool.cpp
     src/app/script.cpp
     src/app/paint_window.cpp
     src/app/screenshot.cpp

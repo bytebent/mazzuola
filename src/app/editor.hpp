@@ -6,6 +6,7 @@
 #include "render/view_draw.hpp"
 #include "tools/prim_tool.hpp"
 #include "tools/select_tool.hpp"
+#include "tools/vertex_tool.hpp"
 #include "ui/actions.hpp"
 #include "imgui.h"
 #include <deque>
@@ -129,6 +130,7 @@ private:
     std::string path_;  // the open model's file ("" = never saved)
     double texel_ = 0.5; // texture pixels per cm, kept from the file (milestone 5)
     SelectTool selectTool_;
+    VertexTool vertexTool_;
     PrimTool primTool_;
     Tool* tool_ = &selectTool_;
     LastBox lastBox_;

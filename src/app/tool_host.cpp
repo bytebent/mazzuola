@@ -67,6 +67,7 @@ Pointer Editor::pointer(int i) const {
     p.cmd = io.KeySuper || io.KeyCtrl;
     p.shift = io.KeyShift;
     p.alt = io.KeyAlt;
+    p.clicks = std::max(1, ImGui::GetMouseClickedCount(ImGuiMouseButton_Left));
     return p;
 }
 

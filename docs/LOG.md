@@ -4,6 +4,30 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.2, steps A–D: points, edges, faces; arrows; Vertex tool
+- `core/select_ops`: mode conversion (agreed rules); picking points (2D: every point
+  stacked on the nearest spot; 3D: nearest visible), edges and faces (nearest to the
+  viewer first); rectangles per mode (2D sees through; 3D only visible points, faces
+  turned toward the camera); grow/shrink; edge loop (straight through four-sided
+  corners) and ring (opposite sides across quads); faces Delete removes per mode.
+- Select tool in every mode: click / Cmd+click / click again for the next one /
+  rectangle / double-click an edge = loop, Shift+double-click = ring; Shift+drag copies
+  the faces the selection covers and selects the copy in the same mode. Modes 1–4 and
+  the tool bar buttons enabled; switching converts. Select menu: grow (Cmd++), shrink
+  (Cmd+è), edge loop, edge ring. Delete in every mode. Points drawn in point mode.
+- Arrows: X/Y/Z at the selection's centre (2D: the view's two; 3D: three unless one
+  points at the viewer); drag = move along that axis only, snapped (corner on grid).
+- Vertex tool (Shift+V, tool bar): a press on any point grabs it straight away (stacked
+  points in 2D together; an already-selected point moves the whole selection).
+- Fixes found while testing: a single point's selection box has no size, so pressing
+  it hit the corner handles and dragging did nothing: tiny boxes now have no handles
+  and a press on them moves. The status bar ran out of room with the longer hints:
+  the right part (selection, cursor, grid, counts) now always shows, the hint ends in
+  "…" if needed.
+- Tests: core 613 checks (conversion, picking, rectangles 2D/3D, grow/shrink, loops and
+  rings on a cylinder, delete). New UI script `a1_parts`; `m0_views` and `a1_layout`
+  back to testing keys 1–4; all pass. Screenshot `m1-07-faces.png`.
+
 ### 2026-11-19 — Loops and grow/shrink keys; v0.1.2 planned (docs only)
 - Edge loop = double-click an edge, ring = Shift+double-click (explained to the user with
   a drawing). Shrink / grow selection = Cmd+è / Cmd++ (user: easier on the Italian

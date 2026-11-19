@@ -247,8 +247,10 @@ void testViewGeom();
 void testDrawData();
 void testTransformPick();
 void testPrimitives();
+void testSelectOps();
 
 void testModel() {
+    testSelectOps();
     testPrimitives();
     testViewGeom();
     testDrawData();
@@ -570,4 +572,108 @@ void testPrimitives() {
     }
     CHECK(bad == 0);
     if (bad) std::fprintf(stderr, "  %d of 200 rocks invalid\n", bad);
+}
+
+// ---------------------------------------------------------------- points, edges, faces
+#include "core/select_ops.hpp"
+
+void testSelectOps() {
+    using namespace mazz;
+    Mesh box;
+    addBox(box, {0, 0, 0}, {10, 10, 10});
+    // Conversion.
+    Selection s;
+    s.mode = SelectMode::Piece;
+    s.faces = {0, 1, 2, 3, 4, 5};
+    CHECK(convertSelection(box, s, SelectMode::Vert).verts.size() == 8);
+    CHECK(convertSelection(box, s, SelectMode::Edge).edges.size() == 12);
+    CHECK(convertSelection(box, s, SelectMode::Face).faces.size() == 6);
+    Selection top;
+    top.mode = SelectMode::Vert;
+    top.verts = {4, 5, 6, 7}; // z = 10
+    Selection f = convertSelection(box, top, SelectMode::Face);
+    CHECK(f.faces.size() == 1 && f.faces.count(1));
+    CHECK(convertSelection(box, top, SelectMode::Edge).edges.size() == 4);
+    CHECK(convertSelection(box, top, SelectMode::Piece).faces.size() == 6); // whole piece
+    Selection oneEdge;
+    oneEdge.mode = SelectMode::Edge;
+    oneEdge.edges = {makeEdge(4, 5)};
+    CHECK(convertSelection(box, oneEdge, SelectMode::Vert).verts == std::set<int>({4, 5}));
+    CHECK(convertSelection(box, oneEdge, SelectMode::Face).faces.empty());
+
+    // Picking in Top: a corner takes the two stacked points; faces nearest first.
+    ViewGeom t;
+    t.dir = ViewDir::Top;
+    t.ortho.dir = ViewDir::Top;
+    t.ortho.zoom = 10;
+    t.w = t.h = 400;
+    double sx, sy;
+    t.project({10, 10, 0}, sx, sy);
+    CHECK(pointsAt(box, t, sx + 2, sy - 1) == std::set<int>({3, 7}));
+    t.project({5, 5, 0}, sx, sy);
+    const std::vector<int> under = facesAt(box, t, sx, sy);
+    CHECK(under.size() == 2 && under[0] == 1 && under[1] == 0); // top, then bottom
+    t.project({5, 10, 0}, sx, sy);
+    const std::vector<Edge> eu = edgesAt(box, t, sx, sy);
+    CHECK(eu.size() >= 2 && eu[0] == makeEdge(6, 7)); // the top edge first
+    // Rectangles: 2D sees through.
+    double ax, ay, bx, by;
+    t.project({-1, -1, 0}, ax, ay);
+    t.project({11, 11, 0}, bx, by);
+    CHECK(inRect(box, t, ax, ay, bx, by, SelectMode::Vert).verts.size() == 8);
+    CHECK(inRect(box, t, ax, ay, bx, by, SelectMode::Face).faces.size() == 6);
+    // 3D: only what can be seen (from above at an angle: one corner hidden).
+    ViewGeom g;
+    g.dir = ViewDir::Persp;
+    g.w = 800;
+    g.h = 600;
+    g.cam.target = {5, 5, 5};
+    g.cam.yaw = 30;
+    g.cam.pitch = 30;
+    g.cam.distance = 80;
+    const Selection seen = inRect(box, g, 0, 0, 800, 600, SelectMode::Vert);
+    CHECK(seen.verts.size() == 7);
+    CHECK(inRect(box, g, 0, 0, 800, 600, SelectMode::Face).faces.size() == 3);
+    int hidden = 0;
+    for (int v = 0; v < 8; ++v) hidden += !pointVisible(box, g, v);
+    CHECK(hidden == 1);
+
+    // Grow / shrink on a 5x5 plane: the centre face grows to its 3x3 neighbourhood and
+    // shrinks back (faces at the plane's own edge would stay: nothing unselected there).
+    PrimParams pp;
+    pp.kind = PrimKind::Plane;
+    pp.rows = 5;
+    pp.cols = 5;
+    const Mesh plane = makePrimitive(pp, {0, 0, 0}, {50, 50, 0}, 2);
+    Selection c;
+    c.mode = SelectMode::Face;
+    c.faces = {12}; // row 2, column 2
+    const Selection grown = growSelection(plane, c);
+    CHECK(grown.faces.size() == 9);
+    CHECK(shrinkSelection(plane, grown).faces == c.faces);
+    Selection pt;
+    pt.mode = SelectMode::Vert;
+    pt.verts = {14}; // an inner point (row 2, column 2 of the 6x6 points)
+    CHECK(growSelection(plane, pt).verts.size() == 5);
+
+    // Loops and rings on a cylinder: 8 sides, 3 segments; points row k: k*8 + i.
+    pp = PrimParams();
+    pp.kind = PrimKind::Cylinder;
+    pp.sides = 8;
+    pp.segments = 3;
+    const Mesh cyl = makePrimitive(pp, {0, 0, 0}, {20, 20, 30}, 2);
+    const std::set<Edge> loop = edgeLoop(cyl, makeEdge(8, 9));
+    CHECK(loop.size() == 8);
+    bool level = true;
+    for (const Edge& e : loop) level = level && cyl.verts[e.first].z == 10 && cyl.verts[e.second].z == 10;
+    CHECK(level);
+    const std::set<Edge> ring = edgeRing(cyl, makeEdge(8, 9));
+    CHECK(ring.size() == 4); // rows 0..3 between the same two columns
+    CHECK(ring.count(makeEdge(0, 1)) && ring.count(makeEdge(24, 25)));
+    const std::set<Edge> vring = edgeRing(cyl, makeEdge(8, 16)); // an upright edge: round the cylinder
+    CHECK(vring.size() == 8);
+
+    // Delete: faces using the selection.
+    CHECK(facesToDelete(box, top).size() == 5); // all but the bottom
+    CHECK(facesToDelete(box, oneEdge).size() == 2);
 }

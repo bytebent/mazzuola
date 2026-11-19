@@ -1,0 +1,141 @@
+# Alpha 1, v0.1.2: points, edges, faces (ARCHITECTURE §6 Selection, Vertex tool, arrows).
+# Views: 0 Top (x right, y up), 1 Front (x right, z up). Grid 8, snap on.
+vworld 0 0 0 0
+wheel -3
+wait 2
+addbox 0 0 0 64 48 32
+expect selected 6
+
+# ---- faces: switching converts; a click picks the face nearest the viewer, again the next
+key 3
+expect mode faces
+expect selected 6
+vworld 0 -100 100 0
+press left
+wait 1
+release left
+wait 1
+expect selected 0
+vworld 0 32 24 0
+press left
+wait 1
+release left
+wait 1
+expect selected 1
+expect selbounds 0 0 32 64 48 32
+wait 20
+press left
+wait 1
+release left
+wait 1
+expect selbounds 0 0 0 64 48 0
+
+# ---- points: the bottom face becomes its 4 corners; a rectangle (from outside the
+# selection's box) sees through: the 2 stacked corner points
+key 1
+expect mode vertices
+expect selected 4
+vworld 0 72 56 0
+press left
+wait 1
+vworld 0 66 50 0
+wait 1
+vworld 0 56 40 0
+wait 1
+release left
+wait 1
+expect selected 2
+expect selbounds 64 48 0 64 48 32
+
+# ---- the X arrow moves along x only (snapped), whatever the mouse does sideways
+vworld 0 89 48 0
+press left
+wait 1
+vworld 0 97 52 0
+wait 1
+vworld 0 105 53 0
+wait 1
+release left
+wait 1
+expect selbounds 80 48 0 80 48 32
+key Cmd+Z
+expect selbounds 64 48 0 64 48 32
+
+# ---- the Vertex tool grabs a point straight away (both stacked ones in Top)
+key Shift+V
+expect tool Vertex
+expect mode vertices
+vworld 0 0 0 0
+press left
+wait 1
+vworld 0 -8 -4 0
+wait 1
+vworld 0 -16 -8 0
+wait 1
+release left
+wait 1
+expect selected 2
+expect selbounds -16 -8 0 -16 -8 32
+expect faces 6
+key Cmd+Z
+
+# ---- a cylinder (8 sides, 3 segments) for loops and rings
+prim Cylinder
+primset segments 3
+vworld 0 -80 -96 0
+press left
+wait 1
+vworld 0 -60 -70 0
+wait 1
+vworld 0 -32 -48 0
+wait 1
+release left
+wait 1
+key Return
+wait 1
+expect faces 46
+key Shift+S
+key 2
+expect mode edges
+# double-click a ring edge (Front view, height 32/3): its loop goes all the way round
+vworld 1 -56 0 10.667
+press left
+release left
+wait 1
+press left
+release left
+wait 1
+expect selected 8
+# Shift+double-click: its ring, up the side through every row
+hold shift
+press left
+release left
+wait 1
+press left
+release left
+letgo shift
+wait 1
+expect selected 4
+
+# ---- grow / shrink (Cmd++ / Cmd+è) from one side face
+key 3
+vworld 1 -56 0 16
+press left
+wait 1
+release left
+wait 1
+expect selected 1
+key Cmd++
+expect selected 9
+key Cmd+è
+expect selected 1
+shot m1-07-faces.png
+
+# ---- Delete in point mode removes the faces that use the points
+key 1
+expect selected 4
+key Delete
+expect faces 37
+key Cmd+Z
+expect faces 46
+quit

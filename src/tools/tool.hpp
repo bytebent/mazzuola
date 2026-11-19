@@ -22,6 +22,7 @@ struct Pointer {
     ViewGeom g;             // that view's geometry
     double sx = 0, sy = 0;  // screen position (logical px)
     bool cmd = false, shift = false, alt = false; // alt = Option on macOS
+    int clicks = 1;         // at a press: 2 = double-click
 };
 
 // Bounds of the last shape made or selected: new shapes take their depth from it.

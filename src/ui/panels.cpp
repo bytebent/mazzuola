@@ -62,7 +62,7 @@ void Editor::toolBar() {
     auto tip = [](Act a) {
         const ActionInfo& info = actionInfo(a);
         if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) return;
-        if (info.milestone) ImGui::SetTooltip("%s (%s) - coming in v0.1.2", info.label, displayKeys(info.keys).c_str());
+        if (info.milestone) ImGui::SetTooltip("%s (%s) - coming later", info.label, displayKeys(info.keys).c_str());
         else ImGui::SetTooltip("%s (%s)", info.label, displayKeys(info.keys).c_str());
     };
 
@@ -83,7 +83,9 @@ void Editor::toolBar() {
     ImGui::Separator();
     ImGui::Spacing();
     struct Entry { Act act; const char* label; const Tool* tool; };
-    const Entry tools[] = {{Act::ToolSelect, "Select", &selectTool_}, {Act::ToolPrimitives, "Primitives", &primTool_}};
+    const Entry tools[] = {{Act::ToolSelect, "Select", &selectTool_},
+                           {Act::ToolVertex, "Vertex", &vertexTool_},
+                           {Act::ToolPrimitives, "Primitives", &primTool_}};
     for (const Entry& e : tools) {
         if (accentButton(e.label, tool_ == e.tool, ImVec2(full, ImGui::GetFrameHeight() * 1.2f))) run(e.act);
         tip(e.act);

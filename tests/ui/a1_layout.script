@@ -8,8 +8,10 @@ expect tool Select
 action tool.primitives
 expect tool Primitives
 action tool.select
-# Points, edges, faces stay greyed out until v0.1.2.
+# Points, edges, faces (v0.1.2).
 action select.vertices
+expect mode vertices
+action select.pieces
 expect mode pieces
 wait 3
 shot m1-01-layout.png

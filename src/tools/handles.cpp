@@ -29,6 +29,7 @@ void handlePos(double x0, double y0, double x1, double y1, int su, int sv, doubl
 }
 
 bool sideHandlesShown(double x0, double y0, double x1, double y1) { return x1 - x0 > 24 && y1 - y0 > 24; }
+bool tinyBox(double x0, double y0, double x1, double y1) { return x1 - x0 < 10 && y1 - y0 < 10; }
 
 double ringRadius(const Vec3& mn, const Vec3& mx) { return std::max(4.0, length(mx - mn) * 0.5 * 1.15); }
 
@@ -50,6 +51,11 @@ BoxGrab hitBox2D(const ViewGeom& g, const Vec3& mn, const Vec3& mx, double sx, d
     BoxGrab out;
     double x0, y0, x1, y1;
     screenRect(g, mn, mx, x0, y0, x1, y1);
+    // A tiny box (one point, or seen edge-on) has no handles: pressing on it moves it.
+    if (tinyBox(x0, y0, x1, y1)) {
+        if (sx >= x0 - kHit && sx <= x1 + kHit && sy >= y0 - kHit && sy <= y1 + kHit) out.kind = BoxGrab::Inside;
+        return out;
+    }
     const bool sides = sideHandlesShown(x0, y0, x1, y1);
     double best = kHit;
     for (int su = -1; su <= 1; ++su)
@@ -193,7 +199,7 @@ void drawBox2D(ImDrawList* dl, const ViewGeom& g, const Vec3& mn, const Vec3& mx
         dashLine(b, {a.x, b.y});
         dashLine({a.x, b.y}, a);
     }
-    if (!handles) return;
+    if (!handles || tinyBox(x0, y0, x1, y1)) return;
     const bool sides = sideHandlesShown(x0, y0, x1, y1);
     for (int su = -1; su <= 1; ++su)
         for (int sv = -1; sv <= 1; ++sv) {
@@ -238,6 +244,97 @@ void drawRings(ImDrawList* dl, const ViewGeom& g, const Vec3& mn, const Vec3& mx
             havePrev = ok;
         }
     }
+}
+
+void drawPoints(ImDrawList* dl, const ViewGeom& g, const Mesh& m, const std::set<int>& selected) {
+    std::vector<char> shown(m.verts.size(), 0);
+    for (int f = 0; f < (int)m.faces.size(); ++f) {
+        const Face& fc = m.faces[f];
+        const bool facing = !g.is3D() || dot(faceNormal(m, f), g.cam.eye() - faceCentre(m, f)) > 0;
+        if (facing)
+            for (int k = 0; k < fc.n; ++k) shown[fc.v[k]] = 1;
+    }
+    for (int v = 0; v < (int)m.verts.size(); ++v) {
+        const bool sel = selected.count(v) > 0;
+        if (!shown[v] && !sel) continue;
+        double x, y;
+        if (!g.project(m.verts[v], x, y)) continue;
+        const float r = sel ? 3.5f : 2.5f;
+        const ImU32 col = sel ? IM_COL32(236, 92, 178, 255) : IM_COL32(40, 44, 52, 255);
+        dl->AddRectFilled({(float)x - r, (float)y - r}, {(float)x + r, (float)y + r}, col);
+    }
+}
+
+namespace {
+constexpr double kArrowLen = 44; // px
+// Screen direction of an axis arrow (false if it points at the viewer).
+bool arrowDir(const ViewGeom& g, const Vec3& centre, int axis, double& cx, double& cy, double& dx, double& dy) {
+    if (!g.is3D()) {
+        const OrthoAxes ax = g.axes();
+        if (axis != ax.u && axis != ax.v) return false;
+    }
+    double ex, ey;
+    if (!g.project(centre, cx, cy)) return false;
+    // A step along the axis big enough to measure, whatever the zoom.
+    const double step = g.is3D() ? std::max(1.0, length(g.cam.eye() - centre) * 0.05) : 10.0 / std::max(1e-6, g.pxPerCm());
+    if (!g.project(centre + axisVec(axis) * step, ex, ey)) return false;
+    const double len = std::hypot(ex - cx, ey - cy);
+    if (len < 1e-6) return false;
+    if (g.is3D()) {
+        // Hidden when it points almost straight at the viewer: shorter than a fifth of
+        // the same length seen side-on.
+        double rx, ry;
+        if (!g.project(centre + g.cam.right() * step, rx, ry)) return false;
+        if (len < 0.2 * std::hypot(rx - cx, ry - cy)) return false;
+    }
+    dx = (ex - cx) / len;
+    dy = (ey - cy) / len;
+    return true;
+}
+const ImU32 kAxisCol[3] = {IM_COL32(208, 62, 62, 255), IM_COL32(58, 156, 74, 255), IM_COL32(62, 102, 210, 255)};
+} // namespace
+
+int hitArrows(const ViewGeom& g, const Vec3& centre, double sx, double sy) {
+    int best = -1;
+    double bestD = 7;
+    for (int axis = 0; axis < 3; ++axis) {
+        double cx, cy, dx, dy;
+        if (!arrowDir(g, centre, axis, cx, cy, dx, dy)) continue;
+        // Only the outer part of the arrow, so the middle stays free for the box.
+        const double d = segDist(cx + dx * 12, cy + dy * 12, cx + dx * kArrowLen, cy + dy * kArrowLen, sx, sy);
+        if (d < bestD) {
+            bestD = d;
+            best = axis;
+        }
+    }
+    return best;
+}
+
+void drawArrows(ImDrawList* dl, const ViewGeom& g, const Vec3& centre, int hotAxis) {
+    for (int axis = 0; axis < 3; ++axis) {
+        double cx, cy, dx, dy;
+        if (!arrowDir(g, centre, axis, cx, cy, dx, dy)) continue;
+        const float w = axis == hotAxis ? 3.0f : 2.0f;
+        const ImVec2 a((float)(cx + dx * 12), (float)(cy + dy * 12));
+        const ImVec2 b((float)(cx + dx * kArrowLen), (float)(cy + dy * kArrowLen));
+        dl->AddLine(a, b, kAxisCol[axis], w);
+        const ImVec2 tip((float)(cx + dx * (kArrowLen + 9)), (float)(cy + dy * (kArrowLen + 9)));
+        const ImVec2 l((float)(b.x - dy * 5), (float)(b.y + dx * 5)), r((float)(b.x + dy * 5), (float)(b.y - dx * 5));
+        dl->AddTriangleFilled(tip, l, r, kAxisCol[axis]);
+    }
+}
+
+Vec3 arrowOffset(const ViewGeom& g, const Grid& grid, const Vec3& centre, const Vec3& mn0, int axis, double x0,
+                 double y0, double x1, double y1) {
+    double c0x, c0y, ex, ey;
+    if (!g.project(centre, c0x, c0y) || !g.project(centre + axisVec(axis), ex, ey)) return {};
+    // Screen pixels per cm along the axis; the mouse movement measured along it.
+    const double ax = ex - c0x, ay = ey - c0y, len2 = ax * ax + ay * ay;
+    if (len2 < 1e-12) return {};
+    const double t = ((x1 - x0) * ax + (y1 - y0) * ay) / len2;
+    Vec3 d;
+    d[axis] = grid.snapValue(mn0[axis] + t) - mn0[axis];
+    return d;
 }
 
 } // namespace mazz

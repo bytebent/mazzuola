@@ -1,4 +1,5 @@
 #include "app/editor.hpp"
+#include "core/select_ops.hpp"
 #include "ui/imgui_checks.hpp"
 #include "ui/theme.hpp"
 #include "imgui_internal.h" // DockBuilder, BeginViewportSideBar
@@ -89,6 +90,10 @@ bool Editor::enabled(Act a) const {
     case Act::FlyMode: return flying_ || firstView3D() >= 0;
     case Act::MaximiseView: return layout_.maximised >= 0 || hoveredView_ >= 0;
     case Act::Delete: return !doc_.sel.empty();
+    case Act::SelectGrow:
+    case Act::SelectShrink: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
+    case Act::SelectLoop:
+    case Act::SelectRing: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
     case Act::Undo: return doc_.canUndo();
     case Act::Redo: return doc_.canRedo();
     default: return true;
@@ -107,8 +112,9 @@ void Editor::run(Act a) {
     case Act::Redo: cancelTool(); if (doc_.redo()) touch(); break;
     case Act::Delete: {
         cancelTool();
-        if (doc_.sel.empty() || (doc_.sel.mode != SelectMode::Piece && doc_.sel.mode != SelectMode::Face)) break;
-        const std::set<int> faces = doc_.sel.faces;
+        if (doc_.sel.empty()) break;
+        // Faces, or the faces that use the selected points or edges.
+        const std::set<int> faces = facesToDelete(doc_.mesh, doc_.sel);
         doc_.apply("Delete", [&](MeshEdit& e, Selection& sel) {
             e.deleteFaces(faces);
             sel.clear();
@@ -133,15 +139,49 @@ void Editor::run(Act a) {
         break;
     }
     // Points, edges and faces arrive in v0.1.2 (they convert the selection then).
+    case Act::ModeVertex:
+    case Act::ModeEdge:
+    case Act::ModeFace:
     case Act::ModePiece: {
-        Selection s = doc_.sel;
-        s.mode = SelectMode::Piece;
-        doc_.select(s);
+        // Switching mode converts the selection (ARCHITECTURE §6).
+        const SelectMode to = a == Act::ModeVertex ? SelectMode::Vert
+                              : a == Act::ModeEdge ? SelectMode::Edge
+                              : a == Act::ModeFace ? SelectMode::Face
+                                                   : SelectMode::Piece;
+        cancelTool();
+        doc_.select(convertSelection(doc_.mesh, doc_.sel, to));
+        touch();
+        break;
+    }
+    case Act::SelectGrow:
+        doc_.select(growSelection(doc_.mesh, doc_.sel));
+        touch();
+        break;
+    case Act::SelectShrink:
+        doc_.select(shrinkSelection(doc_.mesh, doc_.sel));
+        touch();
+        break;
+    case Act::SelectLoop:
+    case Act::SelectRing: {
+        // The loop / ring of every selected edge (also from points or faces: their edges).
+        const Selection e = convertSelection(doc_.mesh, doc_.sel, SelectMode::Edge);
+        Selection out;
+        out.mode = SelectMode::Edge;
+        for (const Edge& edge : e.edges)
+            for (const Edge& x : a == Act::SelectLoop ? edgeLoop(doc_.mesh, edge) : edgeRing(doc_.mesh, edge))
+                out.edges.insert(x);
+        doc_.select(convertSelection(doc_.mesh, out, doc_.sel.mode == SelectMode::Vert ? SelectMode::Vert : SelectMode::Edge));
         touch();
         break;
     }
     case Act::ToolSelect: setTool(&selectTool_); break;
     case Act::ToolPrimitives: setTool(&primTool_); break;
+    case Act::ToolVertex:
+        // The Vertex tool works on points.
+        setTool(&vertexTool_);
+        doc_.select(convertSelection(doc_.mesh, doc_.sel, SelectMode::Vert));
+        touch();
+        break;
     case Act::GridSmaller: grid_.halve(); markViewsDirty(); break;
     case Act::GridLarger: grid_.doubleUp(); markViewsDirty(); break;
     case Act::GridSet: gridDialogValue_ = grid_.size; gridDialogOpen_ = true; break;
@@ -374,10 +414,11 @@ void Editor::menuBar() {
         menuItem(Act::ModeFace, doc_.sel.mode == SelectMode::Face);
         menuItem(Act::ModePiece, doc_.sel.mode == SelectMode::Piece);
         ImGui::Separator();
-        plannedItem("Grow selection", 1);
-        plannedItem("Shrink selection", 1);
+        menuItem(Act::SelectGrow);
+        menuItem(Act::SelectShrink);
+        menuItem(Act::SelectLoop);
+        menuItem(Act::SelectRing);
         plannedItem("Select similar", 1);
-        plannedItem("Edge loop / ring", 1);
         ImGui::Separator();
         menuItem(Act::Hide);
         menuItem(Act::HideOthers);
@@ -388,7 +429,8 @@ void Editor::menuBar() {
         for (Act a : {Act::ToolSelect, Act::ToolVertex, Act::ToolPrimitives, Act::ToolDraw, Act::ToolPushPull,
                       Act::ToolExtrude, Act::ToolCut, Act::ToolLatheLoft, Act::ToolBrush, Act::ToolMapping,
                       Act::ToolPaint, Act::ToolColour})
-            menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_));
+            menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_) ||
+                            (a == Act::ToolVertex && tool_ == &vertexTool_));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Create")) {
@@ -486,12 +528,19 @@ void Editor::statusBar() {
             // cursor, grid, counts.
             ImGui::TextUnformatted(tool_->name());
             ImGui::TextDisabled("|");
-            if (flying_) ImGui::TextUnformatted("flying: WASD move, Q/E down/up, Shift fast, Z or Esc stops");
-            else ImGui::TextUnformatted(tool_->hint());
+            const char* hintText = flying_ ? "flying: WASD move, Q/E down/up, Shift fast, Z or Esc stops" : tool_->hint();
+            const float hintX = ImGui::GetCursorScreenPos().x;
+            const float hintY = ImGui::GetCursorScreenPos().y;
             std::string right;
             char buf[160];
             if (doc_.sel.empty()) std::snprintf(buf, sizeof buf, "%s, nothing selected", selectModeName(doc_.sel.mode));
-            else std::snprintf(buf, sizeof buf, "%s, %d faces selected", selectModeName(doc_.sel.mode), (int)doc_.sel.faces.size());
+            else {
+                const SelectMode md = doc_.sel.mode;
+                const int n = md == SelectMode::Vert ? (int)doc_.sel.verts.size()
+                              : md == SelectMode::Edge ? (int)doc_.sel.edges.size()
+                                                       : (int)doc_.sel.faces.size();
+                std::snprintf(buf, sizeof buf, "%s, %d selected", selectModeName(md), n);
+            }
             right += buf;
             if (haveCursorWorld_ && cursorView_ >= 0 && !flying_) {
                 const OrthoAxes ax = orthoAxes(views_[cursorView_].dir);
@@ -506,10 +555,16 @@ void Editor::statusBar() {
             for (const Face& fc : doc_.mesh.faces) tris += fc.n - 2;
             std::snprintf(buf, sizeof buf, "   |   %d vertices, %d triangles", (int)doc_.mesh.verts.size(), tris);
             right += buf;
+            // The right part always shows in full; the hint gets what's left (with "...").
             const float w = ImGui::CalcTextSize(right.c_str()).x;
             const float x = ImGui::GetWindowWidth() - w - ImGui::GetStyle().WindowPadding.x - 4;
+            const float rightScreenX = ImGui::GetWindowPos().x + x;
+            const float hintMax = rightScreenX - ImGui::GetStyle().ItemSpacing.x * 2;
+            ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), ImVec2(hintX, hintY),
+                                      ImVec2(hintMax, hintY + ImGui::GetTextLineHeight()), hintMax, hintText,
+                                      nullptr, nullptr);
             ImGui::SameLine();
-            if (x > ImGui::GetCursorPosX()) ImGui::SetCursorPosX(x);
+            ImGui::SetCursorPosX(std::max(x, ImGui::GetCursorPosX()));
             ImGui::TextUnformatted(right.c_str());
             ImGui::EndMenuBar();
         }

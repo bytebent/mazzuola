@@ -17,6 +17,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/rock.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/rock.cpp.o.d"
+  "CMakeFiles/mazz_core.dir/src/core/select_ops.cpp.o"
+  "CMakeFiles/mazz_core.dir/src/core/select_ops.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/transform.cpp.o"

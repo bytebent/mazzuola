@@ -381,6 +381,30 @@ src/core/rock.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/rock.cpp.s
 .PHONY : src/core/rock.cpp.s
 
+src/core/select_ops.o: src/core/select_ops.cpp.o
+.PHONY : src/core/select_ops.o
+
+# target to build an object file
+src/core/select_ops.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/select_ops.cpp.o
+.PHONY : src/core/select_ops.cpp.o
+
+src/core/select_ops.i: src/core/select_ops.cpp.i
+.PHONY : src/core/select_ops.i
+
+# target to preprocess a source file
+src/core/select_ops.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/select_ops.cpp.i
+.PHONY : src/core/select_ops.cpp.i
+
+src/core/select_ops.s: src/core/select_ops.cpp.s
+.PHONY : src/core/select_ops.s
+
+# target to generate assembly for a file
+src/core/select_ops.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/select_ops.cpp.s
+.PHONY : src/core/select_ops.cpp.s
+
 src/core/selection.o: src/core/selection.cpp.o
 .PHONY : src/core/selection.o
 
@@ -588,6 +612,9 @@ help:
 	@echo "... src/core/rock.o"
 	@echo "... src/core/rock.i"
 	@echo "... src/core/rock.s"
+	@echo "... src/core/select_ops.o"
+	@echo "... src/core/select_ops.i"
+	@echo "... src/core/select_ops.s"
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"
