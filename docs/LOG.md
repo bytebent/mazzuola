@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Redesign: brush feel (docs only)
+- Agreed with the user: models are points and faces, not brushes, but shapes are
+  handled like Scalpellino's brushes, also once the model gets complex: draw a box →
+  adjustable preview → Return; selection box with always-visible handles; side handles
+  push one side (opposite side fixed, snapped); Option+drag a corner to rotate (15°,
+  +Shift free); drag moves, Shift+drag copies. Written as ARCHITECTURE §6 "Brush feel".
+
 ### 2026-11-19 — Milestone 1 withdrawn (v0.1.0), back to the design
 - Milestone 1 (`43e0a5d`, `0b93748`, released as v0.1.0) was built by Claude Sonnet by
   mistake instead of Opus. The user tried it: apart from the basic UI elements

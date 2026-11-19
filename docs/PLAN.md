@@ -19,8 +19,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   works, click by click (pictures from the user), written into ARCHITECTURE. Then the
   foundations (tool structure like Scalpellino's, clean numbers, undo, selection), then
   small releases the user tries one by one.
-- **Open design question:** primitives should act like Scalpellino's brushes (user,
-  2026-11-19). What that means exactly is being worked out.
+- **Agreed so far:** "brush feel" (ARCHITECTURE §6): models stay points and faces, but
+  making, selecting, resizing, rotating and moving work like Scalpellino's brushes.
+  Next to agree: selecting, click by click.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7

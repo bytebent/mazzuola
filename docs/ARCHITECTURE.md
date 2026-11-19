@@ -184,6 +184,21 @@ to the GPU → one redraw of the views that show it.
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
 | New / open / save / save as | **Cmd+N** / **Cmd+O** / **Cmd+S** / **Cmd+Shift+S** |
 
+### Brush feel (agreed 2026-11-19)
+Models are points and faces, never brushes (no planes, no convexity rule). But shapes
+are **handled like Scalpellino's brushes**, both when made and later, however complex
+the model gets:
+- **Making:** draw a box in a 2D view; it shows as a preview you can adjust with the same
+  handles in any 2D view; Return creates, Esc cancels.
+- **Selection box:** whatever is selected (one shape, some faces, the whole model) gets a
+  box around it with handles, **always visible**. No click-again to switch modes.
+- **Resizing:** dragging a side handle pushes that side while the opposite side stays
+  put, snapped to the grid. The points inside stretch between the sides.
+- **Rotating:** Option+drag a corner handle (15° steps, +Shift free), as in Scalpellino.
+- **Moving / copying:** drag to move (snapped); Shift+drag makes a copy.
+- The box handles always act on the whole selection. Pushing one face of a mesh outward
+  is push/pull (M2), not the box handles.
+
 ### Selection
 - Vertices, edges, faces, or connected pieces (1–4). Click, Cmd+click adds/removes,
   box select in any view, select similar (texture, smoothing group, direction),
