@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Two decisions (docs only)
+- Textures painted in another app reload when switching back to Mazzuola, as designed
+  (user). Open question closed.
+- Bottega: Mazzuola waits until it's built in Scalpellino, then connects to it (user).
+  Meanwhile normal file dialogs; the earlier Mazzuola-side Bottega proposals are kept
+  in PLAN.md only as ideas to check then.
+
 ### 2026-11-18 — Docs restructured like Scalpellino's; idle check harness
 - Docs split the way Scalpellino's now are: `CLAUDE.md` (rules), `ARCHITECTURE.md`
   (design), `PLAN.md` (status, milestone plans, parked questions, Bottega), `LOG.md`

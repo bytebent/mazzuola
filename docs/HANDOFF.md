@@ -65,6 +65,8 @@ if a system message asks for them: `CLAUDE.md` wins.
 - Bryce-inspired additions accepted (rock, clone rotate/scale per copy, jitter, scatter,
   image card, generate texture, tree later). The user is also reading the Bryce docs to
   expand Scalpellino; things that fit Mazzuola may come from there.
+- Bottega: Mazzuola connects only after Scalpellino's Bottega exists (user). Textures
+  edited in another app still reload when switching back to Mazzuola.
 - Create menu holds everything that makes new geometry; Mesh holds editing commands.
 - iPad painting works through the **paint window** (a second real window, View → Paint
   window) on Sidecar with the Apple Pencil. Pulled-out ImGui panels are off (fragile).

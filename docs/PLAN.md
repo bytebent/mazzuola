@@ -19,8 +19,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
   vertex colours → M8 paint window + tablets; later: tree generator. Details below and in
   ARCHITECTURE §14.
-- **Bottega** (shared folder with Scalpellino): decided in Scalpellino's docs, not built;
-  how it applies to Mazzuola is below (partly to confirm).
+- **Bottega** (shared folder with Scalpellino): being built in Scalpellino first.
+  Mazzuola connects to it once it's done there (user, 2026-11-19); meanwhile other work
+  goes ahead.
 - How the user likes to work: one release per step, short plain reports, ask before
   starting the next milestone (see `HANDOFF.md`).
 
@@ -53,11 +54,6 @@ cgltf joins with export in milestone 1.
   as they are (the texture stretches with the shape). Proposed default.
 - **Shortcuts**: the proposed table in ARCHITECTURE §6 (push/pull on Shift+F, vertex
   colour on Shift+O are the least obvious) — confirm in M0.
-- **Reloading textures painted in another app:** ARCHITECTURE §6 says a texture reloads
-  when Mazzuola's window becomes active. Bottega's rule (decided for Scalpellino) is no
-  automatic rescanning, not even on window focus. Keep reload-on-focus for a model's own
-  textures (it's one file being edited, not a library scan), or use a Reload command
-  like Rescan? Decide before milestone 5.
 
 ## Bottega (shared folder) — decided with the user in Scalpellino's docs, not built
 
@@ -79,14 +75,15 @@ far (from Scalpellino's PLAN.md, 2026-11-18):
 - Scalpellino's milestone 10 (Props) loads `.glb` first and `.mazz` once Mazzuola's
   format is final.
 
-For Mazzuola (proposed, confirm):
-- A model is saved as `models/<name>/<name>.mazz` with its texture PNGs beside it.
-- In `.mazz`, a texture in the model's folder is written as a plain file name
-  (`"lamp.png"`); one from the shared library with a Bottega path
-  (`bottega:textures/Bricks_24.png`).
-- Bottega basics (folder setting, marker file, Rescan, File dialogs starting in
-  `models/`) come with saving in milestone 1.
-- Saved palettes (milestone 6) live in `palettes/`.
+**For Mazzuola (user, 2026-11-19): wait.** Bottega is being built in Scalpellino first;
+once it's done, see how it works there and connect Mazzuola to it then. Until then
+Mazzuola saves and opens with normal file dialogs. Ideas to check against Scalpellino's
+version when the time comes (not agreed): a model saved as `models/<name>/<name>.mazz`
+with its PNGs beside it; shared-library textures written with a Bottega path; saved
+palettes in `palettes/`.
+- **Exception, decided by the user:** a texture painted in another app **does** reload
+  when you switch back to Mazzuola (ARCHITECTURE §6). That's one file being edited, not
+  a library scan, so Bottega's "no rescanning on focus" rule doesn't apply to it.
 
 ## Milestone 0 — Skeleton (done, v0.0.0 … v0.0.7)
 
