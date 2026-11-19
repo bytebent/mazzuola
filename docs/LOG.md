@@ -4,6 +4,11 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — Vertex tool: points only (docs only)
+- User: in the Vertex tool with a face selected, pressing a corner handle grabbed the
+  corner point (points come first in that tool) instead of resizing. Decided: the
+  Vertex tool works on points only; 2/3/4 in it switch to the Select tool. With v0.1.3.
+
 ### 2026-11-20 — After v0.1.2: arrows in 3D only; views ordered like Scalpellino
 - User (screenshot): the arrows in the 2D views got in the way. They now show in the 3D
   view only; in 2D the selection box and its handles move things as before.

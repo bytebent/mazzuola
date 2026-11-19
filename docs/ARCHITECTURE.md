@@ -276,7 +276,10 @@ the model gets:
 ### Vertex tool (Shift+V)
 - **Click and drag one point straight away** (agreed 2026-11-19, as in Scalpellino): no
   need to select it first; snapped to the grid. That is the difference from the Select tool in
-  point mode, where a point is clicked (selected) first. Selected points move with the arrows;
+  point mode, where a point is clicked (selected) first. The Vertex tool works on points
+  only: pressing 2, 3 or 4 (edges, faces, pieces) in it switches to the Select tool
+  (user, 2026-11-20; a face's corner handles sit on its corner points, so in face mode
+  the tool grabbed the point instead of resizing). Selected points move with the arrows;
   rotate and scale with handles; typed values (Cmd+Shift+T).
 - **Soft selection** (on when several points are selected and the toggle is on): typed
   radius and curve (smooth, linear, sharp, constant), shown as a colour gradient; the

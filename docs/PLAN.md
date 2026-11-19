@@ -217,7 +217,8 @@ each tried by the user before the next starts:
    - **F. Release v0.1.2.** UI script through all of it; screenshots; controls, README,
      release notes. User tries it.
 
-4. **v0.1.3 — Typed values.** Transform panel (live preview; copies in a row or circle
+4. **v0.1.3 — Typed values.** Also: the Vertex tool works on points only (2/3/4 in it
+   switch to the Select tool; user 2026-11-20). Transform panel (live preview; copies in a row or circle
    with rotate/scale per copy and "scale the offset"); mirror and mirror clone; flatten;
    move along normal.
 5. **v0.1.4 — Out of the app.** `.glb`/`.gltf` + `.obj` export (geometry; origin =
