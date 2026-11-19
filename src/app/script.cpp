@@ -194,6 +194,8 @@ void Editor::stepScript() {
             else if (what == "tubewidth") p.tubeWidth = val;
             else if (what == "stacks") p.stacks = iv;
             else if (what == "iterations") p.iterations = iv;
+            else if (what == "rounded") p.roundSegments = iv;
+            else if (what == "rounding") p.roundSize = val;
             else if (what == "rockfaces") p.rock.faces = iv;
             else if (what == "roughness") p.rock.roughness = val;
             else if (what == "flatbottom") p.rock.flatBottom = iv != 0;

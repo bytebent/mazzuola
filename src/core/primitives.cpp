@@ -34,6 +34,8 @@ PrimParams clampParams(const PrimParams& in) {
     p.segX = std::clamp(p.segX, 1, 32);
     p.segY = std::clamp(p.segY, 1, 32);
     p.segZ = std::clamp(p.segZ, 1, 32);
+    p.roundSegments = std::clamp(p.roundSegments, 0, 3);
+    p.roundSize = std::clamp(p.roundSize, 1.0, 90.0);
     p.rows = std::clamp(p.rows, 1, 64);
     p.cols = std::clamp(p.cols, 1, 64);
     p.sides = std::clamp(p.sides, 3, 64);
@@ -74,7 +76,7 @@ double cornerAngle(int i, int n) { return 2 * kPi * i / n + ((n % 4 == 0) ? kPi 
 
 // A disc of rings at height w; ring r has radius r/rings. Returns the outer ring (shared
 // with the side wall). `up` = the cap faces +w (top) or -w (bottom).
-std::vector<int> cap(Builder& b, int n, int rings, double w, bool up, const std::vector<int>* outer) {
+std::vector<int> cap(Builder& b, int n, int rings, double w, bool up, const std::vector<int>* outer, double outerRad = 1) {
     std::vector<std::vector<int>> ring(rings + 1);
     for (int r = 1; r <= rings; ++r) {
         if (r == rings && outer) {
@@ -82,7 +84,7 @@ std::vector<int> cap(Builder& b, int n, int rings, double w, bool up, const std:
             continue;
         }
         for (int i = 0; i < n; ++i) {
-            const double a = cornerAngle(i, n), rad = (double)r / rings;
+            const double a = cornerAngle(i, n), rad = outerRad * r / rings;
             ring[r].push_back(b.point(rad * std::cos(a), rad * std::sin(a), w));
         }
     }
@@ -99,14 +101,30 @@ std::vector<int> cap(Builder& b, int n, int rings, double w, bool up, const std:
     return ring[rings];
 }
 
-Mesh cylinder(const PrimParams& p, double topScale) {
-    // topScale 1 = cylinder; 0 = cone (apex).
+Mesh cylinder(const PrimParams& p, double topScale, double roundRad = 0, double roundH = 0) {
+    // topScale 1 = cylinder; 0 = cone (apex). roundRad / roundH: the rounded rim's size
+    // across and along the axis in local units (cylinder only; 0 = sharp).
     Builder b;
     const int n = p.sides, s = p.segments;
+    const bool rounded = topScale > 0 && p.roundSegments > 0 && roundRad > 0 && roundH > 0;
+    // The side's profile, bottom to top: (radius, height).
+    std::vector<std::pair<double, double>> profile;
+    if (rounded) {
+        const int q = p.roundSegments;
+        for (int m = 0; m <= q; ++m) { // bottom rim: from the cap's edge round to the wall
+            const Vec3 d = normalize(Vec3{(double)m, -(double)(q - m), 0});
+            profile.push_back({1 - roundRad + roundRad * d.x, roundH + roundH * d.y});
+        }
+        for (int k = 1; k < s; ++k) profile.push_back({1, roundH + (1 - 2 * roundH) * k / s});
+        for (int m = 0; m <= q; ++m) { // top rim
+            const Vec3 d = normalize(Vec3{(double)(q - m), (double)m, 0});
+            profile.push_back({1 - roundRad + roundRad * d.x, 1 - roundH + roundH * d.y});
+        }
+    } else {
+        for (int k = 0; k <= s; ++k) profile.push_back({1 + (topScale - 1) * k / s, (double)k / s});
+    }
     std::vector<std::vector<int>> rows;
-    for (int k = 0; k <= s; ++k) {
-        const double w = (double)k / s;
-        const double rad = 1 + (topScale - 1) * w;
+    for (const auto& [rad, w] : profile) {
         if (rad <= 1e-12) break; // the apex is added below
         std::vector<int> row;
         for (int i = 0; i < n; ++i) {
@@ -120,13 +138,99 @@ Mesh cylinder(const PrimParams& p, double topScale) {
             const int j = (i + 1) % n;
             b.face({rows[k][i], rows[k][j], rows[k + 1][j], rows[k + 1][i]}, 1);
         }
-    cap(b, n, p.capRings, 0, false, &rows.front());
+    const double capRad = rounded ? 1 - roundRad : 1;
+    cap(b, n, p.capRings, rounded ? 0 : 0, false, &rows.front(), capRad);
     if (topScale > 0) {
-        cap(b, n, p.capRings, 1, true, &rows.back());
+        cap(b, n, p.capRings, 1, true, &rows.back(), capRad);
     } else {
         const int apex = b.point(0, 0, 1);
         for (int i = 0; i < n; ++i) b.face({rows.back()[i], rows.back()[(i + 1) % n], apex}, 1);
     }
+    return b.m;
+}
+
+// A box with rounded edges, built at its real proportions (half sizes hu, hv across,
+// height hw along w, from 0): flat faces, a strip of `q` faces along each edge, and a
+// patch of q*q triangles on each corner, all rounded with radius `rad` (same in every
+// direction).
+Mesh roundedBox(double hu, double hv, double hw, double rad, int q) {
+    Builder b;
+    std::map<std::array<long, 3>, int> seen;
+    auto pt = [&](const Vec3& v) {
+        const std::array<long, 3> key = {std::lround(v.x * 1e6), std::lround(v.y * 1e6), std::lround(v.z * 1e6)};
+        auto it = seen.find(key);
+        if (it != seen.end()) return it->second;
+        return seen[key] = b.point(v.x, v.y, v.z);
+    };
+    const Vec3 c{0, 0, hw / 2};
+    const Vec3 a{hu - rad, hv - rad, hw / 2 - rad}; // the inner box's half sizes
+    // A point on the rounding next to inner corner (sx, sy, sz), in direction mix of
+    // the axes by weights (wx, wy, wz) (normalised: an even spread).
+    auto round = [&](int sx, int sy, int sz, double wx, double wy, double wz) {
+        const Vec3 base = c + Vec3{sx * a.x, sy * a.y, sz * a.z};
+        return pt(base + normalize(Vec3{sx * wx, sy * wy, sz * wz}) * rad);
+    };
+    auto face = [&](std::vector<int> idx, int sg) {
+        // Outward: flip if the face looks inward (the shape is convex).
+        Mesh tmp;
+        Face f;
+        f.n = (int)idx.size();
+        for (int k = 0; k < f.n; ++k) f.v[k] = idx[k];
+        f.sg = sg;
+        b.m.faces.push_back(f);
+        const int fi = (int)b.m.faces.size() - 1;
+        if (dot(faceNormal(b.m, fi), faceCentre(b.m, fi) - c) < 0) std::reverse(b.m.faces[fi].v, b.m.faces[fi].v + f.n);
+    };
+    const int signs[2] = {-1, 1};
+    // Flat faces.
+    for (int axis = 0; axis < 3; ++axis)
+        for (int s : signs) {
+            std::vector<int> idx;
+            const int o1 = (axis + 1) % 3, o2 = (axis + 2) % 3;
+            const int corner[4][2] = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
+            for (const auto& cr : corner) {
+                int sg[3];
+                sg[axis] = s;
+                sg[o1] = cr[0];
+                sg[o2] = cr[1];
+                double w[3] = {0, 0, 0};
+                w[axis] = 1;
+                idx.push_back(round(sg[0], sg[1], sg[2], w[0], w[1], w[2]));
+            }
+            face(idx, 0);
+        }
+    // Edge strips: along `along`, between the faces of axes i and j.
+    for (int along = 0; along < 3; ++along) {
+        const int i = (along + 1) % 3, j = (along + 2) % 3;
+        for (int si : signs)
+            for (int sj : signs)
+                for (int m = 0; m < q; ++m) {
+                    std::vector<int> idx;
+                    for (int end : {-1, 1})
+                        for (int step : {m, m + 1}) {
+                            int sg[3];
+                            sg[along] = end;
+                            sg[i] = si;
+                            sg[j] = sj;
+                            double w[3] = {0, 0, 0};
+                            w[i] = q - step;
+                            w[j] = step;
+                            idx.push_back(round(sg[0], sg[1], sg[2], w[0], w[1], w[2]));
+                        }
+                    face({idx[0], idx[1], idx[3], idx[2]}, 1);
+                }
+    }
+    // Corner patches: a triangle grid over the corner's eighth of a sphere.
+    for (int sx : signs)
+        for (int sy : signs)
+            for (int sz : signs) {
+                auto at = [&](int ii, int jj) { return round(sx, sy, sz, q - ii - jj, ii, jj); };
+                for (int ii = 0; ii < q; ++ii)
+                    for (int jj = 0; jj + ii < q; ++jj) {
+                        face({at(ii, jj), at(ii + 1, jj), at(ii, jj + 1)}, 1);
+                        if (ii + jj + 2 <= q) face({at(ii + 1, jj), at(ii + 1, jj + 1), at(ii, jj + 1)}, 1);
+                    }
+            }
     return b.m;
 }
 
@@ -300,10 +404,20 @@ Mesh makePrimitive(const PrimParams& in, const Vec3& mn, const Vec3& mx, int axi
     const PrimParams p = clampParams(in);
     axis = std::clamp(axis, 0, 2);
     Mesh m;
+    // Real sizes across (u, v) and along (w) the axis, for roundings the same in every
+    // direction.
+    const int au0 = (axis + 1) % 3, av0 = (axis + 2) % 3;
+    const double su = mx[au0] - mn[au0], sv = mx[av0] - mn[av0], sw = mx[axis] - mn[axis];
+    const double roundCm = p.roundSize / 100.0 * 0.5 * std::min({su, sv, sw});
+    const bool rounded = p.roundSegments > 0 && roundCm > 0;
     switch (p.kind) {
-    case PrimKind::Box: m = box(p, axis); break;
+    case PrimKind::Box:
+        m = rounded ? roundedBox(su / 2, sv / 2, sw, roundCm * 0.999, p.roundSegments) : box(p, axis);
+        break;
     case PrimKind::Plane: m = plane(p); break;
-    case PrimKind::Cylinder: m = cylinder(p, 1); break;
+    case PrimKind::Cylinder:
+        m = rounded ? cylinder(p, 1, roundCm / (0.5 * std::min(su, sv)), roundCm / sw) : cylinder(p, 1);
+        break;
     case PrimKind::Cone: m = cylinder(p, 0); break;
     case PrimKind::Tube: m = tube(p); break;
     case PrimKind::Torus: m = torus(p); break;

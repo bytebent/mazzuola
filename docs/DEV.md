@@ -90,6 +90,7 @@ prim <shape> / primset <setting> <value>   choose a shape / set a setting (as in
                                     segx segy segz rows cols sides segments caprings hole
                                     tubesides tubewidth stacks iterations
                                     rockfaces roughness flatbottom bottom quads seed
+                                    rounded rounding
 ```
 
 Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.

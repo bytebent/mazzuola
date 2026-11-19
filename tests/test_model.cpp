@@ -472,6 +472,8 @@ void testPrimitives() {
                 p.rock.flatBottom = variant != 1;
                 p.rock.joinQuads = variant == 2;
                 p.rock.seed = 7 + variant + axis * 3;
+                p.roundSegments = variant; // sharp, 1 and 2 faces per edge
+                p.roundSize = 20 + variant * 30;
                 const Mesh m = makePrimitive(p, mn, mx, axis);
                 const char* name = primKindName(p.kind);
                 bool ok = !m.faces.empty();
@@ -534,6 +536,40 @@ void testPrimitives() {
     CHECK(walls == 8 * 2 && caps == 16);
     PrimKind k;
     CHECK(primKindFromName("torus", k) && k == PrimKind::Torus && !primKindFromName("teapot", k));
+
+    // Rounded edges: 1-3 faces across every edge; still fills the box, closed, outward.
+    for (int q = 1; q <= 3; ++q)
+        for (int axis = 0; axis < 3; ++axis) {
+            PrimParams rb;
+            rb.kind = PrimKind::Box;
+            rb.roundSegments = q;
+            rb.roundSize = 40;
+            const Mesh b = makePrimitive(rb, {0, 0, 0}, {64, 32, 48}, axis);
+            CHECK(b.faces.size() == (size_t)(6 + 12 * q + 8 * q * q));
+            Vec3 a, c;
+            b.bounds(a, c);
+            CHECK(closedAndConsistent(b) && signedVolume(b) > 0 && nearV(a, {0, 0, 0}, 0) && nearV(c, {64, 32, 48}, 0));
+            rb.kind = PrimKind::Cylinder;
+            rb.sides = 8;
+            rb.segments = 2;
+            const Mesh cy = makePrimitive(rb, {0, 0, 0}, {64, 32, 48}, axis);
+            CHECK(cy.faces.size() == (size_t)((2 * q + 2) * 8 + 16));
+            cy.bounds(a, c);
+            CHECK(closedAndConsistent(cy) && signedVolume(cy) > 0 && nearV(a, {0, 0, 0}, 0) && nearV(c, {64, 32, 48}, 0));
+        }
+    // The rounding is the same size in cm on every edge: a 64 x 32 x 48 box, 40% of 16 =
+    // 6.4 cm: the top face starts 6.4 cm in from each side.
+    {
+        PrimParams rb;
+        rb.kind = PrimKind::Box;
+        rb.roundSegments = 2;
+        rb.roundSize = 40;
+        const Mesh b = makePrimitive(rb, {0, 0, 0}, {64, 32, 48}, 2);
+        double minX = 1e9;
+        for (const Vec3& v : b.verts)
+            if (v.z == 48) minX = std::min(minX, v.x);
+        CHECK(near(minX, 6.4, 0.01));
+    }
 
     // Rocks: same seed, same rock; another seed, another rock; flat bottom flat; about
     // the asked number of triangles; many seeds all valid.

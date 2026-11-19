@@ -155,6 +155,21 @@ wait 1
 expect previewfaces 60
 key Esc
 expect preview 0
+# rounded edges: a box with 2 faces across each edge (6 + 12*2 + 8*4 = 62 faces)
+prim Box
+primset rounded 2
+vworld 0 -128 80 0
+press left
+wait 1
+vworld 0 -100 100 0
+wait 1
+vworld 0 -80 112 0
+wait 1
+release left
+wait 1
+expect previewfaces 62
+key Esc
+primset rounded 0
 # a torus drawn in Front stands facing you (its axis along y; its depth, y, comes
 # from the last shape, the geosphere)
 prim Torus

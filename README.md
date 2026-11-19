@@ -7,10 +7,11 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 1 (milestone 1, redone). v0.1.1 "All shapes": draw boxes, planes,
-cylinders, cones, tubes, tori, spheres, geospheres and rocks; select them, move, copy,
-resize and rotate them like brushes, undo, save and open `.mazz`. Points/edges/faces,
-typed transforms and export follow in v0.1.2 – v0.1.4.
+**Status:** alpha 1 (milestone 1, redone). v0.1.2 "Points, edges, faces": draw every
+primitive shape and rocks (boxes and cylinders with rounded edges); select whole
+pieces, faces, edges or points; move, copy, resize and rotate them like brushes or
+along the axis arrows; drag single points with the Vertex tool; edge loops and rings;
+undo, save and open `.mazz`. Typed transforms and export follow in v0.1.3 – v0.1.4.
 
 ## Download
 
@@ -26,14 +27,18 @@ including the planned ones with the milestone that brings them.
 |---|---|
 | New / open / save / save as | **Cmd+N** / **Cmd+O** / **Cmd+S** / **Cmd+Shift+S** |
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
-| Tools (also the buttons on the left) | Select **Shift+S**, Primitives **Shift+B** |
-| Selection mode: whole pieces (points, edges, faces in v0.1.2) | **4** (and the buttons at the top of the tool bar) |
+| Tools (also the buttons on the left) | Select **Shift+S**, Vertex **Shift+V**, Primitives **Shift+B** |
+| Selection mode: points / edges / faces / whole pieces | **1** / **2** / **3** / **4** (and the buttons at the top of the tool bar); switching converts the selection |
 | Draw a shape | Primitives tool (or Create → Primitives / Rock): pick the shape and its settings in Properties, drag a rectangle in a 2D view, adjust with the handles in any 2D view (or type the size); **Return** creates, **Esc** cancels. Round shapes stand along the view's depth (drawn in Top = upright); the depth comes from the last shape made or selected |
 | Select | Select tool: click a piece (again on the same spot: the one underneath); **Cmd+click** adds/removes; drag from empty space for a rectangle; **Esc** selects nothing; **Cmd+A** all |
 | Move / copy | drag inside the selection's box in a 2D view (snapped); **Shift+drag** copies |
 | Resize | drag a side or corner handle of the selection's box (the opposite side stays) |
 | Rotate | **Option+drag** a corner handle (15° steps, add **Shift** for free); the rings in the 3D view |
-| Delete | **Delete** |
+| Move along one axis | drag an X/Y/Z arrow (points, edges, faces) |
+| Drag a point | Vertex tool: press on any point and drag (in a 2D view all the points stacked there move) |
+| Edge loop / ring | double-click an edge / **Shift**+double-click (also in the Select menu) |
+| Grow / shrink selection | **Cmd++** / **Cmd+è** |
+| Delete | **Delete** (in point or edge mode: the faces that use them) |
 | Smaller / larger grid | **è** / **+** (the two keys right of P) |
 | Set the grid size | View → Set grid size… (1/8 cm to 512 cm; **Return** sets, **Esc** cancels) |
 | Show grid / snap to grid | **Shift+R** / **Shift+W** |

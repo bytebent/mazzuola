@@ -211,9 +211,13 @@ void PrimTool::properties(ToolEnv& env) {
     };
     switch (params_.kind) {
     case PrimKind::Box:
+        ImGui::BeginDisabled(params_.roundSegments > 0); // a rounded box has plain flat sides
         intField("Segments x", params_.segX);
         intField("Segments y", params_.segY);
         intField("Segments z", params_.segZ);
+        ImGui::EndDisabled();
+        intField("Rounded edges", params_.roundSegments);
+        if (params_.roundSegments > 0) pctField("Rounding", params_.roundSize);
         break;
     case PrimKind::Plane:
         intField("Rows", params_.rows);
@@ -225,6 +229,10 @@ void PrimTool::properties(ToolEnv& env) {
         intField("Sides", params_.sides);
         intField("Segments", params_.segments);
         intField("Cap rings", params_.capRings);
+        if (params_.kind == PrimKind::Cylinder) {
+            intField("Rounded edges", params_.roundSegments);
+            if (params_.roundSegments > 0) pctField("Rounding", params_.roundSize);
+        }
         break;
     case PrimKind::Tube:
         intField("Sides", params_.sides);

@@ -4,6 +4,19 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.2, steps E–F: rounded edges; release
+- Rounded edges: box (flat faces + a strip of 1–3 faces along each edge + a corner patch
+  of q² triangles, built at the real proportions so the rounding is the same size in cm
+  on every edge) and cylinder (rounded rims, 1–3 faces, same rule). Settings "Rounded
+  edges" (0–3) and "Rounding" (% of half the smallest side, up to 90); box segments
+  greyed out while rounded. Script `primset rounded | rounding`.
+- Version 0.1.2, release notes, README status and controls, Help → Controls rows.
+- Tests: core 650 checks (every shape loop with rounding 0/1/2; rounded box and
+  cylinder counts, closed, outward, filling their box for q = 1–3 and every axis;
+  6.4 cm rounding on a 64 x 32 x 48 box measured). `a1_shapes` checks a rounded box's
+  face count; all seven UI scripts at 1× and 2×; idle 0 ticks. Screenshot
+  `m1-08-rounded.png`.
+
 ### 2026-11-19 — v0.1.2, steps A–D: points, edges, faces; arrows; Vertex tool
 - `core/select_ops`: mode conversion (agreed rules); picking points (2D: every point
   stacked on the nearest spot; 3D: nearest visible), edges and faces (nearest to the

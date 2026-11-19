@@ -20,6 +20,10 @@ struct PrimParams {
     PrimKind kind = PrimKind::Box;
     // box
     int segX = 1, segY = 1, segZ = 1;
+    // box and cylinder: rounded edges, 0 = sharp, else 1-3 faces across each edge;
+    // the rounding's size is a % of half the box's smallest side
+    int roundSegments = 0;
+    double roundSize = 25;
     // plane
     int rows = 1, cols = 1;
     bool flipDiagonals = false;
@@ -35,7 +39,8 @@ struct PrimParams {
     RockParams rock;      // rock
 
     bool operator==(const PrimParams& o) const {
-        return kind == o.kind && segX == o.segX && segY == o.segY && segZ == o.segZ && rows == o.rows &&
+        return kind == o.kind && segX == o.segX && segY == o.segY && segZ == o.segZ &&
+               roundSegments == o.roundSegments && roundSize == o.roundSize && rows == o.rows &&
                cols == o.cols && flipDiagonals == o.flipDiagonals && sides == o.sides && segments == o.segments &&
                capRings == o.capRings && inner == o.inner && tubeSides == o.tubeSides && tubeWidth == o.tubeWidth &&
                stacks == o.stacks && iterations == o.iterations && rock.faces == o.rock.faces &&
