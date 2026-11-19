@@ -134,8 +134,8 @@ CMakeFiles/mazz_io.dir/clean:
 # Target rules for target CMakeFiles/mazz_core_tests.dir
 
 # All Build rule for target.
-CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_io.dir/all
 CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_core.dir/all
+CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_io.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=9,10,11,12 "Built target mazz_core_tests"

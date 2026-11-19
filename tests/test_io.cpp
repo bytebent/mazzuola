@@ -4,6 +4,7 @@
 #include "io/mazz_file.hpp"
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 
 using namespace mazz;
@@ -89,16 +90,19 @@ void testRoundTrip() {
     CHECK(sameMesh(m.mesh, back.mesh));
 
     // Through a real file too (written via a temporary file and a rename).
-    char dir[] = "/tmp/mazzio.XXXXXX";
-    if (mkdtemp(dir)) {
-        const std::string path = std::string(dir) + "/model.mazz";
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    const fs::path dir = fs::temp_directory_path(ec) / ("mazzio-" + std::to_string(std::rand()));
+    if (fs::create_directories(dir, ec)) {
+        const std::string path = (dir / "model.mazz").string();
         CHECK(saveMazzFile(path, m, err));
         MazzModel f;
         CHECK(loadMazzFile(path, f, err));
         CHECK(sameMesh(m.mesh, f.mesh));
-        CHECK(!std::fopen((path + ".saving").c_str(), "r")); // no leftover
-        std::remove(path.c_str());
-        std::remove(dir);
+        CHECK(!fs::exists(path + ".saving")); // no leftover
+        fs::remove_all(dir, ec);
+    } else {
+        CHECK(false); // no temp folder
     }
     CHECK(!loadMazzFile("/nonexistent/x.mazz", back, err) && !err.empty());
 }

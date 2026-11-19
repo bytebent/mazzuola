@@ -365,11 +365,13 @@ CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o: /home/claude/mazzuola/tests/
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
 
 CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tests/test_model.cpp \
+  /home/claude/mazzuola/src/core/camera.hpp \
   /home/claude/mazzuola/src/core/document.hpp \
   /home/claude/mazzuola/src/core/math.hpp \
   /home/claude/mazzuola/src/core/mesh.hpp \
   /home/claude/mazzuola/src/core/numbers.hpp \
   /home/claude/mazzuola/src/core/selection.hpp \
+  /home/claude/mazzuola/src/core/view_geom.hpp \
   /home/claude/mazzuola/tests/check.hpp \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
@@ -1088,6 +1090,8 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
 /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
 
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
+
+/home/claude/mazzuola/src/core/view_geom.hpp:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 

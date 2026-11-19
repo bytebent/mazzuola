@@ -368,11 +368,13 @@ CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o
 
 CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o
  /home/claude/mazzuola/tests/test_model.cpp
+ /home/claude/mazzuola/src/core/camera.hpp
  /home/claude/mazzuola/src/core/document.hpp
  /home/claude/mazzuola/src/core/math.hpp
  /home/claude/mazzuola/src/core/mesh.hpp
  /home/claude/mazzuola/src/core/numbers.hpp
  /home/claude/mazzuola/src/core/selection.hpp
+ /home/claude/mazzuola/src/core/view_geom.hpp
  /home/claude/mazzuola/tests/check.hpp
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
