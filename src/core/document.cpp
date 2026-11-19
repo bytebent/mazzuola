@@ -32,7 +32,7 @@ void MeshChange::redo(Mesh& m) const {
 
 // ---------------------------------------------------------------- MeshEdit
 
-MeshEdit::MeshEdit(Mesh& m) : m_(m), oldVerts_((int)m.verts.size()), oldFaces_((int)m.faces.size()) {}
+MeshEdit::MeshEdit(Mesh& m, long* version) : m_(m), version_(version), oldVerts_((int)m.verts.size()), oldFaces_((int)m.faces.size()) {}
 
 void MeshEdit::touchVert(int i) {
     if (i < oldVerts_ && !vertBefore_.count(i)) vertBefore_[i] = m_.verts[i];
@@ -43,32 +43,38 @@ void MeshEdit::touchFace(int i) {
 
 int MeshEdit::addVert(const Vec3& p) {
     m_.verts.push_back(clean(p));
+    bump();
     return (int)m_.verts.size() - 1;
 }
 
 void MeshEdit::setVert(int i, const Vec3& p) {
     touchVert(i);
     m_.verts[i] = clean(p);
+    bump();
 }
 
 int MeshEdit::addFace(const Face& f) {
     m_.faces.push_back(f);
+    bump();
     return (int)m_.faces.size() - 1;
 }
 
 void MeshEdit::setFace(int i, const Face& f) {
     touchFace(i);
     m_.faces[i] = f;
+    bump();
 }
 
 void MeshEdit::resizeVerts(int n) {
     for (int i = n; i < (int)m_.verts.size(); ++i) touchVert(i);
     m_.verts.resize(n);
+    bump();
 }
 
 void MeshEdit::resizeFaces(int n) {
     for (int i = n; i < (int)m_.faces.size(); ++i) touchFace(i);
     m_.faces.resize(n);
+    bump();
 }
 
 void MeshEdit::deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap) {
@@ -141,6 +147,7 @@ void MeshEdit::revert() {
     for (const auto& [i, f] : faceBefore_) m_.faces[i] = f;
     vertBefore_.clear();
     faceBefore_.clear();
+    bump();
 }
 
 // ---------------------------------------------------------------- Document
@@ -148,12 +155,13 @@ void MeshEdit::revert() {
 bool Document::apply(const std::string& name, const std::function<bool(MeshEdit&, Selection&)>& fn) {
     cancelLive();
     const Selection before = sel;
-    MeshEdit e(mesh);
+    MeshEdit e(mesh, &meshVersion_);
     Selection s = sel;
     if (!fn(e, s)) {
         e.revert();
         return false;
     }
+    if (s != sel) ++selVersion_;
     sel = s;
     dropMissing(mesh, sel);
     return record(name, e.change(), before);
@@ -161,7 +169,7 @@ bool Document::apply(const std::string& name, const std::function<bool(MeshEdit&
 
 void Document::beginLive() {
     cancelLive();
-    live_ = std::make_unique<MeshEdit>(mesh);
+    live_ = std::make_unique<MeshEdit>(mesh, &meshVersion_);
     liveSelBefore_ = sel;
 }
 
@@ -178,6 +186,7 @@ void Document::cancelLive() {
     live_->revert();
     live_.reset();
     sel = liveSelBefore_;
+    ++selVersion_;
 }
 
 bool Document::record(const std::string& name, MeshChange c, const Selection& before) {
@@ -211,6 +220,8 @@ bool Document::undo() {
     Step st = std::move(undo_.back());
     undo_.pop_back();
     st.change.undo(mesh);
+    ++meshVersion_;
+    ++selVersion_;
     sel = st.selBefore;
     dropMissing(mesh, sel);
     serial_ = st.prevSerial;
@@ -224,6 +235,8 @@ bool Document::redo() {
     Step st = std::move(redo_.back());
     redo_.pop_back();
     st.change.redo(mesh);
+    ++meshVersion_;
+    ++selVersion_;
     sel = st.selAfter;
     dropMissing(mesh, sel);
     serial_ = st.serial;
@@ -235,6 +248,8 @@ void Document::reset(Mesh m) {
     cancelLive();
     mesh = std::move(m);
     sel = Selection();
+    ++meshVersion_;
+    ++selVersion_;
     undo_.clear();
     redo_.clear();
     historyBytes_ = 0;

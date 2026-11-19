@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/claude/mazzuola/src/core/camera.cpp" "CMakeFiles/mazz_core.dir/src/core/camera.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/camera.cpp.o.d"
   "/home/claude/mazzuola/src/core/document.cpp" "CMakeFiles/mazz_core.dir/src/core/document.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/document.cpp.o.d"
+  "/home/claude/mazzuola/src/core/draw_data.cpp" "CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o.d"
   "/home/claude/mazzuola/src/core/grid_lines.cpp" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o.d"
   "/home/claude/mazzuola/src/core/mesh.cpp" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o.d"
   "/home/claude/mazzuola/src/core/numbers.cpp" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"

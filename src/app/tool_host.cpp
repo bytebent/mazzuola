@@ -5,6 +5,23 @@
 
 namespace mazz {
 
+// Re-uploads the model when its geometry changed, the selection lists when the
+// selection changed, and marks the views for a redraw only then.
+void Editor::refreshModelDrawing() {
+    const bool meshChanged = doc_.meshVersion() != drawnMesh_;
+    const bool selChanged = meshChanged || doc_.selVersion() != drawnSel_;
+    if (meshChanged) {
+        buildDrawData(doc_.mesh, drawData_);
+        drawer_.setModel(drawData_);
+        drawnMesh_ = doc_.meshVersion();
+    }
+    if (selChanged) {
+        drawer_.setSelection(selectedTriIndices(drawData_, doc_.sel), selectedEdgeIndices(doc_.mesh, drawData_, doc_.sel));
+        drawnSel_ = doc_.selVersion();
+        markViewsDirty();
+    }
+}
+
 ToolEnv Editor::toolEnv() { return ToolEnv{doc_, grid_, lastBox_, [this] { touch(); }}; }
 
 void Editor::setTool(Tool* t) {

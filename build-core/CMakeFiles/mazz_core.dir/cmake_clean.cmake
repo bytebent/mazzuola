@@ -3,6 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/mazz_core.dir/src/core/camera.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/document.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/document.cpp.o.d"
+  "CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o"
+  "CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o"
   "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o.d"
   "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o"

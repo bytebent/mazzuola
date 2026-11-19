@@ -1,0 +1,14 @@
+# Alpha 1, step D: the model drawn in all views (edges in 2D, shaded faces in 3D), the
+# selection in pink. addbox is a test helper until the box tool exists.
+addbox 0 0 0 64 48 32
+addbox 96 0 0 128 32 96
+expect faces 12
+expect selected 6
+camera 3 35 25 450 60 20 30
+wait 3
+shot m1-02-two-boxes.png
+# Undo removes the second box from every view.
+key Cmd+Z
+expect faces 6
+wait 3
+quit

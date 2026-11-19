@@ -20,7 +20,21 @@ void View::setDir(ViewDir d) {
     dirty = true;
 }
 
-ViewDrawer::~ViewDrawer() { delete renderer_; }
+ViewDrawer::~ViewDrawer() {
+    delete renderer_;
+    delete model_;
+}
+
+ModelRenderer& ViewDrawer::model() {
+    if (!model_) model_ = new ModelRenderer();
+    return *model_;
+}
+
+void ViewDrawer::setModel(const DrawData& d) { model().setGeometry(d); }
+
+void ViewDrawer::setSelection(const std::vector<unsigned>& tris, const std::vector<unsigned>& edges) {
+    model().setSelection(tris, edges);
+}
 
 namespace {
 Rgba withAlpha(Rgba c, double a) {
@@ -92,6 +106,13 @@ void ViewDrawer::draw(View& v, const Grid& grid, double w, double h, double pxSc
     }
     v.target.begin(bg.r / 255.f, bg.g / 255.f, bg.b / 255.f);
     renderer_->draw(batch_, viewProj, v.is3D());
+    if (v.is3D()) {
+        // A light over the viewer's shoulder, so faces facing the camera are brightest.
+        const Camera3D& c = v.cam3d;
+        model().draw3D(viewProj, c.forward() * -1.0 + c.up() * 0.6 + c.right() * 0.3);
+    } else {
+        model().draw2D(viewProj);
+    }
     v.target.end();
 }
 

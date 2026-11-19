@@ -64,7 +64,12 @@
     X(PFNGLDELETEBUFFERSPROC, glDeleteBuffers)                                  \
     X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer)                      \
     X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray)              \
-    X(PFNGLDRAWARRAYSPROC, glDrawArrays)
+    X(PFNGLDRAWARRAYSPROC, glDrawArrays)                                        \
+    X(PFNGLDRAWELEMENTSPROC, glDrawElements)                                    \
+    X(PFNGLPOLYGONOFFSETPROC, glPolygonOffset)                                  \
+    X(PFNGLUNIFORM4FPROC, glUniform4f)                                          \
+    X(PFNGLUNIFORM3FPROC, glUniform3f)                                          \
+    X(PFNGLUNIFORM1FPROC, glUniform1f)
 
 #define MAZZ_GL_DECLARE(type, name) extern type mazz_##name;
 MAZZ_GL_FUNCTIONS(MAZZ_GL_DECLARE)
@@ -124,6 +129,11 @@ MAZZ_GL_FUNCTIONS(MAZZ_GL_DECLARE)
 #define glVertexAttribPointer mazz_glVertexAttribPointer
 #define glEnableVertexAttribArray mazz_glEnableVertexAttribArray
 #define glDrawArrays mazz_glDrawArrays
+#define glDrawElements mazz_glDrawElements
+#define glPolygonOffset mazz_glPolygonOffset
+#define glUniform4f mazz_glUniform4f
+#define glUniform3f mazz_glUniform3f
+#define glUniform1f mazz_glUniform1f
 #endif
 
 namespace mazz {

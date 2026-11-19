@@ -4,6 +4,23 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, step D: drawing the model
+- `core/draw_data`: triangles with flat normals and each edge once, built once per
+  geometry change; index lists of the selected triangles/edges. The `Document` now has
+  change counters (`meshVersion`, `selVersion`); every `MeshEdit` change, undo, redo and
+  reset moves them.
+- `render/model_draw`: the model on the GPU, shared by all views. 3D: shaded faces
+  (light over the viewer's shoulder), dark edges, selected faces tinted and their edges
+  pink. 2D: edges, selected edges pink. Each frame the editor compares the counters with
+  what it drew: geometry changed → rebuild and upload; only the selection changed → just
+  the two index lists; neither → nothing (views aren't redrawn).
+- GL loader: `glDrawElements`, `glPolygonOffset`, `glUniform1f/3f/4f` added (Linux).
+- Fixed the macOS CI build of step B's test (`mkdtemp` → `std::filesystem`).
+- Tests: core 398 checks (draw data counts, outward normals, selection index lists,
+  counters). New UI script `a1_draw`; all scripts pass at 1× and 2×. The idle scene now
+  holds two boxes (one selected): 0 ticks at 1× and 2× (control 855). Screenshot
+  `docs/screenshots/m1-02-two-boxes.png`.
+
 ### 2026-11-19 — Alpha 1, step C: tool structure and layout
 - `src/tools/tool.hpp`: the `Tool` interface (press, drag, release, hover, key, overlay,
   properties, cancel, busy), `Pointer`, `ToolEnv`, `LastBox`; `SelectTool` and

@@ -28,7 +28,8 @@ add_library(mazz_core STATIC
   src/core/mesh.cpp
   src/core/selection.cpp
   src/core/document.cpp
-  src/core/view_geom.cpp)
+  src/core/view_geom.cpp
+  src/core/draw_data.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -62,6 +63,7 @@ if(MAZZ_BUILD_APP)
     src/render/lines.cpp
     src/render/view_target.cpp
     src/render/view_draw.cpp
+    src/render/model_draw.cpp
     src/ui/actions.cpp
     src/ui/theme.cpp
     src/ui/views_panel.cpp

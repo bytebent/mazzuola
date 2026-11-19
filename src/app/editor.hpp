@@ -132,6 +132,10 @@ private:
     PrimTool primTool_;
     Tool* tool_ = &selectTool_;
     LastBox lastBox_;
+    // What the views last drew (compared with the document's counters each frame).
+    long drawnMesh_ = -1, drawnSel_ = -1;
+    DrawData drawData_;
+    void refreshModelDrawing();
     int toolView_ = -1; // view where the left button went down (-1 = none)
     bool orbitSelection_ = false; // 3D orbit target: selection (falls back to origin) or origin
 

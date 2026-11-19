@@ -198,4 +198,5 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: \
  /usr/include/c++/13/bits/basic_string.tcc \
  /home/claude/mazzuola/src/core/numbers.hpp \
  /home/claude/mazzuola/src/core/view_geom.hpp \
- /home/claude/mazzuola/src/core/camera.hpp
+ /home/claude/mazzuola/src/core/camera.hpp \
+ /home/claude/mazzuola/src/core/draw_data.hpp

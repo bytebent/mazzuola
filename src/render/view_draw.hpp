@@ -4,6 +4,7 @@
 #include "core/camera.hpp"
 #include "core/grid.hpp"
 #include "render/lines.hpp"
+#include "render/model_draw.hpp"
 #include "render/view_target.hpp"
 
 namespace mazz {
@@ -36,12 +37,17 @@ public:
     // Redraws `v` into its target if dirty or resized. Size in logical pixels and the
     // number of real pixels per logical pixel.
     void draw(View& v, const Grid& grid, double w, double h, double pxScale);
+    // The model, shared by all views (uploaded once per change).
+    void setModel(const DrawData& d);
+    void setSelection(const std::vector<unsigned>& tris, const std::vector<unsigned>& edges);
 
 private:
     void build2D(const View& v, const Grid& grid, double w, double h);
     void build3D(const View& v, const Grid& grid);
     Batch batch_;
     BatchRenderer* renderer_ = nullptr; // created on first use (needs a GL context)
+    ModelRenderer* model_ = nullptr;
+    ModelRenderer& model();
 public:
     ~ViewDrawer();
 };

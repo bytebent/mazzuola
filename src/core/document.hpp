@@ -38,7 +38,8 @@ struct MeshChange {
 
 class MeshEdit {
 public:
-    explicit MeshEdit(Mesh& m);
+    // `version` (optional) is bumped on every change, so views know to redraw.
+    explicit MeshEdit(Mesh& m, long* version = nullptr);
     const Mesh& mesh() const { return m_; }
 
     int addVert(const Vec3& p);              // cleaned
@@ -58,11 +59,13 @@ public:
 
 private:
     Mesh& m_;
+    long* version_;
     int oldVerts_, oldFaces_;
     std::map<int, Vec3> vertBefore_;
     std::map<int, Face> faceBefore_;
     void touchVert(int i);
     void touchFace(int i);
+    void bump() { if (version_) ++*version_; }
 };
 
 class Document {
@@ -86,7 +89,15 @@ public:
     void cancelLive();
 
     // Selection-only changes are not undo steps.
-    void select(const Selection& s) { sel = s; }
+    void select(const Selection& s) {
+        if (s != sel) ++selVersion_;
+        sel = s;
+    }
+
+    // Change counters: the geometry (any point or face) and the selection. Views compare
+    // them with what they last drew.
+    long meshVersion() const { return meshVersion_; }
+    long selVersion() const { return selVersion_; }
 
     bool canUndo() const { return !undo_.empty(); }
     bool canRedo() const { return !redo_.empty(); }
@@ -118,6 +129,7 @@ private:
     std::size_t historyBytes_ = 0;
     long serial_ = 0, savedSerial_ = 0, nextSerial_ = 1;
 
+    long meshVersion_ = 0, selVersion_ = 0;
     std::unique_ptr<MeshEdit> live_;
     Selection liveSelBefore_;
 

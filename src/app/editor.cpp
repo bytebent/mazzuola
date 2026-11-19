@@ -230,6 +230,7 @@ bool Editor::frame(double dt) {
     statusBar();
     dockspace();
 
+    refreshModelDrawing();
     ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(kWinViews, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
         viewsPanel();

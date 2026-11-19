@@ -244,9 +244,11 @@ void testDocument() {
 } // namespace
 
 void testViewGeom();
+void testDrawData();
 
 void testModel() {
     testViewGeom();
+    testDrawData();
     testNumbers();
     testBox();
     testPieces();
@@ -300,4 +302,62 @@ void testViewGeom() {
     double tt = 0;
     CHECK(rayTriangle({0.2, 0.2, 5}, {0, 0, -1}, {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, tt) && near(tt, 5));
     CHECK(!rayTriangle({2, 2, 5}, {0, 0, -1}, {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, tt));
+}
+
+// ---------------------------------------------------------------- drawing data, versions
+#include "core/draw_data.hpp"
+
+void testDrawData() {
+    using namespace mazz;
+    Mesh m;
+    addBox(m, {0, 0, 0}, {10, 10, 10});
+    addBox(m, {20, 0, 0}, {30, 10, 10});
+    DrawData d;
+    buildDrawData(m, d);
+    CHECK(d.tris.size() == 12 * 6);   // 2 boxes x 6 quads x 2 triangles x 3
+    CHECK(d.edgeList.size() == 24);   // 12 edges per box, each once
+    CHECK(d.edges.size() == 48);
+    // Normals point outward (the top face's normal is +z).
+    CHECK(d.tris[d.faceFirst[1]].nz == 1.0f);
+    Selection s;
+    s.faces = {6, 7, 8, 9, 10, 11};
+    CHECK(selectedTriIndices(d, s).size() == 36);
+    CHECK(selectedEdgeIndices(m, d, s).size() == 24);
+    s.mode = SelectMode::Vert;
+    s.verts = {0, 1};
+    CHECK(selectedTriIndices(d, s).empty());
+    CHECK(selectedEdgeIndices(m, d, s).size() == 2);
+
+    // Versions: the geometry counter moves with every change, undo and redo; selection
+    // changes only move the selection counter.
+    Document doc;
+    const long m0 = doc.meshVersion(), s0 = doc.selVersion();
+    Selection none;
+    none.mode = SelectMode::Piece;
+    doc.select(none); // same as before: nothing moves
+    CHECK(doc.meshVersion() == m0 && doc.selVersion() == s0);
+    doc.apply("Box", [](MeshEdit& e, Selection& sel) {
+        e.addVert({0, 0, 0});
+        e.addVert({1, 0, 0});
+        e.addVert({0, 1, 0});
+        Face f;
+        f.n = 3;
+        f.v[0] = 0; f.v[1] = 1; f.v[2] = 2;
+        sel.faces.insert(e.addFace(f));
+        return true;
+    });
+    CHECK(doc.meshVersion() > m0 && doc.selVersion() > s0);
+    const long m1 = doc.meshVersion();
+    Selection other;
+    doc.select(other);
+    CHECK(doc.meshVersion() == m1);
+    doc.beginLive();
+    doc.live().setVert(0, {5, 5, 5});
+    CHECK(doc.meshVersion() > m1);
+    const long m2 = doc.meshVersion();
+    doc.cancelLive();
+    CHECK(doc.meshVersion() > m2);
+    const long m3 = doc.meshVersion();
+    doc.undo();
+    CHECK(doc.meshVersion() > m3);
 }

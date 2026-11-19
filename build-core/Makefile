@@ -213,6 +213,30 @@ src/core/document.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/document.cpp.s
 .PHONY : src/core/document.cpp.s
 
+src/core/draw_data.o: src/core/draw_data.cpp.o
+.PHONY : src/core/draw_data.o
+
+# target to build an object file
+src/core/draw_data.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o
+.PHONY : src/core/draw_data.cpp.o
+
+src/core/draw_data.i: src/core/draw_data.cpp.i
+.PHONY : src/core/draw_data.i
+
+# target to preprocess a source file
+src/core/draw_data.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.i
+.PHONY : src/core/draw_data.cpp.i
+
+src/core/draw_data.s: src/core/draw_data.cpp.s
+.PHONY : src/core/draw_data.s
+
+# target to generate assembly for a file
+src/core/draw_data.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.s
+.PHONY : src/core/draw_data.cpp.s
+
 src/core/grid_lines.o: src/core/grid_lines.cpp.o
 .PHONY : src/core/grid_lines.o
 
@@ -447,6 +471,9 @@ help:
 	@echo "... src/core/document.o"
 	@echo "... src/core/document.i"
 	@echo "... src/core/document.s"
+	@echo "... src/core/draw_data.o"
+	@echo "... src/core/draw_data.i"
+	@echo "... src/core/draw_data.s"
 	@echo "... src/core/grid_lines.o"
 	@echo "... src/core/grid_lines.i"
 	@echo "... src/core/grid_lines.s"
