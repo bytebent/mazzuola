@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
+#include <random>
 #include <set>
 
 namespace mazz {
@@ -17,6 +18,12 @@ ImU32 previewColour() {
     return IM_COL32(c.r, c.g, c.b, 255);
 }
 } // namespace
+
+unsigned PrimTool::newSeed() {
+    // A fresh seed each time (not the same series every launch).
+    static std::random_device rd;
+    return rd() % 1000000;
+}
 
 void PrimTool::setShape(PrimKind k) {
     if (k == params_.kind) return;
@@ -236,6 +243,26 @@ void PrimTool::properties(ToolEnv& env) {
     case PrimKind::Geosphere:
         intField("Iterations", params_.iterations);
         break;
+    case PrimKind::Rock: {
+        RockParams& r = params_.rock;
+        intField("Faces", r.faces);
+        pctField("Roughness", r.roughness);
+        if (ImGui::Checkbox("Flat bottom", &r.flatBottom)) changed = true;
+        if (r.flatBottom) pctField("Bottom height", r.bottomHeight);
+        if (ImGui::Checkbox("Join into quads", &r.joinQuads)) changed = true;
+        int seed = (int)r.seed;
+        ImGui::SetNextItemWidth(w);
+        if (ImGui::InputInt("Seed", &seed)) {
+            r.seed = (unsigned)std::max(0, seed);
+            changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("New seed")) {
+            r.seed = newSeed();
+            changed = true;
+        }
+        break;
+    }
     }
     if (changed) {
         params_ = clampParams(params_);

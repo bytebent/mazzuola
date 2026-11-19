@@ -113,7 +113,8 @@ CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o: \
  /usr/include/c++/13/bits/memory_resource.h /usr/include/c++/13/cstddef \
  /usr/include/c++/13/bits/uses_allocator.h \
  /usr/include/c++/13/bits/uses_allocator_args.h /usr/include/c++/13/tuple \
- /usr/include/c++/13/string /usr/include/c++/13/bits/stringfwd.h \
+ /home/claude/mazzuola/src/core/rock.hpp /usr/include/c++/13/string \
+ /usr/include/c++/13/bits/stringfwd.h \
  /usr/include/c++/13/bits/char_traits.h \
  /usr/include/c++/13/bits/postypes.h /usr/include/c++/13/cwchar \
  /usr/include/wchar.h /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \

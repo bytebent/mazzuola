@@ -89,6 +89,7 @@ expect previewfaces <n>             faces of the previewed shape
 prim <shape> / primset <setting> <value>   choose a shape / set a setting (as in Properties):
                                     segx segy segz rows cols sides segments caprings hole
                                     tubesides tubewidth stacks iterations
+                                    rockfaces roughness flatbottom bottom quads seed
 ```
 
 Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.

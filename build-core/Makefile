@@ -357,6 +357,30 @@ src/core/primitives.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/primitives.cpp.s
 .PHONY : src/core/primitives.cpp.s
 
+src/core/rock.o: src/core/rock.cpp.o
+.PHONY : src/core/rock.o
+
+# target to build an object file
+src/core/rock.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/rock.cpp.o
+.PHONY : src/core/rock.cpp.o
+
+src/core/rock.i: src/core/rock.cpp.i
+.PHONY : src/core/rock.i
+
+# target to preprocess a source file
+src/core/rock.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/rock.cpp.i
+.PHONY : src/core/rock.cpp.i
+
+src/core/rock.s: src/core/rock.cpp.s
+.PHONY : src/core/rock.s
+
+# target to generate assembly for a file
+src/core/rock.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/rock.cpp.s
+.PHONY : src/core/rock.cpp.s
+
 src/core/selection.o: src/core/selection.cpp.o
 .PHONY : src/core/selection.o
 
@@ -561,6 +585,9 @@ help:
 	@echo "... src/core/primitives.o"
 	@echo "... src/core/primitives.i"
 	@echo "... src/core/primitives.s"
+	@echo "... src/core/rock.o"
+	@echo "... src/core/rock.i"
+	@echo "... src/core/rock.s"
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"

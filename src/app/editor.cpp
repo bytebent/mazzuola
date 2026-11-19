@@ -394,15 +394,21 @@ void Editor::menuBar() {
     if (ImGui::BeginMenu("Create")) {
         if (ImGui::BeginMenu("Primitives")) {
             // Each opens the Primitives tool with that shape: then drag in a 2D view.
-            for (int k = 0; k < kPrimKindCount; ++k)
+            for (int k = 0; k < kPrimKindCount; ++k) {
+                if ((PrimKind)k == PrimKind::Rock) continue; // its own entry below
                 if (ImGui::MenuItem(primKindName((PrimKind)k), nullptr, tool_ == &primTool_ && (int)primTool_.params().kind == k)) {
                     primTool_.setShape((PrimKind)k);
                     setTool(&primTool_);
                     touch();
                 }
+            }
             ImGui::EndMenu();
         }
-        plannedItem("Rock...", 1);
+        if (ImGui::MenuItem("Rock", nullptr, tool_ == &primTool_ && primTool_.params().kind == PrimKind::Rock)) {
+            primTool_.setShape(PrimKind::Rock);
+            setTool(&primTool_);
+            touch();
+        }
         ImGui::Separator();
         plannedItem("Lathe", 3);
         plannedItem("Loft", 3);

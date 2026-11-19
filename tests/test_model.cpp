@@ -465,6 +465,11 @@ void testPrimitives() {
                 p.rows = variant + 1;
                 p.cols = 2;
                 p.iterations = variant;
+                p.rock.faces = variant == 0 ? 12 : variant == 1 ? 24 : 60;
+                p.rock.roughness = variant * 50;
+                p.rock.flatBottom = variant != 1;
+                p.rock.joinQuads = variant == 2;
+                p.rock.seed = 7 + variant + axis * 3;
                 const Mesh m = makePrimitive(p, mn, mx, axis);
                 const char* name = primKindName(p.kind);
                 bool ok = !m.faces.empty();
@@ -527,4 +532,42 @@ void testPrimitives() {
     CHECK(walls == 8 * 2 && caps == 16);
     PrimKind k;
     CHECK(primKindFromName("torus", k) && k == PrimKind::Torus && !primKindFromName("teapot", k));
+
+    // Rocks: same seed, same rock; another seed, another rock; flat bottom flat; about
+    // the asked number of triangles; many seeds all valid.
+    p = PrimParams();
+    p.kind = PrimKind::Rock;
+    p.rock.seed = 42;
+    const Mesh r1 = makePrimitive(p, {0, 0, 0}, {60, 40, 30}, 2);
+    const Mesh r2 = makePrimitive(p, {0, 0, 0}, {60, 40, 30}, 2);
+    bool same = r1.verts.size() == r2.verts.size();
+    for (size_t i = 0; same && i < r1.verts.size(); ++i) same = nearV(r1.verts[i], r2.verts[i], 0);
+    CHECK(same);
+    p.rock.seed = 43;
+    const Mesh r3 = makePrimitive(p, {0, 0, 0}, {60, 40, 30}, 2);
+    bool differs = r3.verts.size() != r1.verts.size();
+    for (size_t i = 0; !differs && i < r1.verts.size(); ++i) differs = !nearV(r1.verts[i], r3.verts[i], 0);
+    CHECK(differs);
+    int bottomPts = 0;
+    for (const Vec3& q : r1.verts) bottomPts += q.z == 0;
+    CHECK(bottomPts >= 3);
+    CHECK(std::abs((int)r1.faces.size() - 24) <= 4); // about the asked 24 triangles
+    int bad = 0;
+    for (unsigned seed = 1; seed <= 200; ++seed) {
+        p.rock.seed = seed;
+        p.rock.roughness = (seed * 37) % 101;
+        p.rock.faces = 12 + (int)(seed % 49);
+        p.rock.joinQuads = seed % 3 == 0;
+        p.rock.flatBottom = seed % 4 != 0;
+        const Mesh rk = makePrimitive(p, {-10, -10, 0}, {30, 20, 25}, (int)(seed % 3));
+        Vec3 a, b;
+        rk.bounds(a, b);
+        bool flat = false;
+        for (int f = 0; f < (int)rk.faces.size(); ++f) flat = flat || length(faceNormal(rk, f)) < 0.5;
+        if (!closedAndConsistent(rk) || signedVolume(rk) <= 0 || flat || !nearV(a, {-10, -10, 0}, 0) ||
+            !nearV(b, {30, 20, 25}, 0))
+            ++bad;
+    }
+    CHECK(bad == 0);
+    if (bad) std::fprintf(stderr, "  %d of 200 rocks invalid\n", bad);
 }

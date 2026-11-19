@@ -4,6 +4,24 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — v0.1.1, step C: the rock
+- `core/rock`: points spread on a sphere (Fibonacci) and jittered by roughness, their
+  convex hull (incremental, own code); a flat bottom by cutting the hull with a level
+  plane (edge crossings added, points below dropped; clamping points onto the plane
+  sometimes left no real bottom); dents pushed inward along normals, halved until no
+  face turns over; optional join into quads (neighbours within 20°, convex); round part
+  in smoothing group 1, bottom flat. The number of starting points is chosen so the
+  triangle count comes closest to the one asked (with a flat bottom, 24 asked gave ~36
+  before; now 22–26). Fills its box like every shape. Same seed, same rock.
+- The rock is one more kind in the Primitives tool (same draw → adjust → Return), with
+  its own Create menu entry. Settings: faces, roughness, flat bottom + height, join into
+  quads, seed + New seed (a fresh random seed, not the same series each launch).
+  **Stretch X/Y/Z left out:** the drawn box sets the proportions, so stretching would
+  be undone by fitting the box (question for the user in PLAN).
+- Tests: core 587 checks (rocks in the every-shape loop; determinism; 200 random rocks
+  closed, outward, fitting, no flat faces; triangle count). `a1_shapes` draws a rock;
+  all scripts at 1× and 2×; idle 0 ticks. Screenshot `m1-06-rock-settings.png`.
+
 ### 2026-11-19 — v0.1.1, steps A–B: all primitive shapes
 - `core/primitives`: box (segments per side), plane (rows, columns, flipped
   diagonals), cylinder and cone (sides, segments, cap rings), tube (sides, segments,

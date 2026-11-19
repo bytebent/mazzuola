@@ -223,6 +223,20 @@ CMakeFiles/mazz_core.dir/src/core/primitives.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mazz_core.dir/src/core/primitives.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/claude/mazzuola/src/core/primitives.cpp -o CMakeFiles/mazz_core.dir/src/core/primitives.cpp.s
 
+CMakeFiles/mazz_core.dir/src/core/rock.cpp.o: CMakeFiles/mazz_core.dir/flags.make
+CMakeFiles/mazz_core.dir/src/core/rock.cpp.o: /home/claude/mazzuola/src/core/rock.cpp
+CMakeFiles/mazz_core.dir/src/core/rock.cpp.o: CMakeFiles/mazz_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/mazz_core.dir/src/core/rock.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mazz_core.dir/src/core/rock.cpp.o -MF CMakeFiles/mazz_core.dir/src/core/rock.cpp.o.d -o CMakeFiles/mazz_core.dir/src/core/rock.cpp.o -c /home/claude/mazzuola/src/core/rock.cpp
+
+CMakeFiles/mazz_core.dir/src/core/rock.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mazz_core.dir/src/core/rock.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/claude/mazzuola/src/core/rock.cpp > CMakeFiles/mazz_core.dir/src/core/rock.cpp.i
+
+CMakeFiles/mazz_core.dir/src/core/rock.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mazz_core.dir/src/core/rock.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/claude/mazzuola/src/core/rock.cpp -o CMakeFiles/mazz_core.dir/src/core/rock.cpp.s
+
 # Object files for target mazz_core
 mazz_core_OBJECTS = \
 "CMakeFiles/mazz_core.dir/src/core/camera.cpp.o" \
@@ -235,7 +249,8 @@ mazz_core_OBJECTS = \
 "CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o" \
 "CMakeFiles/mazz_core.dir/src/core/transform.cpp.o" \
 "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o" \
-"CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o"
+"CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o" \
+"CMakeFiles/mazz_core.dir/src/core/rock.cpp.o"
 
 # External object files for target mazz_core
 mazz_core_EXTERNAL_OBJECTS =
@@ -251,9 +266,10 @@ libmazz_core.a: CMakeFiles/mazz_core.dir/src/core/draw_data.cpp.o
 libmazz_core.a: CMakeFiles/mazz_core.dir/src/core/transform.cpp.o
 libmazz_core.a: CMakeFiles/mazz_core.dir/src/core/pick.cpp.o
 libmazz_core.a: CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o
+libmazz_core.a: CMakeFiles/mazz_core.dir/src/core/rock.cpp.o
 libmazz_core.a: CMakeFiles/mazz_core.dir/build.make
 libmazz_core.a: CMakeFiles/mazz_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX static library libmazz_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX static library libmazz_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/mazz_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mazz_core.dir/link.txt --verbose=$(VERBOSE)
 

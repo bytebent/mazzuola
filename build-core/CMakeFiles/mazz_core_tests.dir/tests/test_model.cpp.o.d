@@ -202,4 +202,5 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: \
  /home/claude/mazzuola/src/core/draw_data.hpp \
  /home/claude/mazzuola/src/core/pick.hpp \
  /home/claude/mazzuola/src/core/transform.hpp \
- /home/claude/mazzuola/src/core/primitives.hpp
+ /home/claude/mazzuola/src/core/primitives.hpp \
+ /home/claude/mazzuola/src/core/rock.hpp

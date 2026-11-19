@@ -194,6 +194,12 @@ void Editor::stepScript() {
             else if (what == "tubewidth") p.tubeWidth = val;
             else if (what == "stacks") p.stacks = iv;
             else if (what == "iterations") p.iterations = iv;
+            else if (what == "rockfaces") p.rock.faces = iv;
+            else if (what == "roughness") p.rock.roughness = val;
+            else if (what == "flatbottom") p.rock.flatBottom = iv != 0;
+            else if (what == "bottom") p.rock.bottomHeight = val;
+            else if (what == "quads") p.rock.joinQuads = iv != 0;
+            else if (what == "seed") p.rock.seed = (unsigned)iv;
             else scriptFail("unknown setting " + what);
             p = clampParams(p);
             touch();

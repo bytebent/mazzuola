@@ -31,6 +31,7 @@ public:
     PrimParams& params() { return params_; }
     // Each shape keeps its own settings.
     void setShape(PrimKind k);
+    static unsigned newSeed();
     // Creates the previewed box (Return). False if there is none.
     bool create(ToolEnv& env);
 

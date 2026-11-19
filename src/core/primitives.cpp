@@ -10,7 +10,7 @@
 namespace mazz {
 
 const char* primKindName(PrimKind k) {
-    static const char* n[] = {"Box", "Plane", "Cylinder", "Cone", "Tube", "Torus", "Sphere", "Geosphere"};
+    static const char* n[] = {"Box", "Plane", "Cylinder", "Cone", "Tube", "Torus", "Sphere", "Geosphere", "Rock"};
     return n[(int)k];
 }
 
@@ -44,6 +44,7 @@ PrimParams clampParams(const PrimParams& in) {
     p.tubeWidth = std::clamp(p.tubeWidth, 5.0, 95.0);
     p.stacks = std::clamp(p.stacks, 2, 64);
     p.iterations = std::clamp(p.iterations, 0, 4);
+    p.rock = clampRock(p.rock);
     return p;
 }
 
@@ -308,6 +309,7 @@ Mesh makePrimitive(const PrimParams& in, const Vec3& mn, const Vec3& mx, int axi
     case PrimKind::Torus: m = torus(p); break;
     case PrimKind::Sphere: m = sphere(p); break;
     case PrimKind::Geosphere: m = geosphere(p); break;
+    case PrimKind::Rock: m = makeRockLocal(p.rock); break;
     }
     // Local (u, v, w) -> world axes (axis+1, axis+2, axis).
     const int au = (axis + 1) % 3, av = (axis + 2) % 3;
