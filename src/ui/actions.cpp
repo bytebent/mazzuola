@@ -18,9 +18,9 @@ const ActionInfo kActions[] = {
     {Act::Undo, "edit.undo", "Undo", "Cmd+Z", 0},
     {Act::Redo, "edit.redo", "Redo", "Cmd+Shift+Z", 0},
     {Act::Duplicate, "edit.duplicate", "Duplicate", "Cmd+D", 1},
-    {Act::Delete, "edit.delete", "Delete", "Delete", 1},
-    {Act::SelectAll, "edit.selectall", "Select all", "Cmd+A", 1},
-    {Act::SelectNone, "edit.selectnone", "Select none", "Esc", 1},
+    {Act::Delete, "edit.delete", "Delete", "Delete", 0},
+    {Act::SelectAll, "edit.selectall", "Select all", "Cmd+A", 0},
+    {Act::SelectNone, "edit.selectnone", "Select none", "Esc", 0},
 
     {Act::ModeVertex, "select.vertices", "Vertices", "1", 1},
     {Act::ModeEdge, "select.edges", "Edges", "2", 1},

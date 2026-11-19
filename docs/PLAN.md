@@ -29,7 +29,7 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
-  **Building v0.1.0:** steps A–D done; next step E (box primitive).
+  **Building v0.1.0:** steps A–G done; next step H (release).
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
@@ -58,6 +58,14 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
+
+- **Dragging in the 3D view** (v0.1.0): a drag on the selection in 3D draws a selection
+  rectangle; moving happens in the 2D views and turning with the rings. Should a drag in
+  3D move the selection along the ground (or along the face you grabbed)? Ask the user
+  after they try v0.1.0.
+- **Move snapping** (v0.1.0): a drag moves the selection by whole grid steps, so
+  something off the grid stays off it by the same amount (nothing jumps on the first
+  move). Hammer snaps the box's corner to the grid instead. Check with the user.
 
 
 - **Shared texture sheet**: several models using one sheet already works by referencing

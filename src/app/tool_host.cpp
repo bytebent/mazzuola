@@ -19,6 +19,13 @@ void Editor::refreshModelDrawing() {
         drawer_.setSelection(selectedTriIndices(drawData_, doc_.sel), selectedEdgeIndices(doc_.mesh, drawData_, doc_.sel));
         drawnSel_ = doc_.selVersion();
         markViewsDirty();
+        // New shapes take their depth from the last shape made or selected.
+        Vec3 mn, mx;
+        if (!doc_.sel.empty() && selectionBounds(doc_.mesh, doc_.sel, mn, mx)) {
+            lastBox_.mn = mn;
+            lastBox_.mx = mx;
+            lastBox_.valid = true;
+        }
     }
 }
 

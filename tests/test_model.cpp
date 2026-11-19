@@ -245,10 +245,12 @@ void testDocument() {
 
 void testViewGeom();
 void testDrawData();
+void testTransformPick();
 
 void testModel() {
     testViewGeom();
     testDrawData();
+    testTransformPick();
     testNumbers();
     testBox();
     testPieces();
@@ -360,4 +362,81 @@ void testDrawData() {
     const long m3 = doc.meshVersion();
     doc.undo();
     CHECK(doc.meshVersion() > m3);
+}
+
+// ---------------------------------------------------------------- transform, picking
+#include "core/pick.hpp"
+#include "core/transform.hpp"
+
+void testTransformPick() {
+    using namespace mazz;
+    // Stretch: the right side pushed from 64 to 96, the left stays.
+    const Vec3 p = stretchInBox({32, 10, 5}, {0, 0, 0}, {64, 20, 10}, {0, 0, 0}, {96, 20, 10});
+    CHECK(p.x == 48 && p.y == 10 && p.z == 5);
+    // A flat box just moves along its flat axis.
+    const Vec3 q = stretchInBox({5, 5, 0}, {0, 0, 0}, {10, 10, 0}, {0, 0, 7}, {20, 10, 7});
+    CHECK(q.x == 10 && q.z == 7);
+    // Rotation: exact at 90°, counter-clockwise seen from +z.
+    const Vec3 r = rotateAbout({10, 0, 3}, {0, 0, 0}, {0, 0, 1}, 90);
+    CHECK(r.x == 0 && r.y == 10 && r.z == 3);
+    const Vec3 r2 = rotateAbout({10, 0, 0}, {5, 5, 0}, {0, 0, 1}, 180);
+    CHECK(r2.x == 0 && r2.y == 10);
+    const Vec3 r3 = rotateAbout({10, 0, 0}, {0, 0, 0}, {0, 0, 1}, 30);
+    CHECK(near(r3.x, 10 * std::sqrt(3.0) / 2) && near(r3.y, 5));
+    CHECK(snapAngle(22, 15) == 15 && snapAngle(23, 15) == 30 && snapAngle(-8, 15) == -15 && snapAngle(7.3, 0) == 7.3);
+
+    // Copying a box's faces makes a separate piece of 8 points and 6 faces.
+    Document d;
+    d.apply("Box", [](MeshEdit& e, Selection&) {
+        Mesh b;
+        addBox(b, {0, 0, 0}, {10, 10, 10});
+        for (const Vec3& v : b.verts) e.addVert(v);
+        for (const Face& f : b.faces) e.addFace(f);
+        return true;
+    });
+    std::set<int> made;
+    d.apply("Copy", [&](MeshEdit& e, Selection&) {
+        made = copyFaces(e, {0, 1, 2, 3, 4, 5});
+        return true;
+    });
+    CHECK(made.size() == 6 && d.mesh.verts.size() == 16 && d.mesh.faces.size() == 12);
+    std::vector<int> piece;
+    CHECK(pieceIds(d.mesh, piece) == 2);
+
+    // Picking: a Top view and a 3D view over two boxes.
+    Mesh m;
+    addBox(m, {0, 0, 0}, {10, 10, 10});     // piece 0, low
+    addBox(m, {5, 5, 20}, {15, 15, 30});   // piece 1, higher up, overlapping from above
+    ViewGeom top;
+    top.dir = ViewDir::Top;
+    top.ortho.dir = ViewDir::Top;
+    top.ortho.zoom = 10;
+    top.w = 400;
+    top.h = 400;
+    double sx, sy;
+    top.project({7, 7, 0}, sx, sy);
+    std::vector<int> under = piecesAt(m, top, sx, sy);
+    CHECK(under.size() == 2 && under[0] == 1 && under[1] == 0); // the higher one first
+    top.project({2, 2, 0}, sx, sy);
+    under = piecesAt(m, top, sx, sy);
+    CHECK(under.size() == 1 && under[0] == 0);
+    top.project({40, 40, 0}, sx, sy);
+    CHECK(piecesAt(m, top, sx, sy).empty());
+    // Rectangle: only pieces entirely inside.
+    double ax, ay, bx, by;
+    top.project({-1, -1, 0}, ax, ay);
+    top.project({11, 11, 0}, bx, by);
+    std::set<int> inRect = piecesInRect(m, top, ax, ay, bx, by);
+    CHECK(inRect.size() == 1 && inRect.count(0));
+    CHECK(facesOfPieces(m, inRect).size() == 6);
+
+    ViewGeom g;
+    g.dir = ViewDir::Persp;
+    g.w = 800;
+    g.h = 600;
+    g.cam.target = {5, 5, 5};
+    g.cam.distance = 200;
+    g.project({5, 5, 10}, sx, sy); // top of the low box, seen from above at an angle
+    under = piecesAt(m, g, sx, sy);
+    CHECK(under.size() == 1);
 }

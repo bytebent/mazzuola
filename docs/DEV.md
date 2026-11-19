@@ -81,6 +81,10 @@ expect tool <Select|Primitives>     the active tool
 expect fileline <file> <line>       the file contains exactly that line
 saveas <file> | open <file>         save / open without dialogs (relative to the temp folder)
 addbox <x0 y0 z0 x1 y1 z1>          test helper: add a box as one undo step, selected
+vworld <view> <x> <y> <z>           mouse over a world point as that view shows it
+hold <shift|cmd|alt> / letgo <...>  hold / release a modifier for the next mouse actions
+expect bounds <x0 y0 z0 x1 y1 z1>   whole model bounds;  selbounds: the selection's
+expect preview <0|1>                the Primitives tool shows a preview box
 ```
 
 Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.

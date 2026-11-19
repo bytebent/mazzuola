@@ -309,6 +309,30 @@ src/core/numbers.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/numbers.cpp.s
 .PHONY : src/core/numbers.cpp.s
 
+src/core/pick.o: src/core/pick.cpp.o
+.PHONY : src/core/pick.o
+
+# target to build an object file
+src/core/pick.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/pick.cpp.o
+.PHONY : src/core/pick.cpp.o
+
+src/core/pick.i: src/core/pick.cpp.i
+.PHONY : src/core/pick.i
+
+# target to preprocess a source file
+src/core/pick.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/pick.cpp.i
+.PHONY : src/core/pick.cpp.i
+
+src/core/pick.s: src/core/pick.cpp.s
+.PHONY : src/core/pick.s
+
+# target to generate assembly for a file
+src/core/pick.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/pick.cpp.s
+.PHONY : src/core/pick.cpp.s
+
 src/core/selection.o: src/core/selection.cpp.o
 .PHONY : src/core/selection.o
 
@@ -332,6 +356,30 @@ src/core/selection.s: src/core/selection.cpp.s
 src/core/selection.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/selection.cpp.s
 .PHONY : src/core/selection.cpp.s
+
+src/core/transform.o: src/core/transform.cpp.o
+.PHONY : src/core/transform.o
+
+# target to build an object file
+src/core/transform.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/transform.cpp.o
+.PHONY : src/core/transform.cpp.o
+
+src/core/transform.i: src/core/transform.cpp.i
+.PHONY : src/core/transform.i
+
+# target to preprocess a source file
+src/core/transform.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/transform.cpp.i
+.PHONY : src/core/transform.cpp.i
+
+src/core/transform.s: src/core/transform.cpp.s
+.PHONY : src/core/transform.s
+
+# target to generate assembly for a file
+src/core/transform.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/transform.cpp.s
+.PHONY : src/core/transform.cpp.s
 
 src/core/view_geom.o: src/core/view_geom.cpp.o
 .PHONY : src/core/view_geom.o
@@ -483,9 +531,15 @@ help:
 	@echo "... src/core/numbers.o"
 	@echo "... src/core/numbers.i"
 	@echo "... src/core/numbers.s"
+	@echo "... src/core/pick.o"
+	@echo "... src/core/pick.i"
+	@echo "... src/core/pick.s"
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"
+	@echo "... src/core/transform.o"
+	@echo "... src/core/transform.i"
+	@echo "... src/core/transform.s"
 	@echo "... src/core/view_geom.o"
 	@echo "... src/core/view_geom.i"
 	@echo "... src/core/view_geom.s"

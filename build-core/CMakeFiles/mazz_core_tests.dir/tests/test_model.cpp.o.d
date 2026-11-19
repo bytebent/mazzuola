@@ -199,4 +199,6 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: \
  /home/claude/mazzuola/src/core/numbers.hpp \
  /home/claude/mazzuola/src/core/view_geom.hpp \
  /home/claude/mazzuola/src/core/camera.hpp \
- /home/claude/mazzuola/src/core/draw_data.hpp
+ /home/claude/mazzuola/src/core/draw_data.hpp \
+ /home/claude/mazzuola/src/core/pick.hpp \
+ /home/claude/mazzuola/src/core/transform.hpp

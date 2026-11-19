@@ -88,6 +88,7 @@ bool Editor::enabled(Act a) const {
     switch (a) {
     case Act::FlyMode: return flying_ || firstView3D() >= 0;
     case Act::MaximiseView: return layout_.maximised >= 0 || hoveredView_ >= 0;
+    case Act::Delete: return !doc_.sel.empty();
     case Act::Undo: return doc_.canUndo();
     case Act::Redo: return doc_.canRedo();
     default: return true;
@@ -104,6 +105,33 @@ void Editor::run(Act a) {
     case Act::SaveAs: fileSave(true); break;
     case Act::Undo: cancelTool(); if (doc_.undo()) touch(); break;
     case Act::Redo: cancelTool(); if (doc_.redo()) touch(); break;
+    case Act::Delete: {
+        cancelTool();
+        if (doc_.sel.empty() || (doc_.sel.mode != SelectMode::Piece && doc_.sel.mode != SelectMode::Face)) break;
+        const std::set<int> faces = doc_.sel.faces;
+        doc_.apply("Delete", [&](MeshEdit& e, Selection& sel) {
+            e.deleteFaces(faces);
+            sel.clear();
+            return true;
+        });
+        touch();
+        break;
+    }
+    case Act::SelectAll: {
+        Selection s;
+        s.mode = SelectMode::Piece;
+        for (int i = 0; i < (int)doc_.mesh.faces.size(); ++i) s.faces.insert(i);
+        doc_.select(s);
+        touch();
+        break;
+    }
+    case Act::SelectNone: {
+        Selection s;
+        s.mode = doc_.sel.mode;
+        doc_.select(s);
+        touch();
+        break;
+    }
     // Points, edges and faces arrive in v0.1.2 (they convert the selection then).
     case Act::ModePiece: {
         Selection s = doc_.sel;

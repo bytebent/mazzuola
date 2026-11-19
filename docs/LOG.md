@@ -4,6 +4,34 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, steps E–G: box primitive, select tool, selection box
+- `core/transform`: stretch points between box sides, turn about a centre (exact at
+  90°), angle snapping, copy faces. `core/pick`: pieces under a point (2D: inside a face
+  or near an edge, nearest to the viewer first; 3D: the face hit first) and pieces
+  entirely inside a rectangle. Tested.
+- `tools/handles`: the shared box handles (corners and sides in 2D views; Option turns
+  corners into rotation), X/Y/Z rings in 3D, resizing (opposite side fixed, snapped,
+  never thinner than a grid step), snapped move offsets, drag angles. Ring angles are
+  measured where the mouse ray meets the ring's plane (measuring on screen gave 105°
+  for a 90° drag in perspective).
+- Primitives tool, box only: drag a rectangle in a 2D view (snapped), depth from the
+  last shape made or selected (default z 0..64, so a box drawn in Top stands on the
+  ground); dashed preview in all views with handles in the 2D views; size typed in
+  Properties; Return creates it selected, Esc drops it.
+- Select tool: click picks a whole piece (clicking again on the same spot steps to the
+  next one underneath), Cmd+click adds/removes, a rectangle from empty space picks
+  pieces entirely inside, an empty click selects nothing. Selection box: drag inside
+  moves (snapped offset), Shift+drag copies (the copy is selected), side/corner
+  handles resize, Option+drag a corner turns about the centre (15° steps, Shift free),
+  rings in 3D; Esc during a drag puts everything back. Each is one undo step (a live
+  edit). Delete, Select all (Cmd+A) and Select none (Esc) enabled.
+- Script commands `vworld`, `hold`/`letgo`, `expect bounds | selbounds | preview`.
+- Tests: core 412 checks (also under ASan/UBSan). New UI script `a1_boxes` runs the
+  whole v0.1.0 flow (draw, adjust height in Front, Return, Esc, click, Cmd+click,
+  rectangle, move, copy, resize, Option-rotate, ring rotate, delete, undo, save) and
+  checks the saved file by line; all scripts pass at 1× and 2×; idle 0 ticks at 1× and
+  2× (control 867). Screenshots `m1-03-box-made.png`, `m1-04-handles.png`.
+
 ### 2026-11-19 — Alpha 1, step D: drawing the model
 - `core/draw_data`: triangles with flat normals and each edge once, built once per
   geometry change; index lists of the selected triangles/edges. The `Document` now has

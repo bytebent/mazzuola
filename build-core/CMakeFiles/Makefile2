@@ -85,12 +85,12 @@ clean: CMakeFiles/mazz_core_tests.dir/clean
 CMakeFiles/mazz_core.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target mazz_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target mazz_core"
 .PHONY : CMakeFiles/mazz_core.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/mazz_core.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 9
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mazz_core.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 0
 .PHONY : CMakeFiles/mazz_core.dir/rule
@@ -111,12 +111,12 @@ CMakeFiles/mazz_core.dir/clean:
 CMakeFiles/mazz_io.dir/all: CMakeFiles/mazz_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=14,15 "Built target mazz_io"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=16,17 "Built target mazz_io"
 .PHONY : CMakeFiles/mazz_io.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/mazz_io.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mazz_io.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 0
 .PHONY : CMakeFiles/mazz_io.dir/rule
@@ -134,16 +134,16 @@ CMakeFiles/mazz_io.dir/clean:
 # Target rules for target CMakeFiles/mazz_core_tests.dir
 
 # All Build rule for target.
-CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_core.dir/all
 CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_io.dir/all
+CMakeFiles/mazz_core_tests.dir/all: CMakeFiles/mazz_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=10,11,12,13 "Built target mazz_core_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/claude/mazzuola/build-core/CMakeFiles --progress-num=12,13,14,15 "Built target mazz_core_tests"
 .PHONY : CMakeFiles/mazz_core_tests.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/mazz_core_tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mazz_core_tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/claude/mazzuola/build-core/CMakeFiles 0
 .PHONY : CMakeFiles/mazz_core_tests.dir/rule

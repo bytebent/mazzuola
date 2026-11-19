@@ -14,7 +14,9 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/claude/mazzuola/src/core/grid_lines.cpp" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o.d"
   "/home/claude/mazzuola/src/core/mesh.cpp" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o.d"
   "/home/claude/mazzuola/src/core/numbers.cpp" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"
+  "/home/claude/mazzuola/src/core/pick.cpp" "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o.d"
   "/home/claude/mazzuola/src/core/selection.cpp" "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/selection.cpp.o.d"
+  "/home/claude/mazzuola/src/core/transform.cpp" "CMakeFiles/mazz_core.dir/src/core/transform.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/transform.cpp.o.d"
   "/home/claude/mazzuola/src/core/view_geom.cpp" "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/view_geom.cpp.o.d"
   )
 

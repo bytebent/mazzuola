@@ -441,10 +441,13 @@ CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o: /home/claude/mazzuola/tests/
 CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tests/test_model.cpp \
   /home/claude/mazzuola/src/core/camera.hpp \
   /home/claude/mazzuola/src/core/document.hpp \
+  /home/claude/mazzuola/src/core/draw_data.hpp \
   /home/claude/mazzuola/src/core/math.hpp \
   /home/claude/mazzuola/src/core/mesh.hpp \
   /home/claude/mazzuola/src/core/numbers.hpp \
+  /home/claude/mazzuola/src/core/pick.hpp \
   /home/claude/mazzuola/src/core/selection.hpp \
+  /home/claude/mazzuola/src/core/transform.hpp \
   /home/claude/mazzuola/src/core/view_geom.hpp \
   /home/claude/mazzuola/tests/check.hpp \
   /usr/include/alloca.h \
@@ -716,6 +719,12 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
 /usr/include/c++/13/backward/auto_ptr.h:
 
 /usr/include/c++/13/array:
+
+/home/claude/mazzuola/src/core/transform.hpp:
+
+/home/claude/mazzuola/src/core/pick.hpp:
+
+/home/claude/mazzuola/src/core/draw_data.hpp:
 
 /home/claude/mazzuola/src/core/document.hpp:
 

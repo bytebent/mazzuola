@@ -38,6 +38,7 @@ int buttonFromName(const std::string& s) {
     return -1;
 }
 bool near(double a, double b, double tol) { return std::fabs(a - b) <= tol; }
+bool nearV(const Vec3& a, const Vec3& b, double tol) { return length(a - b) <= tol; }
 } // namespace
 
 void Editor::stepScript() {
@@ -80,6 +81,25 @@ void Editor::stepScript() {
             if (viewIndex(v))
                 io.AddMousePosEvent(viewImgPos_[v].x + (float)(fx * viewImgSize_[v].x),
                                     viewImgPos_[v].y + (float)(fy * viewImgSize_[v].y));
+        } else if (cmd == "vworld") {
+            // Mouse over a world point as seen in a view.
+            int v = 0;
+            Vec3 w;
+            in >> v >> w.x >> w.y >> w.z;
+            double sx = 0, sy = 0;
+            if (viewIndex(v)) {
+                if (!geom(v).project(w, sx, sy)) scriptFail("point not visible in that view");
+                else io.AddMousePosEvent((float)sx, (float)sy);
+            }
+        } else if (cmd == "hold" || cmd == "letgo") {
+            // Modifier keys held during mouse actions: shift, cmd, alt (Option).
+            std::string k;
+            in >> k;
+            const bool down = cmd == "hold";
+            if (k == "shift") io.AddKeyEvent(ImGuiMod_Shift, down);
+            else if (k == "cmd") io.AddKeyEvent(ImGuiMod_Super, down), io.AddKeyEvent(ImGuiMod_Ctrl, down);
+            else if (k == "alt") io.AddKeyEvent(ImGuiMod_Alt, down);
+            else scriptFail("unknown modifier " + k);
         } else if (cmd == "press" || cmd == "release") {
             std::string b;
             in >> b;
@@ -240,6 +260,20 @@ void Editor::stepScript() {
                                    : doc_.sel.mode == SelectMode::Edge ? doc_.sel.edges.size()
                                                                        : doc_.sel.faces.size());
                 if (have != want) scriptFail(what + " is " + std::to_string(have));
+            } else if (what == "bounds" || what == "selbounds") {
+                Vec3 a, b, mn, mx;
+                in >> a.x >> a.y >> a.z >> b.x >> b.y >> b.z;
+                const bool have = what == "bounds" ? doc_.mesh.bounds(mn, mx) : selectionBounds(doc_.mesh, doc_.sel, mn, mx);
+                if (!have || !nearV(mn, a, 1e-6) || !nearV(mx, b, 1e-6)) {
+                    char buf[200];
+                    if (have) std::snprintf(buf, sizeof buf, "%s are %g %g %g  %g %g %g", what.c_str(), mn.x, mn.y, mn.z, mx.x, mx.y, mx.z);
+                    else std::snprintf(buf, sizeof buf, "%s: nothing there", what.c_str());
+                    scriptFail(buf);
+                }
+            } else if (what == "preview") {
+                int b = 0;
+                in >> b;
+                if (primTool_.hasPreview() != (b != 0)) scriptFail(std::string("preview is ") + (primTool_.hasPreview() ? "1" : "0"));
             } else if (what == "tool") {
                 std::string t;
                 in >> t;
