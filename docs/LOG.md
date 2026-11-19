@@ -10,6 +10,9 @@ and open questions are in [`PLAN.md`](PLAN.md).
   space; empty click / Esc selects nothing; selection box in every view).
 - Agreed: the main tools as buttons on the left, as in Scalpellino; no panel listing
   every tool. ARCHITECTURE §6 layout and Selection updated.
+- Then agreed: the bar shows only tools that work in the current release; Vert / Edge /
+  Face / Piece buttons at its top (Piece by default); the status bar lists the active
+  tool's gestures, as in Scalpellino.
 
 ### 2026-11-19 — Redesign: brush feel (docs only)
 - Agreed with the user: models are points and faces, not brushes, but shapes are

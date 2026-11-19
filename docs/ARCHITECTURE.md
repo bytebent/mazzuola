@@ -126,7 +126,12 @@ to the GPU → one redraw of the views that show it.
   status bar: tool · selection · cursor position · vertices / triangles
 ```
 - **Tool bar on the left** (agreed 2026-11-19, as in Scalpellino): the main tools as
-  buttons down the left edge. No panel listing every tool.
+  buttons down the left edge. No panel listing every tool. It shows only tools that
+  work in the current release (it grows milestone by milestone; menus still list later
+  features greyed out). At its top, four small buttons for the selection mode
+  (Vert / Edge / Face / Piece; Piece by default).
+- **Status bar** says what the active tool's gestures do, as in Scalpellino
+  ("click: select · Cmd+click: add/remove · drag: move · Shift+drag: copy …").
 - **Four views** by default: top, front, side (orthographic) and 3D. Any view can be
   maximised and switched to another direction (front/back/left/right/top/bottom).
   Splitters resize; double-click restores.

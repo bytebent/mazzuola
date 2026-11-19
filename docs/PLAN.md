@@ -22,7 +22,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 - **Agreed so far:** "brush feel" (ARCHITECTURE §6): models stay points and faces, but
   making, selecting, resizing, rotating and moving work like Scalpellino's brushes.
   Selecting click by click; main tools as buttons on the left (ARCHITECTURE §6).
-  Next to agree: the tool bar's details, then making a shape.
+  Tool bar details and gesture hints in the status bar agreed.
+  Next to agree: making a shape (primitives), click by click.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
