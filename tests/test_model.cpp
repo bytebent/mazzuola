@@ -1,0 +1,251 @@
+// Core tests for the model: clean numbers, mesh, pieces, selection, document and undo.
+#include "check.hpp"
+#include "core/document.hpp"
+#include "core/numbers.hpp"
+#include <cstdlib>
+#include <map>
+#include <string>
+
+using namespace mazz;
+
+namespace {
+
+bool sameMesh(const Mesh& a, const Mesh& b) {
+    if (a.verts.size() != b.verts.size() || a.faces.size() != b.faces.size()) return false;
+    for (size_t i = 0; i < a.verts.size(); ++i)
+        if (a.verts[i].x != b.verts[i].x || a.verts[i].y != b.verts[i].y || a.verts[i].z != b.verts[i].z) return false;
+    for (size_t i = 0; i < a.faces.size(); ++i)
+        if (a.faces[i] != b.faces[i]) return false;
+    return true;
+}
+
+// Every edge used exactly twice, once in each direction: closed and consistently wound.
+bool closedAndConsistent(const Mesh& m) {
+    std::map<std::pair<int, int>, int> uses;
+    for (const Face& f : m.faces)
+        for (int k = 0; k < f.n; ++k) ++uses[{f.v[k], f.v[(k + 1) % f.n]}];
+    for (const auto& [e, n] : uses)
+        if (n != 1 || uses.count({e.second, e.first}) == 0) return false;
+    return true;
+}
+
+double signedVolume(const Mesh& m) {
+    double v = 0;
+    for (const Face& f : m.faces)
+        for (int k = 1; k + 1 < f.n; ++k)
+            v += dot(m.verts[f.v[0]], cross(m.verts[f.v[k]], m.verts[f.v[k + 1]])) / 6;
+    return v;
+}
+
+void testNumbers() {
+    CHECK(clean(0.1 + 0.2) == clean(0.3));
+    CHECK(clean(3.061616997868383e-15) == 0);
+    CHECK(!std::signbit(clean(-1e-9)));
+    CHECK(clean(62.499999999999986) == 62.5);
+    CHECK(clean(1.0005) == 1.001 || clean(1.0005) == 1.0); // halfway: either neighbour is fine
+    CHECK(isClean(62.5) && isClean(0) && !isClean(0.0001) && !isClean(-0.0));
+
+    CHECK(formatClean(100) == "100");
+    CHECK(formatClean(50) == "50");
+    CHECK(formatClean(1000) == "1000");
+    CHECK(formatClean(1000000) == "1000000");
+    CHECK(formatClean(0.5) == "0.5");
+    CHECK(formatClean(-0.125) == "-0.125");
+    CHECK(formatClean(62.499999999999986) == "62.5");
+    CHECK(formatClean(3.061616997868383e-15) == "0");
+    CHECK(formatClean(-0.0) == "0");
+    CHECK(formatClean(-0.0004) == "0");
+    CHECK(formatClean(21.650635094610966) == "21.651");
+
+    // What is written reads back as exactly the same clean value.
+    std::srand(7);
+    bool roundTrip = true, noExponent = true;
+    for (int i = 0; i < 20000; ++i) {
+        const double v = clean((std::rand() - RAND_MAX / 2) / 997.0 * (i % 7 + 1));
+        const std::string s = formatClean(v);
+        if (std::strtod(s.c_str(), nullptr) != v) roundTrip = false;
+        if (s.find('e') != std::string::npos || s.find('E') != std::string::npos) noExponent = false;
+    }
+    CHECK(roundTrip);
+    CHECK(noExponent);
+
+    double c = 0, s = 0;
+    cosSinDeg(90, c, s);
+    CHECK(c == 0 && s == 1);
+    cosSinDeg(-90, c, s);
+    CHECK(c == 0 && s == -1);
+    cosSinDeg(180, c, s);
+    CHECK(c == -1 && s == 0);
+    cosSinDeg(450, c, s);
+    CHECK(c == 0 && s == 1);
+    cosSinDeg(45, c, s);
+    CHECK(near(c, std::sqrt(0.5)) && near(s, std::sqrt(0.5)));
+}
+
+void testBox() {
+    Mesh m;
+    addBox(m, {64, 0.1 + 0.2, 0}, {0, 32, 48});
+    CHECK(m.verts.size() == 8);
+    CHECK(m.faces.size() == 6);
+    CHECK(closedAndConsistent(m));
+    CHECK(signedVolume(m) > 0); // faces point outward
+    bool allClean = true;
+    for (const Vec3& p : m.verts)
+        for (int a = 0; a < 3; ++a) allClean = allClean && isClean(p[a]);
+    CHECK(allClean);
+    Vec3 mn, mx;
+    CHECK(m.bounds(mn, mx));
+    CHECK(mn.x == 0 && mn.y == 0.3 && mn.z == 0 && mx.x == 64 && mx.y == 32 && mx.z == 48);
+    // Each face's normal points away from the box centre.
+    const Vec3 centre = (mn + mx) / 2;
+    bool outward = true;
+    for (int f = 0; f < 6; ++f) outward = outward && dot(faceNormal(m, f), faceCentre(m, f) - centre) > 0;
+    CHECK(outward);
+}
+
+void testPieces() {
+    Mesh m;
+    addBox(m, {0, 0, 0}, {10, 10, 10});
+    addBox(m, {20, 0, 0}, {30, 10, 10});
+    std::vector<int> piece;
+    CHECK(pieceIds(m, piece) == 2);
+    CHECK(piece[0] == 0 && piece[5] == 0 && piece[6] == 1 && piece[11] == 1);
+    const std::set<int> whole = wholePieces(m, {7});
+    CHECK(whole.size() == 6 && *whole.begin() == 6);
+
+    Selection s;
+    CHECK(s.mode == SelectMode::Piece);
+    s.faces = whole;
+    Vec3 mn, mx;
+    CHECK(selectionBounds(m, s, mn, mx));
+    CHECK(mn.x == 20 && mx.x == 30);
+    CHECK(selectedVerts(m, s).size() == 8);
+}
+
+void testDocument() {
+    Document d;
+    CHECK(!d.dirty() && !d.canUndo());
+
+    // A new box: one step, selected as a piece.
+    CHECK(d.apply("New box", [](MeshEdit& e, Selection& s) {
+        Mesh box;
+        addBox(box, {0, 0, 0}, {64, 64, 64});
+        for (const Vec3& p : box.verts) e.addVert(p);
+        for (const Face& f : box.faces) s.faces.insert(e.addFace(f));
+        return true;
+    }));
+    CHECK(d.mesh.faces.size() == 6 && d.sel.faces.size() == 6 && d.dirty());
+    const Mesh afterBox = d.mesh;
+    d.markSaved();
+    CHECK(!d.dirty());
+
+    // A cancelled command leaves nothing behind.
+    CHECK(!d.apply("Nothing", [](MeshEdit& e, Selection&) {
+        e.setVert(0, {999, 0, 0});
+        return false;
+    }));
+    CHECK(sameMesh(d.mesh, afterBox) && d.undoCount() == 1);
+
+    // A command that changes nothing is not a step.
+    CHECK(!d.apply("Same", [](MeshEdit& e, Selection&) {
+        e.setVert(0, e.mesh().verts[0]);
+        return true;
+    }));
+    CHECK(d.undoCount() == 1);
+
+    // A live drag: many updates, one step, only the moved points stored.
+    d.beginLive();
+    const std::set<int> moved = selectedVerts(d.mesh, d.sel);
+    std::map<int, Vec3> start;
+    for (int v : moved) start[v] = d.mesh.verts[v];
+    for (int frame = 1; frame <= 10; ++frame)
+        for (int v : moved) d.live().setVert(v, start[v] + Vec3{frame * 1.0, 0, 0.1 + 0.2});
+    CHECK(d.commitLive("Move"));
+    CHECK(d.undoCount() == 2 && d.dirty());
+    CHECK(d.mesh.verts[0].x == 10 && d.mesh.verts[0].z == 0.3); // cleaned
+    const Mesh afterMove = d.mesh;
+
+    // Switching mode is not a step; undo brings back the selection with its mode.
+    Selection pts;
+    pts.mode = SelectMode::Vert;
+    pts.verts = {0, 1};
+    d.select(pts);
+    CHECK(d.undo());
+    CHECK(sameMesh(d.mesh, afterBox));
+    CHECK(d.sel.mode == SelectMode::Piece && d.sel.faces.size() == 6);
+    CHECK(!d.dirty()); // back to what was saved
+    CHECK(d.redo());
+    CHECK(sameMesh(d.mesh, afterMove) && d.dirty());
+    CHECK(d.sel.mode == SelectMode::Piece && d.sel.faces.size() == 6);
+
+    // A cancelled live edit puts everything back.
+    d.beginLive();
+    d.live().setVert(3, {-50, -50, -50});
+    d.select(pts);
+    d.cancelLive();
+    CHECK(sameMesh(d.mesh, afterMove) && d.sel.mode == SelectMode::Piece && d.undoCount() == 2);
+
+    // Delete one of two boxes: points and faces renumbered, undo exact.
+    CHECK(d.apply("Second box", [](MeshEdit& e, Selection& s) {
+        Mesh box;
+        addBox(box, {100, 0, 0}, {120, 20, 20});
+        const int base = (int)e.mesh().verts.size();
+        for (const Vec3& p : box.verts) e.addVert(p);
+        s.faces.clear();
+        for (Face f : box.faces) {
+            for (int k = 0; k < f.n; ++k) f.v[k] += base;
+            s.faces.insert(e.addFace(f));
+        }
+        return true;
+    }));
+    const Mesh twoBoxes = d.mesh;
+    CHECK(d.apply("Delete", [](MeshEdit& e, Selection& s) {
+        e.deleteFaces(wholePieces(e.mesh(), {0}));
+        s.faces.clear();
+        return true;
+    }));
+    CHECK(d.mesh.verts.size() == 8 && d.mesh.faces.size() == 6);
+    CHECK(closedAndConsistent(d.mesh));
+    Vec3 mn, mx;
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == 100 && mx.x == 120);
+    CHECK(d.undo());
+    CHECK(sameMesh(d.mesh, twoBoxes));
+    CHECK(d.redo());
+    CHECK(d.mesh.faces.size() == 6);
+
+    // Moving one point of a big model stores a tiny step.
+    Document big;
+    big.apply("Many boxes", [](MeshEdit& e, Selection&) {
+        for (int i = 0; i < 500; ++i) {
+            Mesh box;
+            addBox(box, {i * 10.0, 0, 0}, {i * 10.0 + 5, 5, 5});
+            const int base = (int)e.mesh().verts.size();
+            for (const Vec3& p : box.verts) e.addVert(p);
+            for (Face f : box.faces) {
+                for (int k = 0; k < f.n; ++k) f.v[k] += base;
+                e.addFace(f);
+            }
+        }
+        return true;
+    });
+    const std::size_t before = big.historyBytes();
+    big.apply("Nudge", [](MeshEdit& e, Selection&) {
+        e.setVert(17, e.mesh().verts[17] + Vec3{1, 0, 0});
+        return true;
+    });
+    CHECK(big.historyBytes() - before < 1024);
+
+    // New model: empty history, clean.
+    d.reset();
+    CHECK(!d.canUndo() && !d.canRedo() && !d.dirty() && d.mesh.empty());
+}
+
+} // namespace
+
+void testModel() {
+    testNumbers();
+    testBox();
+    testPieces();
+    testDocument();
+}

@@ -23,12 +23,16 @@ endif()
 # Pure C++: no OpenGL, GLFW or ImGui. Must stay that way (see CLAUDE.md).
 add_library(mazz_core STATIC
   src/core/camera.cpp
-  src/core/grid_lines.cpp)
+  src/core/grid_lines.cpp
+  src/core/numbers.cpp
+  src/core/mesh.cpp
+  src/core/selection.cpp
+  src/core/document.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  add_executable(mazz_core_tests tests/test_core.cpp)
+  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp)
   target_link_libraries(mazz_core_tests PRIVATE mazz_core)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()

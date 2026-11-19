@@ -4,6 +4,21 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, step A: core foundations
+- `core/numbers`: clean numbers (1/1000 cm, `-0` → 0), exact cos/sin at multiples of
+  90°, plain-decimal writing (`100`, `62.5`, never `1e+02`) that reads back exactly.
+- `core/mesh`: points, tri/quad faces (fields of §5), face normal/centre, pieces
+  (union-find), `addBox` (closed, outward, cleaned).
+- `core/selection`: selection with its mode, whole pieces, selected points, bounds.
+- `core/document`: `MeshEdit` records only the points/faces it touches; a step stores
+  that change plus the selection before/after; one-shot `apply` and live edits
+  (`beginLive`/`commitLive`/`cancelLive`) for drags; saved marker that undo respects;
+  history limited to 64 MB.
+- Tests (`tests/test_model.cpp`, helpers in `tests/check.hpp`): 349 checks pass, also
+  under AddressSanitizer/UBSan with -Wall -Wextra (no warnings). Includes: 20 000
+  random values round-trip through text exactly; undo after a mode switch restores the
+  selection and its mode; moving one point of a 500-box model stores < 1 KB.
+
 ### 2026-11-19 — v0.1.0 step plan (docs only)
 - PLAN.md: the steps of v0.1.0 (A core foundations, B `.mazz` files, C tool structure
   and layout, D drawing, E box primitive, F select tool, G selection box, H release),
