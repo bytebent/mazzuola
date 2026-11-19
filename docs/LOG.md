@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Redesign: selecting, tool bar (docs only)
+- Agreed: selecting click by click (a click picks a whole shape by default; 1–3 finer,
+  4 back; click again to reach what's underneath in 2D; Cmd+click; rectangle on empty
+  space; empty click / Esc selects nothing; selection box in every view).
+- Agreed: the main tools as buttons on the left, as in Scalpellino; no panel listing
+  every tool. ARCHITECTURE §6 layout and Selection updated.
+
 ### 2026-11-19 — Redesign: brush feel (docs only)
 - Agreed with the user: models are points and faces, not brushes, but shapes are
   handled like Scalpellino's brushes, also once the model gets complex: draw a box →

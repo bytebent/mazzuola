@@ -116,16 +116,17 @@ to the GPU → one redraw of the views that show it.
 
 ### Window layout (default)
 ```
-┌──────────────┬──────────────┬──────────────────┬─────────┐
-│     Top      │    Front     │                  │  Tools  │
-│              │              │   Texture view   │  ─────  │
-├──────────────┼──────────────┤  (texture sheet  │  Props  │
-│     Side     │      3D      │   + pixel grid)  │  ─────  │
-│              │              │                  │ Parts / │
-│              │              │                  │ Palette │
-└──────────────┴──────────────┴──────────────────┴─────────┘
+┌──┬──────────────┬──────────────┬──────────────────┬─────────┐
+│T │     Top      │    Front     │                  │  Props  │
+│o │              │              │   Texture view   │         │
+│o ├──────────────┼──────────────┤  (texture sheet  │  ─────  │
+│l │     Side     │      3D      │   + pixel grid)  │ Parts / │
+│s │              │              │                  │ Palette │
+└──┴──────────────┴──────────────┴──────────────────┴─────────┘
   status bar: tool · selection · cursor position · vertices / triangles
 ```
+- **Tool bar on the left** (agreed 2026-11-19, as in Scalpellino): the main tools as
+  buttons down the left edge. No panel listing every tool.
 - **Four views** by default: top, front, side (orthographic) and 3D. Any view can be
   maximised and switched to another direction (front/back/left/right/top/bottom).
   Splitters resize; double-click restores.
@@ -200,9 +201,17 @@ the model gets:
   is push/pull (M2), not the box handles.
 
 ### Selection
-- Vertices, edges, faces, or connected pieces (1–4). Click, Cmd+click adds/removes,
-  box select in any view, select similar (texture, smoothing group, direction),
-  grow/shrink, edge loop / ring, select part. "Whole faces only" option for box select.
+- Vertices, edges, faces, or connected pieces (1–4). Select similar (texture, smoothing
+  group, direction), grow/shrink, edge loop / ring, select part. "Whole faces only"
+  option for box select.
+- Click by click (agreed 2026-11-19):
+  - By default a click picks a **whole shape** (connected piece), like a brush; 1–3
+    switch to points, edges, faces; 4 back to whole shapes.
+  - In 2D views, click on a shape's outline or inside it; clicking again on the same
+    spot steps to the next one underneath.
+  - Cmd+click adds/removes. Dragging on empty space draws a selection rectangle.
+  - Clicking empty space or Esc selects nothing.
+  - The selection box ("Brush feel") appears around the selection in every view.
 
 ### Vertex tool (Shift+V)
 - Move selected points by dragging, with axis arrows in 2D views; rotate and scale with
