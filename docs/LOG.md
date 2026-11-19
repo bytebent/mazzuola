@@ -4,6 +4,24 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Alpha 1, step B: `.mazz` files
+- `io/mazz_file` (new `mazz_io` library, pure C++): writer and reader of format 1 (§7
+  minus textures/groups/palettes, which come later); plain decimals; attributes and
+  `uv`/`col` lines only when not default; strict reader with "line N: why" errors;
+  saving writes `<file>.saving` then renames it.
+- Editor holds a `Document`. File → New / Open / Save / Save as work (native dialogs on
+  macOS, a typed-path dialog elsewhere), "Save changes?" (Save / Don't save / Cancel)
+  before New, Open and Quit (also the window's close button); errors in a message box;
+  window title shows the file name and • when unsaved. Undo/Redo enabled. Status bar
+  counts points and triangles. Modes 1–3 greyed out until v0.1.2.
+- Script commands `saveas`, `open`, `addbox` (test helper) and `expect dirty | undo |
+  faces | verts | selected | title | fileline` (DEV.md). New UI script `a1_files`.
+- Tests: core 375 checks (golden file text for a box with a noisy height and a stray
+  point; 300-point random round trip, also through a real file; 14 bad files each
+  rejected at the right line). UI scripts `a1_files`, `m0_views` pass at 1× and 2×
+  (`m0_views` updated: keys 1–3 now leave the mode on pieces). Idle: 0 ticks at 1× and
+  2× (control 874). Checked by eye: a saved box reads `v 100 50 62.5`, no `1e+02`.
+
 ### 2026-11-19 — Alpha 1, step A: core foundations
 - `core/numbers`: clean numbers (1/1000 cm, `-0` → 0), exact cos/sin at multiples of
   90°, plain-decimal writing (`100`, `62.5`, never `1e+02`) that reads back exactly.

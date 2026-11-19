@@ -1,11 +1,13 @@
 #pragma once
 // The app's state and per-frame logic. Real input and scripted input (tests,
 // screenshots) go through the same paths: key chords -> actions, mouse -> ImGui IO.
+#include "core/document.hpp"
 #include "core/grid.hpp"
 #include "render/view_draw.hpp"
 #include "ui/actions.hpp"
 #include "imgui.h"
 #include <deque>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -19,8 +21,7 @@ struct EditorOptions {
     bool automated() const { return !scriptPath.empty() || !screenshot.empty(); }
 };
 
-enum class SelectMode { Vertex, Edge, Face, Piece };
-const char* selectModeName(SelectMode m);
+const char* selectModeName(SelectMode m); // "vertices", "edges", "faces", "pieces"
 
 enum class Tool { Select };
 
@@ -40,7 +41,8 @@ public:
     bool frame(double dt);
     bool shouldExit() const { return quit_; }
     int exitCode() const { return scriptFailures_ > 0 ? 1 : 0; }
-    void requestQuit() { quit_ = true; }
+    // Quit, after asking about unsaved changes (window close button, Cmd+Q).
+    void requestQuit();
 
     // A physical key press (from the GLFW callback or a script).
     void keyPressed(int glfwKey, bool shift, bool cmd);
@@ -86,6 +88,23 @@ private:
     void markViewsDirty();
     void allViewsToOrigin();
 
+    // ---- files (app/file_ops.cpp)
+    void fileNew();
+    void fileOpen();
+    void fileSave(bool saveAs);
+    bool openPath(const std::string& path);
+    bool savePath(const std::string& path);
+    void whenSaved(std::function<void()> then); // asks "save changes?" first if needed
+    void askPath(const std::string& title, bool saving, const std::string& start,
+                 std::function<void(const std::string&)> done);
+    void showMessage(const std::string& title, const std::string& text);
+    void fileDialogs(); // the pop-ups above, once per frame
+    std::string displayName() const;
+    void updateTitle();
+
+    // The model changed (geometry or selection): views redraw.
+    void touch();
+
     // ---- scripting (app/script.cpp)
     void loadScript(const std::string& path);
     void stepScript();
@@ -99,7 +118,9 @@ private:
     View views_[4];
     ViewsLayout layout_;
     ViewDrawer drawer_;
-    SelectMode mode_ = SelectMode::Face;
+    Document doc_;
+    std::string path_;  // the open model's file ("" = never saved)
+    double texel_ = 0.5; // texture pixels per cm, kept from the file (milestone 5)
     Tool tool_ = Tool::Select;
     bool orbitSelection_ = false; // 3D orbit target: selection (falls back to origin) or origin
 
@@ -120,6 +141,17 @@ private:
     bool paintWanted_ = false, paintOpen_ = false;
     std::string paintShot_;
     double gridDialogValue_ = 8;
+
+    // file pop-ups
+    std::function<void()> afterSave_;  // what to do once the unsaved question is settled
+    bool unsavedOpen_ = false;
+    bool pathOpen_ = false, pathSaving_ = false;
+    std::string pathTitle_;
+    char pathBuf_[1024] = {};
+    std::function<void(const std::string&)> pathDone_;
+    bool messageOpen_ = false;
+    std::string messageTitle_, messageText_;
+    std::string title_;
 
     std::deque<Chord> keyQueue_;
     std::string screenshotRequest_;

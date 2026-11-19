@@ -22,7 +22,7 @@ constexpr const char* kWinPalette = "Palette";
 
 const char* selectModeName(SelectMode m) {
     switch (m) {
-    case SelectMode::Vertex: return "vertices";
+    case SelectMode::Vert: return "vertices";
     case SelectMode::Edge: return "edges";
     case SelectMode::Face: return "faces";
     case SelectMode::Piece: return "pieces";
@@ -88,6 +88,8 @@ bool Editor::enabled(Act a) const {
     switch (a) {
     case Act::FlyMode: return flying_ || firstView3D() >= 0;
     case Act::MaximiseView: return layout_.maximised >= 0 || hoveredView_ >= 0;
+    case Act::Undo: return doc_.canUndo();
+    case Act::Redo: return doc_.canRedo();
     default: return true;
     }
 }
@@ -95,11 +97,21 @@ bool Editor::enabled(Act a) const {
 void Editor::run(Act a) {
     if (!enabled(a)) return;
     switch (a) {
-    case Act::Quit: quit_ = true; break;
-    case Act::ModeVertex: mode_ = SelectMode::Vertex; break;
-    case Act::ModeEdge: mode_ = SelectMode::Edge; break;
-    case Act::ModeFace: mode_ = SelectMode::Face; break;
-    case Act::ModePiece: mode_ = SelectMode::Piece; break;
+    case Act::Quit: requestQuit(); break;
+    case Act::New: fileNew(); break;
+    case Act::Open: fileOpen(); break;
+    case Act::Save: fileSave(false); break;
+    case Act::SaveAs: fileSave(true); break;
+    case Act::Undo: if (doc_.undo()) touch(); break;
+    case Act::Redo: if (doc_.redo()) touch(); break;
+    // Points, edges and faces arrive in v0.1.2 (they convert the selection then).
+    case Act::ModePiece: {
+        Selection s = doc_.sel;
+        s.mode = SelectMode::Piece;
+        doc_.select(s);
+        touch();
+        break;
+    }
     case Act::ToolSelect: tool_ = Tool::Select; break;
     case Act::GridSmaller: grid_.halve(); markViewsDirty(); break;
     case Act::GridLarger: grid_.doubleUp(); markViewsDirty(); break;
@@ -228,6 +240,8 @@ bool Editor::frame(double dt) {
     if (ImGui::Begin(kWinPalette)) palettePanel();
     ImGui::End();
 
+    fileDialogs();
+    updateTitle();
     controlsWindow();
     aboutWindow();
     gridSizeDialog();
@@ -317,10 +331,10 @@ void Editor::menuBar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Select")) {
-        menuItem(Act::ModeVertex, mode_ == SelectMode::Vertex);
-        menuItem(Act::ModeEdge, mode_ == SelectMode::Edge);
-        menuItem(Act::ModeFace, mode_ == SelectMode::Face);
-        menuItem(Act::ModePiece, mode_ == SelectMode::Piece);
+        menuItem(Act::ModeVertex, doc_.sel.mode == SelectMode::Vert);
+        menuItem(Act::ModeEdge, doc_.sel.mode == SelectMode::Edge);
+        menuItem(Act::ModeFace, doc_.sel.mode == SelectMode::Face);
+        menuItem(Act::ModePiece, doc_.sel.mode == SelectMode::Piece);
         ImGui::Separator();
         plannedItem("Grow selection", 1);
         plannedItem("Shrink selection", 1);
@@ -421,7 +435,8 @@ void Editor::statusBar() {
         if (ImGui::BeginMenuBar()) {
             ImGui::TextUnformatted("Select tool");
             ImGui::TextDisabled("|");
-            ImGui::Text("%s, nothing selected", selectModeName(mode_));
+            if (doc_.sel.empty()) ImGui::Text("%s, nothing selected", selectModeName(doc_.sel.mode));
+            else ImGui::Text("%s, %d faces selected", selectModeName(doc_.sel.mode), (int)doc_.sel.faces.size());
             ImGui::TextDisabled("|");
             if (flying_) {
                 ImGui::TextUnformatted("Flying: WASD, Q/E down/up, Shift fast, Z or Esc to stop");
@@ -435,7 +450,11 @@ void Editor::statusBar() {
             }
             ImGui::TextDisabled("|");
             ImGui::Text("grid %g cm%s%s", grid_.size, grid_.snap ? ", snap" : "", grid_.visible ? "" : ", hidden");
-            const char* count = "0 vertices, 0 triangles";
+            int tris = 0;
+            for (const Face& fc : doc_.mesh.faces) tris += fc.n - 2;
+            char countBuf[96];
+            std::snprintf(countBuf, sizeof countBuf, "%d vertices, %d triangles", (int)doc_.mesh.verts.size(), tris);
+            const char* count = countBuf;
             const float w = ImGui::CalcTextSize(count).x;
             const float x = ImGui::GetWindowWidth() - w - ImGui::GetStyle().WindowPadding.x - 4;
             if (x > ImGui::GetCursorPosX()) ImGui::SetCursorPosX(x);

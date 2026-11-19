@@ -140,6 +140,31 @@ void Editor::stepScript() {
             in >> paintShot_;
         } else if (cmd == "quit") {
             quit_ = true;
+        } else if (cmd == "saveas" || cmd == "open") {
+            // Paths relative to the script's working directory (tests run in a scratch dir).
+            std::string path;
+            std::getline(in >> std::ws, path);
+            if (path.empty()) scriptFail(cmd + " needs a path");
+            else if (cmd == "saveas") savePath(path);
+            else openPath(path);
+        } else if (cmd == "addbox") {
+            // Test helper (until the box tool exists): adds a box as one undo step and
+            // selects it.
+            Vec3 a, b;
+            in >> a.x >> a.y >> a.z >> b.x >> b.y >> b.z;
+            doc_.apply("Box", [&](MeshEdit& e, Selection& sel) {
+                Mesh box;
+                addBox(box, a, b);
+                const int base = (int)e.mesh().verts.size();
+                for (const Vec3& p : box.verts) e.addVert(p);
+                sel = Selection();
+                for (Face f : box.faces) {
+                    for (int k = 0; k < f.n; ++k) f.v[k] += base;
+                    sel.faces.insert(e.addFace(f));
+                }
+                return true;
+            });
+            touch();
         } else if (cmd == "expect") {
             std::string what;
             in >> what;
@@ -155,7 +180,7 @@ void Editor::stepScript() {
             } else if (what == "mode") {
                 std::string m;
                 in >> m;
-                if (m != selectModeName(mode_)) scriptFail(std::string("mode is ") + selectModeName(mode_));
+                if (m != selectModeName(doc_.sel.mode)) scriptFail(std::string("mode is ") + selectModeName(doc_.sel.mode));
             } else if (what == "viewdir") {
                 int v = 0;
                 std::string name;
@@ -203,6 +228,33 @@ void Editor::stepScript() {
                         scriptFail(b);
                     }
                 }
+            } else if (what == "dirty" || what == "undo" || what == "faces" || what == "verts" || what == "selected") {
+                long want = 0;
+                in >> want;
+                long have = 0;
+                if (what == "dirty") have = doc_.dirty() ? 1 : 0;
+                else if (what == "undo") have = doc_.undoCount();
+                else if (what == "faces") have = (long)doc_.mesh.faces.size();
+                else if (what == "verts") have = (long)doc_.mesh.verts.size();
+                else have = (long)(doc_.sel.mode == SelectMode::Vert ? doc_.sel.verts.size()
+                                   : doc_.sel.mode == SelectMode::Edge ? doc_.sel.edges.size()
+                                                                       : doc_.sel.faces.size());
+                if (have != want) scriptFail(what + " is " + std::to_string(have));
+            } else if (what == "title") {
+                std::string t;
+                std::getline(in >> std::ws, t);
+                if (title_ != t) scriptFail("title is \"" + title_ + "\"");
+            } else if (what == "fileline") {
+                // expect fileline <path> <exact line>: the file contains that line.
+                std::string path, want;
+                in >> path;
+                std::getline(in >> std::ws, want);
+                std::ifstream f(path);
+                std::string l;
+                bool found = false;
+                while (f && std::getline(f, l))
+                    if (l == want) found = true;
+                if (!found) scriptFail(path + " has no line \"" + want + "\"");
             } else {
                 scriptFail("unknown expectation " + what);
             }

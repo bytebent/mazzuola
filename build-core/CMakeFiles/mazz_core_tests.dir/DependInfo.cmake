@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/claude/mazzuola/tests/test_core.cpp" "CMakeFiles/mazz_core_tests.dir/tests/test_core.cpp.o" "gcc" "CMakeFiles/mazz_core_tests.dir/tests/test_core.cpp.o.d"
+  "/home/claude/mazzuola/tests/test_io.cpp" "CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o" "gcc" "CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o.d"
   "/home/claude/mazzuola/tests/test_model.cpp" "CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o" "gcc" "CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o.d"
   )
 

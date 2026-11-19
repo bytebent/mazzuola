@@ -10,6 +10,7 @@
 using namespace mazz;
 
 void testModel(); // test_model.cpp
+void testIo();    // test_io.cpp
 
 static void testGrid() {
     Grid g;
@@ -183,6 +184,7 @@ int main() {
     testCamera3D();
     testGridLines();
     testModel();
+    testIo();
     if (gFailures) {
         std::fprintf(stderr, "%d of %d checks failed\n", gFailures, gChecks);
         return 1;

@@ -9,22 +9,22 @@ namespace mazz {
 namespace {
 // Order must match enum Act.
 const ActionInfo kActions[] = {
-    {Act::New, "file.new", "New", "Cmd+N", 1},
-    {Act::Open, "file.open", "Open...", "Cmd+O", 1},
-    {Act::Save, "file.save", "Save", "Cmd+S", 1},
-    {Act::SaveAs, "file.saveas", "Save as...", "Cmd+Shift+S", 1},
+    {Act::New, "file.new", "New", "Cmd+N", 0},
+    {Act::Open, "file.open", "Open...", "Cmd+O", 0},
+    {Act::Save, "file.save", "Save", "Cmd+S", 0},
+    {Act::SaveAs, "file.saveas", "Save as...", "Cmd+Shift+S", 0},
     {Act::Quit, "file.quit", "Quit", "Cmd+Q", 0},
 
-    {Act::Undo, "edit.undo", "Undo", "Cmd+Z", 1},
-    {Act::Redo, "edit.redo", "Redo", "Cmd+Shift+Z", 1},
+    {Act::Undo, "edit.undo", "Undo", "Cmd+Z", 0},
+    {Act::Redo, "edit.redo", "Redo", "Cmd+Shift+Z", 0},
     {Act::Duplicate, "edit.duplicate", "Duplicate", "Cmd+D", 1},
     {Act::Delete, "edit.delete", "Delete", "Delete", 1},
     {Act::SelectAll, "edit.selectall", "Select all", "Cmd+A", 1},
     {Act::SelectNone, "edit.selectnone", "Select none", "Esc", 1},
 
-    {Act::ModeVertex, "select.vertices", "Vertices", "1", 0},
-    {Act::ModeEdge, "select.edges", "Edges", "2", 0},
-    {Act::ModeFace, "select.faces", "Faces", "3", 0},
+    {Act::ModeVertex, "select.vertices", "Vertices", "1", 1},
+    {Act::ModeEdge, "select.edges", "Edges", "2", 1},
+    {Act::ModeFace, "select.faces", "Faces", "3", 1},
     {Act::ModePiece, "select.pieces", "Connected pieces", "4", 0},
     {Act::Hide, "select.hide", "Hide selected", "H", 1},
     {Act::HideOthers, "select.hideothers", "Hide others", "Shift+H", 1},

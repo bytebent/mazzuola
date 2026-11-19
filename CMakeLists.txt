@@ -30,10 +30,15 @@ add_library(mazz_core STATIC
   src/core/document.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# File formats: pure C++ too.
+add_library(mazz_io STATIC
+  src/io/mazz_file.cpp)
+target_link_libraries(mazz_io PUBLIC mazz_core)
+
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp)
-  target_link_libraries(mazz_core_tests PRIVATE mazz_core)
+  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp tests/test_io.cpp)
+  target_link_libraries(mazz_core_tests PRIVATE mazz_io mazz_core)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()
 
@@ -44,6 +49,7 @@ if(MAZZ_BUILD_APP)
   set(MAZZ_APP_SOURCES
     src/app/main.cpp
     src/app/editor.cpp
+    src/app/file_ops.cpp
     src/app/script.cpp
     src/app/paint_window.cpp
     src/app/screenshot.cpp
@@ -81,7 +87,7 @@ if(MAZZ_BUILD_APP)
   # GLFW must not pull in the legacy OpenGL header (render/gl.hpp includes the right one).
   target_compile_definitions(Mazzuola PRIVATE MAZZ_VERSION="${PROJECT_VERSION}" GLFW_INCLUDE_NONE)
   target_include_directories(Mazzuola PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  target_link_libraries(Mazzuola PRIVATE mazz_core mazz_imgui mazz_stb mazz_assets glfw)
+  target_link_libraries(Mazzuola PRIVATE mazz_io mazz_core mazz_imgui mazz_stb mazz_assets glfw)
 endif()
 
 # Warnings for our own code only (not third-party).

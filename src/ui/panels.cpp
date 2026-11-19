@@ -53,7 +53,7 @@ void Editor::toolsPanel() {
     const float bw = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x * 3) / 4;
     for (int k = 0; k < 4; ++k) {
         if (k) ImGui::SameLine();
-        const bool on = (int)mode_ == k;
+        const bool on = (int)doc_.sel.mode == k;
         if (on) {
             ImGui::PushStyleColor(ImGuiCol_Button, theme::kAccent);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, theme::kAccentHover);

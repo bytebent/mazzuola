@@ -35,13 +35,14 @@ key Shift+W
 expect snap 0
 key Shift+W
 expect snap 1
-# selection modes 1-4
+# selection modes: whole pieces by default; 1-3 stay greyed out until v0.1.2
+expect mode pieces
 key 1
-expect mode vertices
-key 4
 expect mode pieces
 key 3
-expect mode faces
+expect mode pieces
+key 4
+expect mode pieces
 # zoom the top view toward a point, then pan it with the middle mouse
 vmove 0 0.75 0.25
 wheel 2

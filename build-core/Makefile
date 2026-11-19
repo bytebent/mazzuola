@@ -140,6 +140,19 @@ mazz_core/fast:
 .PHONY : mazz_core/fast
 
 #=============================================================================
+# Target rules for targets named mazz_io
+
+# Build rule for target.
+mazz_io: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mazz_io
+.PHONY : mazz_io
+
+# fast build rule for target.
+mazz_io/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/build
+.PHONY : mazz_io/fast
+
+#=============================================================================
 # Target rules for targets named mazz_core_tests
 
 # Build rule for target.
@@ -296,6 +309,30 @@ src/core/selection.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/selection.cpp.s
 .PHONY : src/core/selection.cpp.s
 
+src/io/mazz_file.o: src/io/mazz_file.cpp.o
+.PHONY : src/io/mazz_file.o
+
+# target to build an object file
+src/io/mazz_file.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/src/io/mazz_file.cpp.o
+.PHONY : src/io/mazz_file.cpp.o
+
+src/io/mazz_file.i: src/io/mazz_file.cpp.i
+.PHONY : src/io/mazz_file.i
+
+# target to preprocess a source file
+src/io/mazz_file.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/src/io/mazz_file.cpp.i
+.PHONY : src/io/mazz_file.cpp.i
+
+src/io/mazz_file.s: src/io/mazz_file.cpp.s
+.PHONY : src/io/mazz_file.s
+
+# target to generate assembly for a file
+src/io/mazz_file.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_io.dir/build.make CMakeFiles/mazz_io.dir/src/io/mazz_file.cpp.s
+.PHONY : src/io/mazz_file.cpp.s
+
 tests/test_core.o: tests/test_core.cpp.o
 .PHONY : tests/test_core.o
 
@@ -319,6 +356,30 @@ tests/test_core.s: tests/test_core.cpp.s
 tests/test_core.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/tests/test_core.cpp.s
 .PHONY : tests/test_core.cpp.s
+
+tests/test_io.o: tests/test_io.cpp.o
+.PHONY : tests/test_io.o
+
+# target to build an object file
+tests/test_io.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o
+.PHONY : tests/test_io.cpp.o
+
+tests/test_io.i: tests/test_io.cpp.i
+.PHONY : tests/test_io.i
+
+# target to preprocess a source file
+tests/test_io.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.i
+.PHONY : tests/test_io.cpp.i
+
+tests/test_io.s: tests/test_io.cpp.s
+.PHONY : tests/test_io.s
+
+# target to generate assembly for a file
+tests/test_io.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core_tests.dir/build.make CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.s
+.PHONY : tests/test_io.cpp.s
 
 tests/test_model.o: tests/test_model.cpp.o
 .PHONY : tests/test_model.o
@@ -355,6 +416,7 @@ help:
 	@echo "... test"
 	@echo "... mazz_core"
 	@echo "... mazz_core_tests"
+	@echo "... mazz_io"
 	@echo "... src/core/camera.o"
 	@echo "... src/core/camera.i"
 	@echo "... src/core/camera.s"
@@ -373,9 +435,15 @@ help:
 	@echo "... src/core/selection.o"
 	@echo "... src/core/selection.i"
 	@echo "... src/core/selection.s"
+	@echo "... src/io/mazz_file.o"
+	@echo "... src/io/mazz_file.i"
+	@echo "... src/io/mazz_file.s"
 	@echo "... tests/test_core.o"
 	@echo "... tests/test_core.i"
 	@echo "... tests/test_core.s"
+	@echo "... tests/test_io.o"
+	@echo "... tests/test_io.i"
+	@echo "... tests/test_io.s"
 	@echo "... tests/test_model.o"
 	@echo "... tests/test_model.i"
 	@echo "... tests/test_model.s"

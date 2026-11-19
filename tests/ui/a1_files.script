@@ -1,0 +1,39 @@
+# Alpha 1, step B: saving and opening .mazz files, the unsaved marker, undo past a save.
+# (addbox is a test helper until the box tool exists.)
+expect dirty 0
+expect faces 0
+addbox 0 0 0 100 50 62.499999999999986
+expect faces 6
+expect verts 8
+expect selected 6
+expect dirty 1
+expect undo 1
+saveas box
+expect dirty 0
+# The file is plain and clean: ".mazz" added, round numbers, no 1e+02, noise rounded.
+expect fileline box.mazz mazzuola 1
+expect fileline box.mazz units cm
+expect fileline box.mazz v 100 50 62.5
+expect fileline box.mazz f 0 2 3 1
+# Undo past the save marks it unsaved; redo brings back the saved state.
+key Cmd+Z
+expect faces 0
+expect dirty 1
+key Cmd+Shift+Z
+expect faces 6
+expect dirty 0
+# A second box, then New: scripts are not asked, the model is emptied.
+addbox 200 0 0 220 20 20
+expect dirty 1
+action file.new
+expect faces 0
+expect dirty 0
+expect undo 0
+# Open brings the saved box back, not dirty, with an empty history.
+open box.mazz
+expect faces 6
+expect verts 8
+expect dirty 0
+expect undo 0
+expect selected 0
+quit
