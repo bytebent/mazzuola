@@ -4,6 +4,28 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Milestone 1, step 1: core and files (no release)
+- **Core** (`src/core`, no graphics): `mesh` (points, tri/quad faces with per-corner
+  texture coordinates and colours, texture, part, smoothing group, two-sided, diagonal,
+  hidden; checks: valid, closed, volume), `primitives` (plane, box with segments and
+  rounded edges, cylinder, cone, tube, torus, sphere, geosphere; any axis), `rock`
+  (seeded hull of jittered sphere points, flat-bottom cut, roughness with a no
+  self-crossing guard, optional quads), `rng` (PCG32: same results on every platform),
+  `ops` (selection modes and conversion, pieces, edge loop / ring, grow / shrink,
+  similar, transforms, clone with rotate/scale per copy, mirror (copy), flatten, snap,
+  delete, duplicate, hide, join triangles into quads, normals from smoothing groups),
+  `pick` (face / point / edge under the cursor, points hidden behind faces skipped in 3D;
+  box select), `document` (snapshot undo/redo, saved state).
+- **Files** (`src/io`): `.mazz` read/write (exact round trip, shortest numbers, errors
+  name the line, save via a temporary file); export `.glb`, `.gltf` + `.bin`, `.obj`
+  (Y up, metres, pivot as origin; units and pivot in glTF extras; quads written with
+  their diagonal first for `.obj`). cgltf v1.15 (tests only) reads exports back.
+- **Tests:** 1176 checks, 0 failed: every primitive on every axis is valid, closed,
+  outward and fills its box; 1000 rocks (12–60 faces, with/without flat bottom, any
+  roughness) valid, closed, no self-crossing, triangle count within ±20 %; clone, mirror,
+  transform, flatten, snap, delete, hide, join, normals, picking in 2D and 3D, undo,
+  `.mazz` golden round trip and error lines, glTF validated by cgltf.
+
 ### 2026-11-19 — Two decisions (docs only)
 - Textures painted in another app reload when switching back to Mazzuola, as designed
   (user). Open question closed.

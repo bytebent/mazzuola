@@ -23,13 +23,34 @@ endif()
 # Pure C++: no OpenGL, GLFW or ImGui. Must stay that way (see CLAUDE.md).
 add_library(mazz_core STATIC
   src/core/camera.cpp
-  src/core/grid_lines.cpp)
+  src/core/grid_lines.cpp
+  src/core/mesh.cpp
+  src/core/primitives.cpp
+  src/core/rock.cpp
+  src/core/ops.cpp
+  src/core/pick.cpp
+  src/core/document.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# ---------------------------------------------------------------- io
+# Files and exports. Also no graphics.
+add_library(mazz_io STATIC
+  src/io/mazz_file.cpp
+  src/io/export.cpp)
+target_link_libraries(mazz_io PUBLIC mazz_core)
+target_compile_definitions(mazz_io PRIVATE MAZZ_VERSION="${PROJECT_VERSION}")
 
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  add_executable(mazz_core_tests tests/test_core.cpp)
-  target_link_libraries(mazz_core_tests PRIVATE mazz_core)
+  # cgltf reads exported glTF files back in the tests.
+  include(FetchContent)
+  FetchContent_Declare(cgltf
+    URL https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+  FetchContent_MakeAvailable(cgltf)
+  add_executable(mazz_core_tests tests/test_core.cpp tests/test_m1.cpp tests/test_io.cpp)
+  target_include_directories(mazz_core_tests PRIVATE tests ${cgltf_SOURCE_DIR})
+  target_link_libraries(mazz_core_tests PRIVATE mazz_core mazz_io)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()
 
@@ -77,11 +98,11 @@ if(MAZZ_BUILD_APP)
   # GLFW must not pull in the legacy OpenGL header (render/gl.hpp includes the right one).
   target_compile_definitions(Mazzuola PRIVATE MAZZ_VERSION="${PROJECT_VERSION}" GLFW_INCLUDE_NONE)
   target_include_directories(Mazzuola PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  target_link_libraries(Mazzuola PRIVATE mazz_core mazz_imgui mazz_stb mazz_assets glfw)
+  target_link_libraries(Mazzuola PRIVATE mazz_core mazz_io mazz_imgui mazz_stb mazz_assets glfw)
 endif()
 
 # Warnings for our own code only (not third-party).
-foreach(t mazz_core mazz_core_tests Mazzuola)
+foreach(t mazz_core mazz_io mazz_core_tests Mazzuola)
   if(TARGET ${t})
     target_compile_options(${t} PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wno-unused-parameter>)
   endif()

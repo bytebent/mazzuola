@@ -17,7 +17,7 @@ design in [`ARCHITECTURE.md`](ARCHITECTURE.md), status in [`PLAN.md`](PLAN.md), 
 - **AI workspace:** GitHub archive downloads are blocked, so FetchContent fails. Clone the
   deps with git at the pinned refs into a scratch folder and configure with
   `-DFETCHCONTENT_SOURCE_DIR_GLFW=… -DFETCHCONTENT_SOURCE_DIR_IMGUI=…
-  -DFETCHCONTENT_SOURCE_DIR_STB=…`.
+  -DFETCHCONTENT_SOURCE_DIR_STB=… -DFETCHCONTENT_SOURCE_DIR_CGLTF=…` (cgltf: tests only).
 - **OpenGL functions:** macOS links the system framework; elsewhere `render/gl.hpp`
   loads a short list of function pointers. A new GL function must be added to that list
   (and its `#define`).

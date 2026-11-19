@@ -14,7 +14,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   check: the whole app and the paint window work on the iPad with the Pencil (v0.0.6,
   graphics switching); v0.0.7 cleaned up after the tests.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
-- **Next:** **milestone 1 — Mesh basics**, once the user says go.
+- **Working on:** **milestone 1 — Mesh basics** (user said go, 2026-11-19). Step 1 done:
+  core and files (see LOG). Next: drawing models in the views, then tools and dialogs.
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
   vertex colours → M8 paint window + tablets; later: tree generator. Details below and in
@@ -38,8 +39,8 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 | GLFW | 3.4 |
 | Dear ImGui | v1.93.0-docking (with its GLFW and OpenGL 3 backends) |
 | stb | commit 9600522de53973336fa033a289858a4354cbb04c |
+| cgltf | v1.15 (tests only, reads exports back) |
 
-cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
