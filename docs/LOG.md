@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Redesign: pivot, reference images, alpha 1 releases (docs only)
+- Vertex drag in 2D takes all stacked points, as in Scalpellino.
+- No model pivot tool: the world origin is the model's pivot (and the export's origin).
+- Reference images: one per orthographic view, chosen from that view (not the View
+  menu), options in a pop-up panel; not saved in the `.mazz`.
+- Alpha 1 = the milestone 1 redo (milestones keep their names), in five releases
+  v0.1.0 – v0.1.4 (PLAN.md).
+
 ### 2026-11-19 — Redesign: transform panel, rings, arrows, vertex drag (docs only)
 - Agreed: the Transform dialog becomes a panel that stays open with a live preview
   (Return applies, Esc cancels), like Scalpellino's Multi-Replicate. Rotation is about

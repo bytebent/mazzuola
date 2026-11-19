@@ -76,7 +76,7 @@ to the GPU → one redraw of the views that show it.
 
 ## 5. Core data model
 
-- **Model**: one document. Vertices, faces, groups, smoothing groups, textures, pivot,
+- **Model**: one document. Vertices, faces, groups, smoothing groups, textures,
   mirror setting, palette.
 - **Vertex**: a position (doubles in core, floats for rendering).
 - **Face**: a triangle or a quad. Each face has:
@@ -102,12 +102,16 @@ to the GPU → one redraw of the views that show it.
   to 256 suggested, with a **filtering** setting: nearest (default) or smooth. A model
   may use several textures. Fully transparent pixels are cut
   out (for leaves, fences, hair).
-- **Reference images**: an image pinned to a view direction (front, side, top…) with
-  position, rotation, scale, a transparency slider and a front/back switch (drawn in
-  front of or behind the model). Editor-only, saved in the model file.
+- **Reference images** (agreed 2026-11-19): one image per orthographic view (top,
+  front, right…), chosen from that view itself (its header), not from the View menu.
+  Options in a pop-up panel from the view: position and size with the brush handles
+  (proportions kept; real width typable in cm), rotation, transparency, in front of /
+  behind the model. Not selectable while modelling. **Not saved in the `.mazz`.**
 - **Units / axes**: 1 unit = 1 cm, Z-up (matches Scalpellino, so models place at their
   real size). A 175 cm human figure can be shown for scale (same as Scalpellino's).
-- **Pivot**: the model's origin, becomes the placement point in Scalpellino.
+- **Pivot**: the **world origin is the model's pivot** (agreed 2026-11-19): build the
+  model with its base on the origin; that's where Scalpellino holds it and the export's
+  zero point. No pivot tool. (Groups have their own pivots, alpha 3.)
 - **Mirror mode**: optional symmetry plane (X by default). Edits, brush strokes and soft
   selection on one side are repeated on the other; vertices on the plane stay on it.
 - **Settings per model**: texel target (pixels per cm, optional; 0.5 suggested for
@@ -235,7 +239,7 @@ the model gets:
 ### Shaping tools
 - **Transform**: move / rotate / scale with handles in every view; Transform panel
   (Cmd+T; **stays open, live preview, Return applies, Esc cancels**, like Scalpellino's
-  Multi-Replicate; agreed 2026-11-19) with pivot (bounds centre, average, model pivot, group pivot, typed point) and
+  Multi-Replicate; agreed 2026-11-19) with pivot (selection centre by default, average, world origin, group pivot, typed point) and
   angle snap. **Clone**: N copies at a typed distance or angle (in a row, or in a circle
   around the pivot), spacing given per copy or as a total. Each copy can also add a
   **rotation per copy** (X/Y/Z degrees, about the chosen pivot) and a **scale per copy**
@@ -262,8 +266,7 @@ the model gets:
   box. Faces (12–60, target triangle count), roughness, stretch X/Y/Z, flat bottom
   (with height), join into quads, seed. Built from the hull of jittered points on an
   ellipsoid, then pushed in/out along normals without self-intersection. One smoothing
-  group or auto smooth; box-projected texture coordinates at the texel target; pivot at
-  the bottom centre.
+  group or auto smooth; box-projected texture coordinates at the texel target.
 - **Draw** (Shift+D):
   - on a face: lines, rectangles and circles drawn onto a face split it into new faces;
   - in a view: a polygon outline point by point (click the first point to close),
@@ -299,7 +302,7 @@ the model gets:
   rotate). Rounded path corners with typed segments; section scale and twist along the
   path; closed or open path; capped ends optional.
 - **Mirror mode** toggle and **Apply mirror**.
-- **Pivots**: place the model's pivot or the selected group's pivot by click (snaps to
+- **Group pivots**: place the selected group's pivot by click (snaps to
   points, edge midpoints, face centres, bottom centre of the bounds) or typed position.
 - **Groups** (Cmd+G / Cmd+Shift+G): assign selected faces to a group; hide, show, isolate, select, rename;
   **isolate copy** (a group that shares no points with others). Exported as separate
@@ -430,7 +433,6 @@ Common to rock, tree, jitter, scatter and generate texture:
   ```
   mazzuola 1
   units cm
-  pivot 0 0 0
   texel 0.5
   texture 0 "lamp.png" 64 64 filter=nearest
   group 0 "body" pivot=0,0,0
@@ -450,7 +452,7 @@ Common to rock, tree, jitter, scatter and generate texture:
   coordinates, vertex colours (`COLOR_0`), textures (embedded in `.glb`, beside `.gltf`)
   with samplers matching each texture's filtering, alpha cut-out, double-sided materials, optional
   `KHR_materials_unlit`, groups as separate nodes (origin at the group pivot) or merged.
-  Converted to Y-up and meters (÷ 100); units (cm) and pivot in `extras` so Scalpellino
+  Converted to Y-up and meters (÷ 100); units (cm) in `extras` so Scalpellino
   converts back exactly.
 - **Export `.obj` + `.mtl`**: positions, normals, texture coordinates, materials with
   texture paths, groups as OBJ groups (vertex colours as the common unofficial extension).
@@ -567,7 +569,7 @@ the Scalpellino repo and adapted. The two repos don't depend on each other.
 | # | Milestone | Status |
 |---|-----------|--------|
 | 0 | Skeleton: GLFW + OpenGL + ImGui docking, idle = zero, Roboto, menus, four views + maximise, 3D orbit/fly, grid keys, counter, shortcut scheme, CI | done (v0.0.0) |
-| 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), rock, selection modes, transform + clone (with rotate/scale per copy), mirror, flatten, model pivot, undo, `.mazz`, reference images (transparency, front/back), scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
+| 1 | Mesh basics: primitives (plane, box, cylinder, cone, tube, torus, sphere, geosphere), rock, selection modes, transform + clone (with rotate/scale per copy), mirror, flatten, undo, `.mazz`, reference images (transparency, front/back), scale figure, `.glb`/`.gltf` + `.obj` export (geometry) | |
 | 2 | Modelling: draw on faces + polygon tool, push/pull, inference snapping, extrude/inset/bevel, bridge, shell, divide (subdivide plain/smoothed, edges, poke, connect), cut, loop cut, slide, merge/collapse/weld, dissolve, fill, split, flip, diagonals, double-sided, mirror mode | |
 | 3 | Lathe + loft, groups with pivots, smoothing groups + auto smooth, problems list with fixes | |
 | 4 | Vertex tool soft selection + vertex brush, jitter points | |

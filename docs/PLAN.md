@@ -26,7 +26,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   Making a shape agreed (plain mesh after Return).
   Parts renamed **groups** (Cmd+G), as in Scalpellino; the M0 "Parts" panel gets
   renamed in code with milestone 1.
-  Next to agree: moving, resizing and rotating in detail; the Transform dialog.
+  Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
+  agreed; alpha 1 split into five releases (below).
+  Next: check the design is complete, then build v0.1.0.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
@@ -112,30 +114,27 @@ the **paint window** (a second real window, View → Paint window) works on the 
 the Pencil; graphics switching is on (required for Sidecar); panels can't be pulled out
 of the main window. See LOG.md and ARCHITECTURE §8.
 
-## Milestone 1 — Mesh basics
+## Milestone 1 — Mesh basics: **alpha 1** (the redo)
 
-**Being redesigned** (first attempt withdrawn, see LOG.md 2026-11-19). The list below is
-the old plan, to be revised.
+"Alpha 1" names the redo, to tell it apart from the withdrawn first milestone 1 (LOG.md
+2026-11-19). The other milestones keep their names. Design: ARCHITECTURE §6 ("Brush
+feel", Selection, Vertex tool, Primitives, Transform, reference images). Five releases,
+each tried by the user before the next starts:
 
-1. Core mesh (vertices, tri/quad faces, per-corner texture coordinate and colour, group,
-   smoothing group, double-sided, diagonal) and document with command-based undo.
-2. Primitives: plane, box (stacks, rounded edges), cylinder, cone, tube, torus, sphere,
-   geosphere; drag in a view, typed values, live preview, Return/Esc.
-3. Rock generator (Create menu): faces, roughness, stretch, flat bottom, join into
-   quads, seed; shared generator machinery (seed + New seed, values remembered,
-   preview). Smoothing and texture coordinates for the rock follow once M3/M5 exist.
-4. Selection modes 1–4 with picking pass; box select, grow/shrink, select similar,
-   edge loop / ring.
-5. Transform handles + Transform dialog (pivots, angle snap); clone in a row or circle,
-   with rotate and scale per copy and "scale the offset"; mirror and mirror clone;
-   flatten X/Y/Z; move along normal.
-6. Model pivot tool.
-7. `.mazz` reader/writer (`units cm` header) + round-trip golden tests.
-8. Reference images per view (load, move, rotate, scale, transparency slider,
-   front/back switch).
-9. Scale figure toggle (175 cm).
-10. Export geometry to `.glb`/`.gltf` (cm → m; units + pivot in `extras`) and `.obj`; read-back
-    tests.
+1. **v0.1.0 — Boxes.** Foundations (tool classes like Scalpellino's, clean numbers,
+   undo, selection with its mode); left tool bar and status hints; Primitives tool with
+   box only; selecting whole shapes; selection box: move, resize, rotate (corners in 2D,
+   rings in 3D), Shift+drag copy; delete; undo; save and open `.mazz`.
+2. **v0.1.1 — All shapes.** Cylinder, cone, tube, torus, sphere, geosphere, plane; rock
+   (same flow, its settings, New seed).
+3. **v0.1.2 — Points, edges, faces.** Modes 1–4; Vertex tool with direct dragging
+   (stacked points in 2D taken together, as in Scalpellino); arrows; rectangle
+   selection; grow/shrink; edge loop / ring.
+4. **v0.1.3 — Typed values.** Transform panel (live preview; copies in a row or circle
+   with rotate/scale per copy and "scale the offset"); mirror and mirror clone; flatten;
+   move along normal.
+5. **v0.1.4 — Out of the app.** `.glb`/`.gltf` + `.obj` export (geometry; origin =
+   world origin); reference images; 175 cm figure.
 
 ## Milestone 2 — Modelling
 
