@@ -234,7 +234,10 @@ the model gets:
   everything turns about the selection's centre.
 - **Arrows:** points, edges and faces also get X/Y/Z **arrows** (2D and 3D views):
   drag one to push the selection along that axis, snapped.
-- **Moving / copying:** drag to move (snapped); Shift+drag makes a copy.
+- **Moving / copying:** drag to move; Shift+drag makes a copy. Snapping puts the box's
+  lowest corner on the grid, as in Scalpellino (something off the grid snaps onto it).
+  In the 3D view a drag draws a selection rectangle; moving is done in the 2D views,
+  turning with the rings (user, 2026-11-19).
 - The box handles always act on the whole selection. Pushing one face of a mesh outward
   is push/pull (M2), not the box handles.
 

@@ -66,7 +66,7 @@ void PrimTool::drag(ToolEnv& env, const Pointer& p) {
         if (grab_.kind == BoxGrab::Handle) {
             resizeBox(p.g, env.grid, start_.mn, start_.mx, grab_.su, grab_.sv, u - u0_, v - v0_, b.mn, b.mx);
         } else {
-            const Vec3 d = moveOffset(p.g, env.grid, u - u0_, v - v0_);
+            const Vec3 d = moveOffset(p.g, env.grid, start_.mn, u - u0_, v - v0_);
             b.mn = start_.mn + d;
             b.mx = start_.mx + d;
         }

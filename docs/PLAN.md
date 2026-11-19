@@ -60,13 +60,6 @@ cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
 
-- **Dragging in the 3D view** (v0.1.0): a drag on the selection in 3D draws a selection
-  rectangle; moving happens in the 2D views and turning with the rings. Should a drag in
-  3D move the selection along the ground (or along the face you grabbed)? Ask the user
-  after they try v0.1.0.
-- **Move snapping** (v0.1.0): a drag moves the selection by whole grid steps, so
-  something off the grid stays off it by the same amount (nothing jumps on the first
-  move). Hammer snaps the box's corner to the grid instead. Check with the user.
 
 
 - **Shared texture sheet**: several models using one sheet already works by referencing
@@ -180,6 +173,28 @@ each tried by the user before the next starts:
 
 2. **v0.1.1 — All shapes.** Cylinder, cone, tube, torus, sphere, geosphere, plane; rock
    (same flow, its settings, New seed).
+   **Steps of v0.1.1:**
+   - **A. Shape generators (core).** One function per shape filling a box exactly,
+     standing along a chosen axis (the view's depth axis when drawn), outward faces,
+     closed (plane: one flat grid), clean numbers, sensible smoothing groups (round
+     sides one group, flat caps flat). Box gets segments per side. Settings per §6:
+     plane rows/columns/diagonal; box segments X/Y/Z; cylinder sides, segments along,
+     cap rings; cone the same; tube outer sides, inner size, segments; torus sides,
+     tube sides (its thickness is the box size along its axis); sphere sides and
+     stacks; geosphere iterations. Tests: every shape × every axis fits its box, is
+     closed (not the plane), faces outward, numbers clean; counts per setting.
+   - **B. Primitives tool with all shapes.** Shape list and the chosen shape's settings
+     in Properties, remembered between uses; the preview is the real shape (drawn in
+     all views); the Create menu lists the shapes (opens the tool with that shape).
+   - **C. Rock (Create menu).** Same flow (drag a box, adjust, Return); settings: faces
+     (12–60), roughness, stretch X/Y/Z, flat bottom (with height), join into quads,
+     seed + New seed (a fresh seed each time, not the same series every launch).
+     Hull of jittered points on an ellipsoid, then pushed in/out along normals without
+     folding over; fills its box. Tests: closed, outward, fits its box, same seed →
+     same rock, different seeds differ.
+   - **D. Release v0.1.1.** UI script drawing each shape in a 2D view and checking its
+     box and counts; screenshots; controls, README, release notes. User tries it.
+
 3. **v0.1.2 — Points, edges, faces.** Modes 1–4; Vertex tool with direct dragging
    (stacked points in 2D taken together, as in Scalpellino); arrows; rectangle
    selection; grow/shrink; edge loop / ring.

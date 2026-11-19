@@ -4,6 +4,15 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Move snaps the corner onto the grid; v0.1.1 planned
+- User tried v0.1.0: "looks good". Decided: a drag in the 3D view stays a selection
+  rectangle; moving keeps things on the grid: the selection box's lowest corner snaps
+  onto it (as Scalpellino does), so off-grid things snap on. `moveOffset` changed (Select
+  and Primitives tools); `a1_boxes` checks an off-grid box (x −77) landing on −64.
+  ARCHITECTURE "Brush feel" updated; the two open questions closed.
+- PLAN: steps of v0.1.1 (A shape generators, B Primitives tool with all shapes, C rock,
+  D release).
+
 ### 2026-11-19 — v0.1.0 "Boxes" published
 - The user deleted the withdrawn v0.1.0 tag (and with it the release); this push lets CI
   publish the new v0.1.0 from `docs/releases/v0.1.0.md`. (Deleting releases isn't

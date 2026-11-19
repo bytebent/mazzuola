@@ -93,7 +93,7 @@ void SelectTool::drag(ToolEnv& env, const Pointer& p) {
     if (!p.g.is3D()) p.g.toPlane(p.sx, p.sy, u, v);
     MeshEdit& e = doc.live();
     if (action_ == Action::Move) {
-        const Vec3 d = moveOffset(p.g, env.grid, u - u0_, v - v0_);
+        const Vec3 d = moveOffset(p.g, env.grid, mn0_, u - u0_, v - v0_);
         for (const auto& [i, s] : start_) e.setVert(i, s + d);
     } else if (action_ == Action::Resize) {
         Vec3 mn, mx;

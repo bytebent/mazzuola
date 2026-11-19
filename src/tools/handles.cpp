@@ -126,11 +126,11 @@ void resizeBox(const ViewGeom& g, const Grid& grid, const Vec3& mn0, const Vec3&
     push(ax.v, sv, ax.sv, dv);
 }
 
-Vec3 moveOffset(const ViewGeom& g, const Grid& grid, double du, double dv) {
+Vec3 moveOffset(const ViewGeom& g, const Grid& grid, const Vec3& mn0, double du, double dv) {
     const OrthoAxes ax = g.axes();
     Vec3 d;
-    d[ax.u] = grid.snapValue(du * ax.su);
-    d[ax.v] = grid.snapValue(dv * ax.sv);
+    d[ax.u] = grid.snapValue(mn0[ax.u] + du * ax.su) - mn0[ax.u];
+    d[ax.v] = grid.snapValue(mn0[ax.v] + dv * ax.sv) - mn0[ax.v];
     return d;
 }
 

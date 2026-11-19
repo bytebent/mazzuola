@@ -25,9 +25,10 @@ BoxGrab hitRings(const ViewGeom& g, const Vec3& mn, const Vec3& mx, double sx, d
 // than one grid step (or 1/1000 cm without snapping).
 void resizeBox(const ViewGeom& g, const Grid& grid, const Vec3& mn0, const Vec3& mx0, int su, int sv, double du,
                double dv, Vec3& mn, Vec3& mx);
-// Moving: a world offset for a drag of (du, dv) plane units in view `g`, snapped to the
-// grid step when snapping.
-Vec3 moveOffset(const ViewGeom& g, const Grid& grid, double du, double dv);
+// Moving: a world offset for a drag of (du, dv) plane units in view `g`. When snapping,
+// the box's lowest corner `mn0` lands on the grid (as in Scalpellino and Hammer), so
+// something off the grid snaps onto it.
+Vec3 moveOffset(const ViewGeom& g, const Grid& grid, const Vec3& mn0, double du, double dv);
 // Rotation by dragging a corner (2D) or a ring (3D): the angle in degrees from the
 // press point to the current point, around the box centre; and the world axis.
 double dragAngle(const ViewGeom& g, const Vec3& centre, double x0, double y0, double x1, double y1, const Vec3& axis);
