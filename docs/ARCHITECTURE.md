@@ -239,7 +239,18 @@ the model gets:
 - **Primitives** (Shift+B): plane (rows, columns, diagonal direction), box (stacks per
   side, optional rounded edges with segments), cylinder (sides, stacks, cap segments,
   rounded edges), cone, tube (inner/outer sides, length), torus, sphere (sides and
-  stacks) and geosphere (iterations). Drag in a view, adjust, Return creates.
+  stacks) and geosphere (iterations). Click by click (agreed 2026-11-19, like
+  Scalpellino's Block tool):
+  1. Primitives tool (left bar or Shift+B); Properties shows the shape list and the
+     shape's settings. The Create menu has the same shapes (opens the tool with it).
+  2. Drag a rectangle in a 2D view (snapped); the depth comes from the last shape made
+     or selected.
+  3. The preview shows in all views with the brush handles in every 2D view; width,
+     depth and height can also be typed in Properties.
+  4. Round shapes fill their box exactly and stand along the view's depth (drawn in Top
+     = lying flat). A torus's tube is as thick as the box along that direction.
+  5. Return creates it, selected; Esc cancels. Corners on the grid, clean numbers.
+  After Return it is a plain mesh (settings can't be changed; undo and draw again).
 - **Rock** (Create menu, generator): a random low-poly rock filling a dragged or typed
   box. Faces (12–60, target triangle count), roughness, stretch X/Y/Z, flat bottom
   (with height), join into quads, seed. Built from the hull of jittered points on an

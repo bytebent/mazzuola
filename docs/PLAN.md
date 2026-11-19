@@ -23,7 +23,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   making, selecting, resizing, rotating and moving work like Scalpellino's brushes.
   Selecting click by click; main tools as buttons on the left (ARCHITECTURE §6).
   Tool bar details and gesture hints in the status bar agreed.
-  Next to agree: making a shape (primitives), click by click.
+  Making a shape agreed (plain mesh after Return).
+  Next to agree: moving, resizing and rotating in detail; the Transform dialog.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, parts, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7

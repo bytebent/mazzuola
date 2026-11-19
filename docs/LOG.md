@@ -4,6 +4,12 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-19 — Redesign: making a shape (docs only)
+- Agreed: primitives click by click like Scalpellino's Block tool (shape and settings in
+  Properties; drag a rectangle, depth from the last shape; preview with brush handles in
+  every 2D view and typed sizes; round shapes fill their box; Return creates, Esc
+  cancels; clean numbers). After Return a primitive is plain mesh (user).
+
 ### 2026-11-19 — Redesign: selecting, tool bar (docs only)
 - Agreed: selecting click by click (a click picks a whole shape by default; 1–3 finer,
   4 back; click again to reach what's underneath in 2D; Cmd+click; rectangle on empty
