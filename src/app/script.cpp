@@ -299,6 +299,7 @@ void Editor::stepScript() {
                     drawTool_.setSize(env, v, h);
                 } else if (what == "radius") drawTool_.setRadius(env, v);
                 else if (what == "segments") drawTool_.setSegments(env, (int)v);
+                else if (what == "twosided") drawTool_.setTwoSided(v != 0);
                 else scriptFail("unknown draw setting " + what);
             } else if (t == "inset") {
                 InsetParams& p = insetTool_.params();

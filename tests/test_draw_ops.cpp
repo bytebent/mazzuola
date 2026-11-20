@@ -422,6 +422,44 @@ void testThroughRandom() {
     CHECK(through > 100);
 }
 
+void testWallWithManyHoles() {
+    // One wall, many windows and doorways one after another (each drawn on the surface
+    // as it is by then, pieces and holes and all), each pushed through.
+    unsigned seed = 31337;
+    auto rnd = [&](int lo, int hi) {
+        seed = seed * 1103515245u + 12345u;
+        return lo + (int)((seed >> 8) % (unsigned)(hi - lo + 1));
+    };
+    Mesh m = box({0, 0, 0}, {400, 16, 120});
+    int holes = 0, bad = 0;
+    for (int round = 0; round < 200 && !bad; ++round) {
+        // Any face facing front lying on the wall's front plane.
+        int front = -1;
+        const double x = rnd(0, 380), z = rnd(0, 100), w = rnd(4, 40), h = rnd(4, 60);
+        const Vec3 probe{x + w / 2, 0, z + h / 2};
+        for (int i = 0; i < (int)m.faces.size(); ++i)
+            if (nearV(faceNormal(m, i), {0, -1, 0}, 1e-9) && std::fabs(m.verts[m.faces[i].v[0]].y) < 1e-9) front = i;
+        if (front < 0) break;
+        (void)probe;
+        const double v0 = signedVolume(m);
+        Mesh before = m;
+        MeshEdit e(m);
+        std::set<int> shape;
+        if (!cutShape(e, front, rectanglePoints({x, 0, z}, {1, 0, 0}, {0, 0, 1}, w, h), true, &shape) ||
+            throughDistance(m, shape) <= 0 || !pushThrough(e, shape)) {
+            e.revert();
+            continue;
+        }
+        ++holes;
+        if (!isClosed(m) || !goodFaces(m) || signedVolume(m) > v0 - 1) {
+            ++bad;
+            std::printf("wall round %d closed %d good %d\n", round, isClosed(m), goodFaces(m));
+        }
+    }
+    CHECK(bad == 0);
+    CHECK(holes > 10);
+}
+
 void testOutline() {
     // A plain L, facing up.
     Mesh m;
@@ -517,6 +555,7 @@ void testOutlineRandom() {
 void testDrawOps() {
     testWindowThrough();
     testThroughRandom();
+    testWallWithManyHoles();
     testOutline();
     testOutlineRandom();
     testManyShapes();

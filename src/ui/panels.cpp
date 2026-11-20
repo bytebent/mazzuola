@@ -177,6 +177,8 @@ void Editor::controlsWindow() {
             row("Push/pull an edge or point", "in edge / point mode: drag it along the surface's normal; the faces around tilt", 0);
             row("Extrude / inset", "select faces (or open edges); drag the arrow or type in Properties; Return applies", 0);
             row("Draw on a face (Draw)", "rectangle: two corners; circle: centre, radius; line: edge to edge; Return cuts it in; Shift: keep the direction", 0);
+            row("Outline (Draw, 2D views)", "click points, the first one again to close; outlines inside become holes; Return", 0);
+            row("A hole through", "Push/pull a drawn shape in until it reaches the other side", 0);
             row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
             row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);
             row("Scale figure (175 cm)", "View \xE2\x86\x92 Scale figure", 0);

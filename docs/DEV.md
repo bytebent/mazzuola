@@ -89,7 +89,8 @@ addquad <x0> <y0> <x1> <y1> <z>      test helper: one flat face facing up, selec
 toolset pushpull distance <d>       Push/pull: as typed in Properties
 toolset extrude distance|each|straight|axis|keep <v>   Extrude settings (preview follows)
 toolset inset width|depth|each <v>  Inset settings (preview follows)
-toolset draw shape <0|1|2>          Draw: rectangle, circle, line
+toolset draw shape <0|1|2|3>        Draw: rectangle, circle, line, outline
+toolset draw twosided <0|1>         Draw: outlines double-sided
 toolset draw size <w> <h> | radius <r> | segments <n>   Draw: typed values while adjusting
 expect drawing <0|1>                Draw has a shape going
 expect fits <0|1>                   that shape fits its face

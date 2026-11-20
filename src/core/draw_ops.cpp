@@ -302,72 +302,268 @@ std::vector<Vec3> circlePoints(const Vec3& centre, const Vec3& u, const Vec3& v,
     return p;
 }
 
-// ---------------------------------------------------------------- cutting
+// ---------------------------------------------------------------- surfaces
 
 namespace {
 
+// The outline loops of a set of faces: each a closed chain of its border edges, in the
+// faces' direction. False if the border touches itself at a point.
+bool outlineLoops(const Mesh& m, const std::set<int>& region, std::vector<std::vector<int>>& loops) {
+    loops.clear();
+    std::set<std::pair<int, int>> all;
+    for (int fi : region) {
+        const Face& f = m.faces[fi];
+        for (int k = 0; k < f.n; ++k) all.insert({f.v[k], f.v[(k + 1) % f.n]});
+    }
+    std::map<int, int> next;
+    for (const auto& d : all)
+        if (!all.count({d.second, d.first})) {
+            if (next.count(d.first)) return false;
+            next[d.first] = d.second;
+        }
+    std::set<int> seen;
+    for (const auto& [start, nx] : next) {
+        (void)nx;
+        if (seen.count(start)) continue;
+        std::vector<int> loop;
+        int v = start;
+        do {
+            if (seen.count(v)) return false;
+            seen.insert(v);
+            loop.push_back(v);
+            auto it = next.find(v);
+            if (it == next.end()) return false;
+            v = it->second;
+        } while (v != start);
+        loops.push_back(loop);
+    }
+    return !loops.empty();
+}
+
+// The region's outline as one loop (empty if it has holes or isn't one piece).
+std::vector<int> outlineLoop(const Mesh& m, const std::set<int>& region) {
+    std::vector<std::vector<int>> loops;
+    if (!outlineLoops(m, region, loops) || loops.size() != 1) return {};
+    return loops[0];
+}
+
+// A flat surface: the faces lying flat with a face and joined to it (to the user it is
+// one face, however it has been cut), its outline and its holes.
+struct Surface {
+    std::set<int> faces;
+    Frame fr;
+    std::vector<int> outer;              // counter-clockwise
+    std::vector<std::vector<int>> holes; // clockwise
+};
+
+bool surfaceOf(const Mesh& m, int face, Surface& s) {
+    Vec3 o, u, v, n;
+    if (!faceFrame(m, face, o, u, v, n)) return false;
+    s = Surface{};
+    s.fr = Frame{o, u, v, n};
+    s.faces = {face};
+    std::vector<int> todo = {face};
+    std::map<std::pair<int, int>, int> owner; // directed edge -> face
+    for (int fi = 0; fi < (int)m.faces.size(); ++fi) {
+        const Face& f = m.faces[fi];
+        for (int k = 0; k < f.n; ++k) owner[{f.v[k], f.v[(k + 1) % f.n]}] = fi;
+    }
+    while (!todo.empty()) {
+        const Face f = m.faces[todo.back()];
+        todo.pop_back();
+        for (int k = 0; k < f.n; ++k) {
+            auto it = owner.find({f.v[(k + 1) % f.n], f.v[k]});
+            if (it == owner.end() || s.faces.count(it->second)) continue;
+            const int g = it->second;
+            if (dot(faceNormal(m, g), n) < 1 - 1e-9 || std::fabs(dot(faceCentre(m, g) - o, n)) > 1e-6) continue;
+            s.faces.insert(g);
+            todo.push_back(g);
+        }
+    }
+    std::vector<std::vector<int>> loops;
+    if (!outlineLoops(m, s.faces, loops)) return false;
+    for (auto& l : loops) {
+        std::vector<P2> p;
+        for (int i : l) p.push_back(s.fr.to(m.verts[i]));
+        if (area2(p) > 0) {
+            if (!s.outer.empty()) return false; // two outlines: not one surface
+            s.outer = l;
+        } else {
+            s.holes.push_back(l);
+        }
+    }
+    return !s.outer.empty();
+}
+
+std::vector<P2> positions(const Mesh& m, const Frame& fr, const std::vector<int>& ids) {
+    std::vector<P2> p;
+    for (int i : ids) p.push_back(fr.to(m.verts[i]));
+    return p;
+}
+
+// Where a point is on a surface: inside, on its outline (edge k from outer[k], or a
+// corner k), or on / in a hole (counts as outside, `onHole` set).
+FacePlace placeOnSurface(const Mesh& m, const Surface& s, const Vec3& p, int* index = nullptr, bool* onHole = nullptr) {
+    if (onHole) *onHole = false;
+    if (std::fabs(dot(p - s.fr.o, s.fr.n)) > kOn) return FacePlace::Outside;
+    const P2 q = s.fr.to(p);
+    const std::vector<P2> o = positions(m, s.fr, s.outer);
+    const int n = (int)o.size();
+    for (int k = 0; k < n; ++k)
+        if (len(q - o[k]) <= kOn) {
+            if (index) *index = k;
+            return FacePlace::OnCorner;
+        }
+    for (int k = 0; k < n; ++k)
+        if (segPointDist(q, o[k], o[(k + 1) % n]) <= kOn) {
+            if (index) *index = k;
+            return FacePlace::OnEdge;
+        }
+    for (const auto& h : s.holes) {
+        const std::vector<P2> hp = positions(m, s.fr, h);
+        bool on = false;
+        for (size_t k = 0; k < hp.size() && !on; ++k) on = segPointDist(q, hp[k], hp[(k + 1) % hp.size()]) <= kOn;
+        if (on || pointInPolygon(q, hp)) {
+            if (onHole) *onHole = true;
+            return FacePlace::Outside;
+        }
+    }
+    return pointInPolygon(q, o) ? FacePlace::Inside : FacePlace::Outside;
+}
+
+// An outline (counter-clockwise) with holes (clockwise), joined by bridges into one
+// list (a bridge's ends are visited twice) and split into faces of 3 or 4 corners.
+bool splitWithHoles(std::vector<int> ids, std::vector<P2> pos, const std::vector<std::vector<int>>& holeIds,
+                    const std::vector<std::vector<P2>>& holePos, std::vector<std::vector<int>>& out) {
+    std::vector<size_t> order(holeIds.size());
+    for (size_t i = 0; i < order.size(); ++i) order[i] = i;
+    auto maxX = [&](size_t h) {
+        double m = -1e300;
+        for (const P2& q : holePos[h]) m = std::max(m, q.x);
+        return m;
+    };
+    std::sort(order.begin(), order.end(), [&](size_t a, size_t b) { return maxX(a) > maxX(b); });
+    std::vector<bool> merged(holeIds.size(), false);
+    for (size_t h : order) {
+        const auto& hp = holePos[h];
+        double bestL = 1e300;
+        int bestJ = -1, bestK = -1;
+        for (size_t k = 0; k < hp.size(); ++k)
+            for (size_t j = 0; j < pos.size(); ++j) {
+                const P2 a = pos[j], b = hp[k];
+                const double l = len(a - b);
+                if (l >= bestL) continue;
+                bool bad = false;
+                for (size_t q = 0; q < pos.size() && !bad; ++q) bad = segmentsCross(a, b, pos[q], pos[(q + 1) % pos.size()]);
+                for (size_t g = 0; g < holeIds.size() && !bad; ++g) {
+                    if (merged[g]) continue;
+                    const auto& gp = holePos[g];
+                    for (size_t q = 0; q < gp.size() && !bad; ++q) bad = segmentsCross(a, b, gp[q], gp[(q + 1) % gp.size()]);
+                }
+                const P2 mid{(a.x + b.x) / 2, (a.y + b.y) / 2};
+                for (size_t g = 0; g < holeIds.size() && !bad; ++g)
+                    if (pointInPolygon(mid, holePos[g])) bad = true;
+                if (!bad) bestL = l, bestJ = (int)j, bestK = (int)k;
+            }
+        if (bestJ < 0) return false;
+        std::vector<int> nid(ids.begin(), ids.begin() + bestJ + 1);
+        std::vector<P2> npos(pos.begin(), pos.begin() + bestJ + 1);
+        const size_t hn = hp.size();
+        for (size_t st = 0; st <= hn; ++st) {
+            const size_t k = (bestK + st) % hn;
+            nid.push_back(holeIds[h][k]);
+            npos.push_back(hp[k]);
+        }
+        nid.push_back(ids[bestJ]);
+        npos.push_back(pos[bestJ]);
+        nid.insert(nid.end(), ids.begin() + bestJ + 1, ids.end());
+        npos.insert(npos.end(), pos.begin() + bestJ + 1, pos.end());
+        ids = nid;
+        pos = npos;
+        merged[h] = true;
+    }
+    std::vector<int> local(ids.size());
+    for (size_t i = 0; i < ids.size(); ++i) local[i] = (int)i;
+    auto pieces = splitPoly2D(local, pos);
+    if (pieces.empty()) return false;
+    out.clear();
+    for (auto& p : pieces) {
+        std::vector<int> r;
+        for (int i : p) r.push_back(ids[i]);
+        for (size_t a = 0; a < r.size(); ++a)
+            for (size_t b = a + 1; b < r.size(); ++b)
+                if (r[a] == r[b]) return false;
+        out.push_back(r);
+    }
+    return true;
+}
+
 struct Cutter {
     MeshEdit& e;
-    int face;
-    Frame fr;
-    Face orig;
-    std::vector<P2> outer2; // the face's corners in its frame
-    int origCount = 0;      // faces in the model before the cut
+    Surface S;
+    Face like;
+    int origCount = 0;
     std::string why;
+    std::set<int> toDelete;                   // group faces left over (deleted at the end)
+    std::map<int, std::vector<int>> inserted; // outline edge k -> new points on it, in order
 
-    P2 to(const Vec3& p) const { return fr.to(p); }
+    P2 to(const Vec3& p) const { return S.fr.to(p); }
 
-    // A point on the face's border: its index (an existing corner, or a new point
-    // that `insert` records on edge k).
-    struct Border {
-        int vert = -1;
-        int edge = -1; // the edge it was put on (-1: a corner)
-    };
-    std::map<int, std::vector<int>> inserted; // edge -> new points on it, in order along it
-
-    Border borderPoint(const Vec3& p) {
-        int edge = -1, corner = -1;
-        const FacePlace at = placeOnFace(e.mesh(), face, p, &edge, &corner);
-        Border b;
-        if (at == FacePlace::OnCorner) {
-            b.vert = orig.v[corner];
-            return b;
+    // Replaces the surface's faces by `pieces`: their slots first, then new faces; slots
+    // left over are deleted at the end. Returns the pieces' face indices (before that).
+    std::vector<int> replaceGroup(const std::vector<std::vector<int>>& pieces) {
+        std::vector<int> slots(S.faces.begin(), S.faces.end());
+        std::vector<int> out;
+        for (size_t i = 0; i < pieces.size(); ++i) {
+            const Face f = faceLike(like, pieces[i]);
+            if (i < slots.size()) {
+                e.setFace(slots[i], f);
+                out.push_back(slots[i]);
+            } else {
+                out.push_back(e.addFace(f));
+            }
         }
-        if (at != FacePlace::OnEdge) return b;
-        // Exactly on the edge's line (the click was snapped near it).
-        const Vec3 a = e.mesh().verts[orig.v[edge]], c = e.mesh().verts[orig.v[(edge + 1) % orig.n]];
-        const Vec3 d = c - a;
-        const double t = std::clamp(dot(p - a, d) / dot(d, d), 0.0, 1.0);
-        b.vert = e.addVert(a + d * t);
-        b.edge = edge;
-        auto& list = inserted[edge];
-        list.push_back(b.vert);
-        std::sort(list.begin(), list.end(), [&](int x, int y) {
-            return dot(e.mesh().verts[x] - a, d) < dot(e.mesh().verts[y] - a, d);
-        });
-        return b;
+        for (size_t i = pieces.size(); i < slots.size(); ++i) toDelete.insert(slots[i]);
+        return out;
     }
 
-    // The face's outline with the new border points.
-    std::vector<int> outerLoop() const {
+    // A point on the outline: its index (an existing point, or a new one on edge k).
+    int borderPoint(const Vec3& p) {
+        int k = -1;
+        const FacePlace at = placeOnSurface(e.mesh(), S, p, &k);
+        if (at == FacePlace::OnCorner) return S.outer[k];
+        if (at != FacePlace::OnEdge) return -1;
+        const int n = (int)S.outer.size();
+        const Vec3 a = e.mesh().verts[S.outer[k]], c = e.mesh().verts[S.outer[(k + 1) % n]];
+        const Vec3 d = c - a;
+        const double t = std::clamp(dot(p - a, d) / dot(d, d), 0.0, 1.0);
+        const int v = e.addVert(a + d * t);
+        auto& list = inserted[k];
+        list.push_back(v);
+        std::sort(list.begin(), list.end(),
+                  [&](int x, int y) { return dot(e.mesh().verts[x] - a, d) < dot(e.mesh().verts[y] - a, d); });
+        return v;
+    }
+
+    std::vector<int> outerWithInserted() const {
         std::vector<int> loop;
-        for (int k = 0; k < orig.n; ++k) {
-            loop.push_back(orig.v[k]);
+        for (int k = 0; k < (int)S.outer.size(); ++k) {
+            loop.push_back(S.outer[k]);
             auto it = inserted.find(k);
             if (it != inserted.end()) loop.insert(loop.end(), it->second.begin(), it->second.end());
         }
         return loop;
     }
 
-    // Faces next to the cut face get the new points on their shared edges (all of a
-    // face's edges at once: a face can border the cut face along two edges).
+    // Faces outside the surface sharing an outline edge with new points get them too.
     bool fixNeighbours() {
         const Mesh& m = e.mesh();
-        std::map<int, std::map<int, std::vector<int>>> todo; // face -> its edge index -> points (in its order)
+        const int n = (int)S.outer.size();
+        std::map<int, std::map<int, std::vector<int>>> todo;
         for (const auto& [k, pts] : inserted) {
-            const int a = orig.v[k], b = orig.v[(k + 1) % orig.n];
+            const int a = S.outer[k], b = S.outer[(k + 1) % n];
             for (int g = 0; g < origCount; ++g) {
-                if (g == face) continue;
+                if (S.faces.count(g)) continue;
                 const Face& gf = m.faces[g];
                 for (int j = 0; j < gf.n; ++j)
                     if (gf.v[j] == b && gf.v[(j + 1) % gf.n] == a) todo[g][j] = std::vector<int>(pts.rbegin(), pts.rend());
@@ -381,8 +577,7 @@ struct Cutter {
                 auto it = edges.find(q);
                 if (it != edges.end()) loop.insert(loop.end(), it->second.begin(), it->second.end());
             }
-            const Vec3 gn = faceNormal(e.mesh(), g);
-            auto pieces = splitPolygon(e.mesh(), loop, gn);
+            auto pieces = splitPolygon(e.mesh(), loop, faceNormal(e.mesh(), g));
             if (!piecesOk(e.mesh(), pieces)) {
                 why = "a face next to it can't take the new point";
                 return false;
@@ -392,25 +587,18 @@ struct Cutter {
         return true;
     }
 
-    std::vector<P2> loop2(const std::vector<int>& loop) const {
-        std::vector<P2> p;
-        for (int i : loop) p.push_back(to(e.mesh().verts[i]));
-        return p;
-    }
-
-    // Splits the face along a path from one border point to another through the inside.
-    // Returns the two loops' faces (the first is to the left of the path's direction... see below).
+    // Splits the surface (no holes) along a path from one point of its outline to another.
     bool lineCut(const std::vector<Vec3>& path, std::vector<int>& facesA, std::vector<int>& facesB,
                  std::vector<P2>& loopA2, std::vector<P2>& loopB2) {
         if (path.size() < 2) {
             why = "a line needs two points";
             return false;
         }
-        // The inside points must be inside; the path mustn't cross the face's border or itself.
+        const std::vector<P2> o2 = positions(e.mesh(), S.fr, S.outer);
         std::vector<P2> p2;
         for (const Vec3& p : path) p2.push_back(to(p));
         for (size_t i = 1; i + 1 < path.size(); ++i)
-            if (placeOnFace(e.mesh(), face, path[i]) != FacePlace::Inside) {
+            if (placeOnSurface(e.mesh(), S, path[i]) != FacePlace::Inside) {
                 why = "the line has to stay inside the face";
                 return false;
             }
@@ -419,8 +607,8 @@ struct Cutter {
                 why = "two points of the line are on top of each other";
                 return false;
             }
-            for (size_t k = 0; k < outer2.size(); ++k)
-                if (segmentsCross(p2[i], p2[i + 1], outer2[k], outer2[(k + 1) % outer2.size()])) {
+            for (size_t k = 0; k < o2.size(); ++k)
+                if (segmentsCross(p2[i], p2[i + 1], o2[k], o2[(k + 1) % o2.size()])) {
                     why = "the line goes over the edge of the face";
                     return false;
                 }
@@ -429,30 +617,35 @@ struct Cutter {
                     why = "the line crosses itself";
                     return false;
                 }
-        }
-        // Middle of each straight piece must be inside (not running along the border).
-        for (size_t i = 0; i + 1 < path.size(); ++i) {
+            for (const auto& h : S.holes) {
+                const std::vector<P2> hp = positions(e.mesh(), S.fr, h);
+                for (size_t k = 0; k < hp.size(); ++k)
+                    if (segmentsCross(p2[i], p2[i + 1], hp[k], hp[(k + 1) % hp.size()])) {
+                        why = "the line crosses a hole";
+                        return false;
+                    }
+            }
             const Vec3 mid = (path[i] + path[i + 1]) * 0.5;
-            if (placeOnFace(e.mesh(), face, mid) != FacePlace::Inside) {
+            if (placeOnSurface(e.mesh(), S, mid) != FacePlace::Inside) {
                 why = "the line runs along the edge of the face";
                 return false;
             }
         }
-        const Border A = borderPoint(path.front()), B = borderPoint(path.back());
-        if (A.vert < 0 || B.vert < 0) {
+        const int A = borderPoint(path.front()), B = borderPoint(path.back());
+        if (A < 0 || B < 0) {
             why = "a line must start and end on an edge of the face";
             return false;
         }
-        if (A.vert == B.vert) {
+        if (A == B) {
             why = "the line starts and ends at the same point";
             return false;
         }
         std::vector<int> mid;
         for (size_t i = 1; i + 1 < path.size(); ++i) mid.push_back(e.addVert(path[i]));
-        const std::vector<int> outer = outerLoop();
+        const std::vector<int> outer = outerWithInserted();
         const int n = (int)outer.size();
-        const int pa = (int)(std::find(outer.begin(), outer.end(), A.vert) - outer.begin());
-        const int pb = (int)(std::find(outer.begin(), outer.end(), B.vert) - outer.begin());
+        const int pa = (int)(std::find(outer.begin(), outer.end(), A) - outer.begin());
+        const int pb = (int)(std::find(outer.begin(), outer.end(), B) - outer.begin());
         if (pa >= n || pb >= n) {
             why = "the line's ends aren't on the face's edge";
             return false;
@@ -468,81 +661,83 @@ struct Cutter {
             if (i == pa) break;
         }
         lb.insert(lb.end(), mid.begin(), mid.end());
-        loopA2 = loop2(la);
-        loopB2 = loop2(lb);
-        auto sa = splitPolygon(e.mesh(), la, fr.n), sb = splitPolygon(e.mesh(), lb, fr.n);
+        loopA2 = positions(e.mesh(), S.fr, la);
+        loopB2 = positions(e.mesh(), S.fr, lb);
+        // The surface's holes go with the side they lie in.
+        std::vector<std::vector<int>> ha, hb;
+        std::vector<std::vector<P2>> pa2, pb2;
+        for (const auto& h : S.holes) {
+            const std::vector<P2> hp = positions(e.mesh(), S.fr, h);
+            if (pointInPolygon(hp[0], loopA2)) ha.push_back(h), pa2.push_back(hp);
+            else hb.push_back(h), pb2.push_back(hp);
+        }
+        std::vector<std::vector<int>> sa, sb;
+        if (ha.empty()) sa = splitPolygon(e.mesh(), la, S.fr.n);
+        else if (!splitWithHoles(la, loopA2, ha, pa2, sa)) sa.clear();
+        if (hb.empty()) sb = splitPolygon(e.mesh(), lb, S.fr.n);
+        else if (!splitWithHoles(lb, loopB2, hb, pb2, sb)) sb.clear();
         if (!piecesOk(e.mesh(), sa) || !piecesOk(e.mesh(), sb)) {
             why = "it would leave a sliver of a face (too close to a corner or an edge)";
             return false;
         }
         std::vector<std::vector<int>> all = sa;
         all.insert(all.end(), sb.begin(), sb.end());
-        const std::vector<int> made = replaceFace(e, face, all);
+        const std::vector<int> made = replaceGroup(all);
         facesA.assign(made.begin(), made.begin() + sa.size());
         facesB.assign(made.begin() + sa.size(), made.end());
         return fixNeighbours();
     }
 
-    // A closed shape strictly inside: the face becomes a frame round it, joined by two
-    // bridges into two simple outlines.
-    bool ringCut(const std::vector<Vec3>& pts, std::vector<int>& shapeFaces) {
-        std::vector<int> inner;
-        for (const Vec3& p : pts) inner.push_back(e.addVert(p));
-        const std::vector<int> outer = outerLoop();
-        const std::vector<P2> o2 = loop2(outer), i2 = loop2(inner);
-        const int n = (int)outer.size(), k = (int)inner.size();
-        auto crossesAny = [&](P2 a, P2 b, int skipOuter, int skipInner) {
-            for (int q = 0; q < n; ++q)
-                if (q != skipOuter && (q + 1) % n != skipOuter && segmentsCross(a, b, o2[q], o2[(q + 1) % n])) return true;
-            for (int q = 0; q < k; ++q)
-                if (q != skipInner && (q + 1) % k != skipInner && segmentsCross(a, b, i2[q], i2[(q + 1) % k])) return true;
-            // Not through the shape itself (from a corner across it).
-            const P2 mid{(a.x + b.x) / 2, (a.y + b.y) / 2};
-            return pointInPolygon(mid, i2);
-        };
-        struct Bridge {
-            int o, i;
-            double l;
-        };
-        std::vector<Bridge> bridges;
-        for (int a = 0; a < n; ++a)
-            for (int i = 0; i < k; ++i)
-                if (!crossesAny(o2[a], i2[i], a, i)) bridges.push_back({a, i, len(o2[a] - i2[i])});
-        std::sort(bridges.begin(), bridges.end(), [](const Bridge& x, const Bridge& y) { return x.l < y.l; });
-        const Mesh& m = e.mesh();
-        for (size_t x = 0; x < bridges.size(); ++x)
-            for (size_t y = x + 1; y < bridges.size(); ++y) {
-                const Bridge b1 = bridges[x], b2 = bridges[y];
-                if (b1.o == b2.o || b1.i == b2.i) continue;
-                if (segmentsCross(o2[b1.o], i2[b1.i], o2[b2.o], i2[b2.i])) continue;
-                std::vector<int> l1, l2;
-                for (int q = b1.o;; q = (q + 1) % n) {
-                    l1.push_back(outer[q]);
-                    if (q == b2.o) break;
-                }
-                for (int q = b2.i;; q = (q + k - 1) % k) {
-                    l1.push_back(inner[q]);
-                    if (q == b1.i) break;
-                }
-                for (int q = b2.o;; q = (q + 1) % n) {
-                    l2.push_back(outer[q]);
-                    if (q == b1.o) break;
-                }
-                for (int q = b1.i;; q = (q + k - 1) % k) {
-                    l2.push_back(inner[q]);
-                    if (q == b2.i) break;
-                }
-                auto s1 = splitPolygon(m, l1, fr.n), s2 = splitPolygon(m, l2, fr.n), s3 = splitPolygon(m, inner, fr.n);
-                if (!piecesOk(m, s1) || !piecesOk(m, s2) || !piecesOk(m, s3)) continue;
-                std::vector<std::vector<int>> all = s3;
-                all.insert(all.end(), s1.begin(), s1.end());
-                all.insert(all.end(), s2.begin(), s2.end());
-                const std::vector<int> made = replaceFace(e, face, all);
-                shapeFaces.assign(made.begin(), made.begin() + s3.size());
-                return true;
+    // A closed shape inside the surface: it becomes a hole of the surface, filled by its
+    // own faces.
+    bool insideCut(const std::vector<Vec3>& pts, std::vector<int>& shapeFaces) {
+        const Mesh& m0 = e.mesh();
+        std::vector<P2> s2;
+        for (const Vec3& p : pts) s2.push_back(to(p));
+        // Its outline mustn't cross a hole's or go round one.
+        for (const auto& h : S.holes) {
+            const std::vector<P2> hp = positions(m0, S.fr, h);
+            for (size_t i = 0; i < s2.size(); ++i)
+                for (size_t k = 0; k < hp.size(); ++k)
+                    if (segmentsCross(s2[i], s2[(i + 1) % s2.size()], hp[k], hp[(k + 1) % hp.size()])) {
+                        why = "the shape crosses a hole";
+                        return false;
+                    }
+            if (pointInPolygon(hp[0], s2)) {
+                why = "the shape goes round a hole";
+                return false;
             }
-        why = "the shape can't be cut into this face";
-        return false;
+        }
+        const std::vector<P2> o2 = positions(m0, S.fr, S.outer);
+        for (size_t i = 0; i < s2.size(); ++i)
+            for (size_t k = 0; k < o2.size(); ++k)
+                if (segmentsCross(s2[i], s2[(i + 1) % s2.size()], o2[k], o2[(k + 1) % o2.size()])) {
+                    why = "the shape goes over the edge of the face";
+                    return false;
+                }
+        std::vector<int> shape;
+        for (const Vec3& p : pts) shape.push_back(e.addVert(p));
+        std::vector<std::vector<int>> holeIds = S.holes;
+        std::vector<std::vector<P2>> holePos;
+        for (const auto& h : S.holes) holePos.push_back(positions(e.mesh(), S.fr, h));
+        holeIds.push_back(std::vector<int>(shape.rbegin(), shape.rend()));
+        holePos.push_back(std::vector<P2>(s2.rbegin(), s2.rend()));
+        std::vector<std::vector<int>> around;
+        if (!splitWithHoles(S.outer, positions(e.mesh(), S.fr, S.outer), holeIds, holePos, around) ||
+            !piecesOk(e.mesh(), around)) {
+            why = "the shape can't be cut into this face";
+            return false;
+        }
+        auto inner = splitPolygon(e.mesh(), shape, S.fr.n);
+        if (!piecesOk(e.mesh(), inner)) {
+            why = "the shape is too small";
+            return false;
+        }
+        std::vector<std::vector<int>> all = inner;
+        all.insert(all.end(), around.begin(), around.end());
+        const std::vector<int> made = replaceGroup(all);
+        shapeFaces.assign(made.begin(), made.begin() + inner.size());
+        return true;
     }
 };
 
@@ -553,12 +748,10 @@ bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed
         if (why) *why = w;
         return false;
     };
-    Vec3 o, u, v, n;
-    if (!faceFrame(e.mesh(), face, o, u, v, n)) return fail("that face has no area");
-    Cutter c{e, face, Frame{o, u, v, n}, e.mesh().faces[face], {}, 0, {}, {}};
-    for (int k = 0; k < c.orig.n; ++k) c.outer2.push_back(c.to(e.mesh().verts[c.orig.v[k]]));
-    c.origCount = (int)e.mesh().faces.size();
-    // Into the face's plane, cleaned.
+    if (face < 0 || face >= (int)e.mesh().faces.size()) return fail("no face there");
+    Cutter c{e, {}, e.mesh().faces[face], (int)e.mesh().faces.size(), {}, {}, {}};
+    if (!surfaceOf(e.mesh(), face, c.S)) return fail("that face can't be drawn on");
+    const Vec3 o = c.S.fr.o, n = c.S.fr.n;
     std::vector<Vec3> pts;
     for (const Vec3& p : ptsIn) {
         const Vec3 q = clean(p - n * dot(p - o, n));
@@ -568,7 +761,9 @@ bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed
     if (closed && pts.size() > 1 && length(pts.front() - pts.back()) < kOn) pts.pop_back();
     std::vector<FacePlace> place;
     for (const Vec3& p : pts) {
-        place.push_back(placeOnFace(e.mesh(), face, p));
+        bool onHole = false;
+        place.push_back(placeOnSurface(e.mesh(), c.S, p, nullptr, &onHole));
+        if (onHole) return fail("the shape touches a hole");
         if (place.back() == FacePlace::Outside) return fail("the shape goes over the edge of the face");
     }
     std::vector<int> picked;
@@ -592,16 +787,14 @@ bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed
         for (FacePlace p : place) inside += p == FacePlace::Inside;
         if (inside == k) {
             std::vector<int> f;
-            if (!c.ringCut(pts, f)) return fail(c.why);
+            if (!c.insideCut(pts, f)) return fail(c.why);
             picked = f;
         } else {
             if (inside == 0) return fail("the shape lies along the edge of the face");
-            // The inside points must follow each other: one stretch along the border.
             int start = -1, runs = 0;
             for (int i = 0; i < k; ++i)
                 if (place[i] == FacePlace::Inside && place[(i + k - 1) % k] != FacePlace::Inside) start = i, ++runs;
             if (runs != 1) return fail("the shape touches the edge of the face in more than one place");
-            // Path: the border point before the stretch, the stretch, the border point after.
             std::vector<Vec3> path = {pts[(start + k - 1) % k]};
             int i = start;
             while (place[i] == FacePlace::Inside) {
@@ -612,11 +805,16 @@ bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed
             std::vector<int> a, b;
             std::vector<P2> la, lb;
             if (!c.lineCut(path, a, b, la, lb)) return fail(c.why);
-            // The shape is the part its middle lies in.
             P2 mid{0, 0};
             for (const P2& q : s2) mid.x += q.x / k, mid.y += q.y / k;
             picked = pointInPolygon(mid, la) ? a : b;
         }
+    }
+    // Faces left over from the surface go; the picked ones are renumbered to match.
+    if (!c.toDelete.empty()) {
+        std::vector<int> map;
+        e.deleteFaces(c.toDelete, &map);
+        for (int& f : picked) f = map[f];
     }
     if (shape) shape->insert(picked.begin(), picked.end());
     return true;
@@ -624,36 +822,6 @@ bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed
 
 // ---------------------------------------------------------------- holes through
 
-namespace {
-
-// The region's outline as one loop of points (counter-clockwise seen from its normal);
-// empty if it isn't a single loop.
-std::vector<int> outlineLoop(const Mesh& m, const std::set<int>& region) {
-    std::set<std::pair<int, int>> all;
-    for (int fi : region) {
-        const Face& f = m.faces[fi];
-        for (int k = 0; k < f.n; ++k) all.insert({f.v[k], f.v[(k + 1) % f.n]});
-    }
-    std::map<int, int> next;
-    for (const auto& d : all)
-        if (!all.count({d.second, d.first})) {
-            if (next.count(d.first)) return {}; // touches itself at a point
-            next[d.first] = d.second;
-        }
-    if (next.empty()) return {};
-    std::vector<int> loop;
-    int v = next.begin()->first;
-    do {
-        loop.push_back(v);
-        auto it = next.find(v);
-        if (it == next.end() || loop.size() > next.size()) return {};
-        v = it->second;
-    } while (v != loop.front());
-    if (loop.size() != next.size()) return {}; // more than one loop
-    return loop;
-}
-
-} // namespace
 
 namespace {
 
@@ -762,9 +930,11 @@ double throughDistance(const Mesh& m, const std::set<int>& region, int* target) 
         if (region.count(g) || dot(faceNormal(m, g), n) > -1 + 1e-9) continue;
         const double t = dot(c - m.verts[m.faces[g].v[0]], n);
         if (t <= 1e-6 || (best > 0 && t >= best)) continue;
+        Surface far;
+        if (!surfaceOf(m, g, far)) continue;
         bool inside = true;
         for (int v : loop)
-            if (placeOnFace(m, g, m.verts[v] - n * t) == FacePlace::Outside) {
+            if (placeOnSurface(m, far, m.verts[v] - n * t) == FacePlace::Outside) {
                 inside = false;
                 break;
             }
@@ -918,71 +1088,8 @@ bool makeOutline(MeshEdit& e, const std::vector<Vec3>& outerIn, const std::vecto
         for (const Vec3& p : h) hi.push_back(e.addVert(p));
         holeIds.push_back(hi);
     }
-    std::vector<size_t> order(holes.size());
-    for (size_t i = 0; i < order.size(); ++i) order[i] = i;
-    auto maxX = [&](size_t h) {
-        double m = -1e300;
-        for (const P2& q : h2s[h]) m = std::max(m, q.x);
-        return m;
-    };
-    std::sort(order.begin(), order.end(), [&](size_t a, size_t b) { return maxX(a) > maxX(b); });
-    std::vector<bool> merged(holes.size(), false);
-    for (size_t h : order) {
-        const auto& hp = h2s[h];
-        // Any hole point to any point of the outline so far: the shortest bridge that
-        // crosses nothing.
-        double bestL = 1e300;
-        int bestJ = -1, bestK = -1;
-        for (size_t k = 0; k < hp.size(); ++k)
-            for (size_t j = 0; j < pos.size(); ++j) {
-                const P2 a = pos[j], b = hp[k];
-                const double l = len(a - b);
-                if (l >= bestL) continue;
-                bool bad = false;
-                for (size_t q = 0; q < pos.size() && !bad; ++q)
-                    bad = segmentsCross(a, b, pos[q], pos[(q + 1) % pos.size()]);
-                for (size_t g = 0; g < holes.size() && !bad; ++g) {
-                    if (merged[g]) continue;
-                    const auto& gp = h2s[g];
-                    for (size_t q = 0; q < gp.size() && !bad; ++q)
-                        bad = segmentsCross(a, b, gp[q], gp[(q + 1) % gp.size()]);
-                }
-                // Must leave through the inside of the shape, not across a hole.
-                const P2 mid{(a.x + b.x) / 2, (a.y + b.y) / 2};
-                for (size_t g = 0; g < holes.size() && !bad; ++g)
-                    if (pointInPolygon(mid, h2s[g])) bad = true;
-                if (!bad) bestL = l, bestJ = (int)j, bestK = (int)k;
-            }
-        if (bestJ < 0) return fail("a hole can't be joined to the outline");
-        std::vector<int> nid(ids.begin(), ids.begin() + bestJ + 1);
-        std::vector<P2> npos(pos.begin(), pos.begin() + bestJ + 1);
-        const size_t hn = hp.size();
-        for (size_t s = 0; s <= hn; ++s) {
-            const size_t k = (bestK + s) % hn;
-            nid.push_back(holeIds[h][k]);
-            npos.push_back(hp[k]);
-        }
-        nid.push_back(ids[bestJ]);
-        npos.push_back(pos[bestJ]);
-        nid.insert(nid.end(), ids.begin() + bestJ + 1, ids.end());
-        npos.insert(npos.end(), pos.begin() + bestJ + 1, pos.end());
-        ids = nid;
-        pos = npos;
-        merged[h] = true;
-    }
-    std::vector<int> local(ids.size());
-    for (size_t i = 0; i < ids.size(); ++i) local[i] = (int)i;
-    auto pieces = splitPoly2D(local, pos);
-    if (pieces.empty()) return fail("the outline can't be made into faces");
     std::vector<std::vector<int>> real;
-    for (auto& p : pieces) {
-        std::vector<int> r;
-        for (int i : p) r.push_back(ids[i]);
-        for (size_t a = 0; a < r.size(); ++a)
-            for (size_t b = a + 1; b < r.size(); ++b)
-                if (r[a] == r[b]) return fail("the outline can't be made into faces");
-        real.push_back(r);
-    }
+    if (!splitWithHoles(ids, pos, holeIds, h2s, real)) return fail("the outline can't be made into faces");
     if (!piecesOk(e.mesh(), real)) return fail("it would leave a sliver of a face");
     Face like;
     like.twoSided = twoSided;

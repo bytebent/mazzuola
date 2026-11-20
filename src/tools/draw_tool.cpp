@@ -58,16 +58,22 @@ bool screen(const ViewGeom& g, const Vec3& p, ImVec2& out) {
 const char* DrawTool::hint() const {
     switch (phase_) {
     case Phase::Idle:
+        if (shape_ == Shape::Outline) return "in a 2D view, click points of an outline; click the first point to close it";
         if (shape_ == Shape::Line) return "click on a face: start a line (from one of its edges)";
         return shape_ == Shape::Circle ? "click on a face: the circle's centre" : "click on a face: a corner of the rectangle";
     case Phase::Placing: return shape_ == Shape::Circle ? "click: the radius  Esc: cancel" : "click: the opposite corner  Esc: cancel";
     case Phase::Adjust: return "type the size or drag a corner  Return: cut it in  Esc: cancel";
     case Phase::Line: return "click: next point (end on an edge)  Shift: keep the direction  Return: finish  Backspace: undo a point  Esc: cancel";
+    case Phase::Outline:
+        return outer_.empty() || !current_.empty()
+                   ? "click: next point  click the first point: close it  Return: finish  Backspace: undo a point  Esc: cancel"
+                   : "click inside: a hole  Return: make the shape  Esc: cancel";
     }
     return "";
 }
 
 DrawTool::Cursor DrawTool::snapAt(const ToolEnv& env, const ViewGeom& g, double sx, double sy, bool shift) const {
+    if (shape_ == Shape::Outline) return snapOutline(env, g, sx, sy, shift);
     const Mesh& m = env.doc.mesh;
     Cursor c;
     int face = face_;
@@ -183,6 +189,7 @@ std::vector<Vec3> DrawTool::points() const {
     case Shape::Rectangle: return rectanglePoints(a_, u_, v_, w_, h_);
     case Shape::Circle: return circlePoints(a_, u_, v_, r_, segments_);
     case Shape::Line: return line_;
+    case Shape::Outline: return outer_;
     }
     return {};
 }
@@ -200,7 +207,30 @@ void DrawTool::check(ToolEnv& env) {
     fits_ = cutShape(e, face_, points(), true, nullptr, &why_);
 }
 
+void DrawTool::alignFrame(const Mesh& m, int face) {
+    // Rectangles line up with the world on faces along an axis (a cut face's pieces have
+    // any first edge), else with the face's longest edge.
+    const int na = normalAxis(n_);
+    if (na >= 0) {
+        u_ = axisVec(na == 0 ? 1 : 0);
+    } else {
+        const Face& f = m.faces[face];
+        double best = -1;
+        for (int k = 0; k < f.n; ++k) {
+            const Vec3 d = m.verts[f.v[(k + 1) % f.n]] - m.verts[f.v[k]];
+            if (length(d) > best) best = length(d), u_ = d * (1.0 / length(d));
+        }
+        u_ = u_ - n_ * dot(u_, n_);
+        u_ = u_ * (1.0 / length(u_));
+    }
+    v_ = cross(n_, u_);
+}
+
 void DrawTool::reset(ToolEnv& env) {
+    current_.clear();
+    outer_.clear();
+    holes_.clear();
+    closes_ = false;
     phase_ = Phase::Idle;
     face_ = -1;
     line_.clear();
@@ -217,6 +247,7 @@ void DrawTool::cancel(ToolEnv& env) {
 }
 
 bool DrawTool::apply(ToolEnv& env) {
+    if (shape_ == Shape::Outline) return applyOutline(env);
     if (phase_ == Phase::Idle || phase_ == Phase::Placing) return false;
     const bool closed = shape_ != Shape::Line;
     const std::vector<Vec3> pts = points();
@@ -245,6 +276,10 @@ bool DrawTool::apply(ToolEnv& env) {
 }
 
 void DrawTool::press(ToolEnv& env, const Pointer& p) {
+    if (shape_ == Shape::Outline) {
+        pressOutline(env, p);
+        return;
+    }
     const Cursor c = snapAt(env, p.g, p.sx, p.sy, p.shift);
     pressX_ = p.sx;
     pressY_ = p.sy;
@@ -273,6 +308,7 @@ void DrawTool::press(ToolEnv& env, const Pointer& p) {
         const int face = drawFaceAt(env.doc.mesh, p.g, p.sx, p.sy);
         if (face < 0 || !s.ok) return;
         if (!faceFrame(env.doc.mesh, face, o_, u_, v_, n_)) return;
+        alignFrame(env.doc.mesh, face);
         face_ = face;
         view_ = p.view;
         if (shape_ == Shape::Line) {
@@ -301,6 +337,7 @@ void DrawTool::press(ToolEnv& env, const Pointer& p) {
         check(env);
         env.touch();
         return;
+    case Phase::Outline: return;
     case Phase::Line:
         if (!c.ok) return;
         if (p.clicks >= 2) {
@@ -372,6 +409,14 @@ bool DrawTool::key(ToolEnv& env, int key, bool shift, bool cmd) {
         apply(env);
         return true;
     }
+    if (key == GLFW_KEY_BACKSPACE && phase_ == Phase::Outline) {
+        if (!current_.empty()) current_.pop_back();
+        else if (!holes_.empty()) holes_.pop_back();
+        if (current_.empty() && outer_.empty() && holes_.empty()) reset(env);
+        checkOutline(env);
+        env.touch();
+        return true;
+    }
     if (key == GLFW_KEY_BACKSPACE && phase_ == Phase::Line) {
         line_.pop_back();
         if (line_.empty()) reset(env);
@@ -383,8 +428,9 @@ bool DrawTool::key(ToolEnv& env, int key, bool shift, bool cmd) {
 
 void DrawTool::overlay(const ToolEnv& env, const ViewGeom& g, int view, ImDrawList* dl) const {
     (void)env;
+    if (shape_ == Shape::Outline) drawOutline(g, view, dl);
     const ImU32 col = fits_ ? kShapeCol : kBadCol;
-    if (phase_ != Phase::Idle) {
+    if (phase_ != Phase::Idle && shape_ != Shape::Outline) {
         std::vector<Vec3> pts = points();
         const bool closed = shape_ != Shape::Line;
         std::vector<ImVec2> s;
@@ -454,7 +500,26 @@ void DrawTool::properties(ToolEnv& env) {
     sh |= ImGui::RadioButton("Circle", &s, 1);
     ImGui::SameLine();
     sh |= ImGui::RadioButton("Line", &s, 2);
+    ImGui::SameLine();
+    sh |= ImGui::RadioButton("Outline", &s, 3);
     if (sh) setShape(env, (Shape)s);
+    if (shape_ == Shape::Outline) {
+        if (ImGui::Checkbox("Double-sided", &twoSided_)) env.touch();
+        if (phase_ == Phase::Idle) {
+            dimWrapped("In a 2D view: click the points of an outline, then the first point again to close it. Outlines "
+                       "clicked inside it become holes. Return makes the flat shape (facing you); Push/pull makes it solid.");
+            return;
+        }
+        if (!fits_) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.2f, 0.2f, 1));
+            ImGui::TextWrapped("Can't make it: %s.", why_.c_str());
+            ImGui::PopStyleColor();
+        }
+        if (ImGui::Button("Make it (Return)")) apply(env);
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel (Esc)")) reset(env);
+        return;
+    }
     const float fieldW = ImGui::GetFontSize() * 7;
     auto onReturn = [&]() {
         if (ImGui::IsItemDeactivatedAfterEdit() &&
@@ -497,6 +562,173 @@ void DrawTool::properties(ToolEnv& env) {
     ImGui::EndDisabled();
     ImGui::SameLine();
     if (ImGui::Button("Cancel (Esc)")) reset(env);
+}
+
+// ---------------------------------------------------------------- outline (v0.2.3)
+
+DrawTool::Cursor DrawTool::snapOutline(const ToolEnv& env, const ViewGeom& g, double sx, double sy, bool shift) const {
+    Cursor c;
+    if (g.is3D()) return c; // outlines are drawn in a 2D view
+    Vec3 ro, rd;
+    g.ray(sx, sy, ro, rd);
+    const Vec3 n = phase_ == Phase::Outline ? planeN_ : rd * -1.0;
+    const double den = dot(rd, n);
+    if (std::fabs(den) < 1e-9) return c;
+    // The view's plane through the origin.
+    c.p = ro + rd * (dot(Vec3{0, 0, 0} - ro, n) / den);
+    c.ok = true;
+    // The first point of the loop (closes it), then points on the plane.
+    auto near = [&](const Vec3& p) {
+        double x, y;
+        return g.project(p, x, y) && std::hypot(x - sx, y - sy) <= kSnapPx;
+    };
+    if (current_.size() >= 3 && near(current_.front())) {
+        c.p = current_.front();
+        c.snap = Snap::Point;
+        return c;
+    }
+    for (const Vec3& p : env.doc.mesh.verts)
+        if (std::fabs(dot(p, n)) < kOnPlane && near(p)) {
+            c.p = p;
+            c.snap = Snap::Point;
+            return c;
+        }
+    // Direction from the last point (Shift keeps it), then the grid.
+    if (!current_.empty()) {
+        const Vec3 prev = current_.back();
+        int axis = shift && lockAxis_ >= 0 ? lockAxis_ : -1;
+        if (axis < 0) {
+            double px0, py0, best = kSnapPx;
+            if (g.project(prev, px0, py0))
+                for (int a = 0; a < 3; ++a) {
+                    if (std::fabs(dot(axisVec(a), n)) > 0.5) continue;
+                    double px1, py1;
+                    if (!g.project(prev + axisVec(a) * 10.0, px1, py1)) continue;
+                    const double lx = px1 - px0, ly = py1 - py0, l = std::hypot(lx, ly);
+                    if (l < 1) continue;
+                    const double off = std::fabs((sx - px0) * ly - (sy - py0) * lx) / l;
+                    if (off < best) best = off, axis = a;
+                }
+        }
+        if (axis >= 0 && std::fabs(dot(axisVec(axis), n)) < 0.5) {
+            Vec3 q = prev + axisVec(axis) * dot(c.p - prev, axisVec(axis));
+            if (env.grid.snap) setComp(q, axis, env.grid.snapValue(comp(q, axis)));
+            c.p = q;
+            c.axis = axis;
+            return c;
+        }
+    }
+    if (env.grid.snap) {
+        const int na = normalAxis(n);
+        for (int a = 0; a < 3; ++a)
+            if (a != na) setComp(c.p, a, env.grid.snapValue(comp(c.p, a)));
+        c.snap = Snap::Grid;
+    }
+    return c;
+}
+
+void DrawTool::pressOutline(ToolEnv& env, const Pointer& p) {
+    if (p.g.is3D()) return;
+    if (phase_ == Phase::Outline && p.view != view_) return;
+    Cursor c = snapOutline(env, p.g, p.sx, p.sy, p.shift);
+    if (!c.ok) return;
+    if (phase_ == Phase::Idle) {
+        Vec3 ro, rd;
+        p.g.ray(p.sx, p.sy, ro, rd);
+        planeN_ = rd * -1.0;
+        phase_ = Phase::Outline;
+        view_ = p.view;
+        c = snapOutline(env, p.g, p.sx, p.sy, p.shift);
+    }
+    // On the first point: the loop closes (the outline, then holes).
+    if (current_.size() >= 3 && length(c.p - current_.front()) < 1e-6) {
+        if (outer_.empty()) outer_ = current_;
+        else holes_.push_back(current_);
+        current_.clear();
+        checkOutline(env);
+    } else if (p.clicks >= 2 && current_.size() >= 3) {
+        // A double-click closes it too.
+        if (outer_.empty()) outer_ = current_;
+        else holes_.push_back(current_);
+        current_.clear();
+        checkOutline(env);
+    } else if (current_.empty() || length(c.p - current_.back()) > 1e-3) {
+        current_.push_back(c.p);
+    }
+    cursor_ = c;
+    cursor_.view = p.view;
+    env.touch();
+}
+
+void DrawTool::checkOutline(ToolEnv& env) {
+    fits_ = true;
+    why_.clear();
+    if (outer_.empty()) return;
+    Mesh copy = env.doc.mesh;
+    MeshEdit e(copy);
+    fits_ = makeOutline(e, outer_, holes_, planeN_, twoSided_, nullptr, &why_);
+}
+
+bool DrawTool::applyOutline(ToolEnv& env) {
+    if (phase_ != Phase::Outline) return false;
+    // An open loop of three or more points closes on Return.
+    if (current_.size() >= 3) {
+        if (outer_.empty()) outer_ = current_;
+        else holes_.push_back(current_);
+        current_.clear();
+    }
+    if (outer_.empty()) return false;
+    checkOutline(env);
+    if (!fits_) {
+        env.touch();
+        return false;
+    }
+    const auto outer = outer_;
+    const auto holes = holes_;
+    const Vec3 n = planeN_;
+    const bool two = twoSided_;
+    std::string why;
+    const bool ok = env.doc.apply("Draw outline", [&](MeshEdit& e, Selection& sel) {
+        std::set<int> faces;
+        if (!makeOutline(e, outer, holes, n, two, &faces, &why)) return false;
+        sel = Selection();
+        sel.mode = SelectMode::Face;
+        sel.faces = faces;
+        return true;
+    });
+    if (!ok) {
+        fits_ = false;
+        why_ = why;
+        env.touch();
+        return false;
+    }
+    reset(env);
+    return true;
+}
+
+void DrawTool::drawOutline(const ViewGeom& g, int view, ImDrawList* dl) const {
+    if (phase_ != Phase::Outline || view != view_) return;
+    const ImU32 col = fits_ ? kShapeCol : kBadCol;
+    auto loop = [&](const std::vector<Vec3>& pts, bool closed) {
+        std::vector<ImVec2> s;
+        for (const Vec3& p : pts) {
+            ImVec2 q;
+            if (screen(g, p, q)) s.push_back(q);
+        }
+        if (s.size() >= 2) dl->AddPolyline(s.data(), (int)s.size(), col, closed ? ImDrawFlags_Closed : 0, 2.0f);
+        for (const ImVec2& q : s) dl->AddRectFilled({q.x - 2.5f, q.y - 2.5f}, {q.x + 2.5f, q.y + 2.5f}, col);
+    };
+    loop(outer_, true);
+    for (const auto& h : holes_) loop(h, true);
+    loop(current_, false);
+    if (!current_.empty() && cursor_.ok && cursor_.view == view) {
+        ImVec2 a, b;
+        if (screen(g, current_.back(), a) && screen(g, cursor_.p, b))
+            dl->AddLine(a, b, cursor_.axis >= 0 ? kAxisCol[cursor_.axis] : col, 2.0f);
+        // About to close: the first point lights up.
+        if (current_.size() >= 3 && length(cursor_.p - current_.front()) < 1e-6 && screen(g, current_.front(), a))
+            dl->AddCircle(a, 7, kSnapCol[(int)Snap::Point], 0, 2.0f);
+    }
 }
 
 } // namespace mazz

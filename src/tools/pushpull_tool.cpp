@@ -1,4 +1,5 @@
 #include "tools/pushpull_tool.hpp"
+#include "core/draw_ops.hpp"
 #include "core/model_ops.hpp"
 #include "core/numbers.hpp"
 #include "core/select_ops.hpp"
@@ -50,7 +51,7 @@ const char* PushPullTool::hint() const {
     return "drag: distance  Return: apply  Esc: cancel  pushing something else applies this one first";
 }
 
-int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy) {
+int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy, const std::set<int>* prefer) {
     if (g.is3D()) {
         const std::vector<int> hits = facesAt(m, g, sx, sy);
         return hits.empty() ? -1 : hits.front();
@@ -74,7 +75,13 @@ int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy)
             nearest = std::max(nearest, -dot(m.verts[f.v[k]], rd));
         }
         if (d > kEdgeOnPx) continue;
-        if (d < bestDist - 0.5 || (std::fabs(d - bestDist) <= 0.5 && nearest > bestNear)) {
+        // Faces lying on the same line (a drawn shape and the face round it): the
+        // selected one wins (a shape just drawn is selected), then the nearest.
+        const bool sameDist = std::fabs(d - bestDist) <= 0.5;
+        const bool mine = prefer && prefer->count(fi), theirs = best >= 0 && prefer && prefer->count(best);
+        const bool better = d < bestDist - 0.5 || (sameDist && mine && !theirs) ||
+                            (sameDist && mine == theirs && nearest > bestNear + 1e-6);
+        if (better) {
             best = fi;
             bestDist = d;
             bestNear = nearest;
@@ -83,7 +90,8 @@ int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy)
     return best;
 }
 
-PushPullTool::Target PushPullTool::targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode) {
+PushPullTool::Target PushPullTool::targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode,
+                                            const std::set<int>* prefer) {
     Target t;
     Vec3 ro, rd;
     g.ray(sx, sy, ro, rd);
@@ -112,7 +120,7 @@ PushPullTool::Target PushPullTool::targetAt(const Mesh& m, const ViewGeom& g, do
         if (frame(m, c, o, n) && std::fabs(dot(n, rd)) < 0.9) return c;
         return t;
     }
-    t.face = faceAt(m, g, sx, sy);
+    t.face = faceAt(m, g, sx, sy, prefer);
     return t;
 }
 
@@ -167,6 +175,9 @@ void PushPullTool::begin(ToolEnv& env, const Target& t, bool forceNew) {
     distance_ = 0;
     valid_ = true;
     kind_ = t.face >= 0 ? (int)pushKind(doc.mesh, region_, forceNew) : 0;
+    // Pushed in this far, it reaches the other side: a hole (v0.2.3).
+    throughAt_ = t.face >= 0 ? throughDistance(doc.mesh, region_) : 0;
+    through_ = false;
     doc.beginLive();
 }
 
@@ -178,6 +189,18 @@ void PushPullTool::refresh(ToolEnv& env) {
     valid_ = true;
     moved_ = target_.face;
     movedRegion_ = region_;
+    through_ = false;
+    // All the way to the other side (or past it): a hole; it stops there.
+    if (target_.face >= 0 && throughAt_ > 0 && distance_ <= -throughAt_ + 1e-9) {
+        distance_ = clean(-throughAt_);
+        valid_ = pushThrough(e, region_);
+        through_ = valid_;
+        movedRegion_.clear();
+        moved_ = -1;
+        if (!valid_) e.revert();
+        env.touch();
+        return;
+    }
     if (distance_ != 0) {
         if (target_.face >= 0) {
             std::set<int> moved;
@@ -206,7 +229,7 @@ void PushPullTool::press(ToolEnv& env, const Pointer& p) {
     Document& doc = env.doc;
     const SelectMode mode = doc.sel.mode;
     if (state_ == State::Pending) {
-        const Target at = targetAt(doc.mesh, p.g, p.sx, p.sy, mode);
+        const Target at = targetAt(doc.mesh, p.g, p.sx, p.sy, mode, &doc.sel.faces);
         if (!at.valid()) return;
         // What is being pushed: carry on with this push (edges and points keep their
         // indices; a face may have moved to a new one).
@@ -221,7 +244,7 @@ void PushPullTool::press(ToolEnv& env, const Pointer& p) {
         // Something else: the pending push goes in first.
         if (!apply(env)) cancel(env);
     }
-    const Target t = targetAt(doc.mesh, p.g, p.sx, p.sy, mode);
+    const Target t = targetAt(doc.mesh, p.g, p.sx, p.sy, mode, &doc.sel.faces);
     if (!t.valid()) return;
     Vec3 o, n;
     double tp;
@@ -258,7 +281,7 @@ void PushPullTool::release(ToolEnv& env, const Pointer&) {
 }
 
 void PushPullTool::hover(ToolEnv& env, const Pointer& p) {
-    const Target at = targetAt(env.doc.mesh, p.g, p.sx, p.sy, env.doc.sel.mode);
+    const Target at = targetAt(env.doc.mesh, p.g, p.sx, p.sy, env.doc.sel.mode, &env.doc.sel.faces);
     if (!(at == hover_) || p.view != hoverView_) {
         hover_ = at;
         hoverView_ = p.view;
@@ -347,7 +370,16 @@ void PushPullTool::properties(ToolEnv& env) {
         apply(env);
     static const char* what[] = {"The faces around it stretch.", "New side faces.",
                                  "A flat shape: it becomes a solid."};
-    if (target_.face >= 0) dimWrapped(what[std::clamp(kind_, 0, 2)]);
+    if (through_) {
+        ImGui::TextWrapped("Through to the other side: a hole.");
+    } else if (target_.face >= 0) {
+        dimWrapped(what[std::clamp(kind_, 0, 2)]);
+        if (throughAt_ > 0) {
+            char buf[96];
+            std::snprintf(buf, sizeof buf, "Pushed in %g cm it goes through: a hole.", throughAt_);
+            dimWrapped(buf);
+        }
+    }
     else dimWrapped(target_.edge ? "The edge moves along the normal; the faces around tilt." : "The point moves along the normal; the faces around tilt.");
     if (!valid_) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.2f, 0.2f, 1));

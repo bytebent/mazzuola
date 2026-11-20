@@ -14,8 +14,10 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   alpha 1 = milestone 1: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges,
   faces", v0.1.3 "Typed values", v0.1.4 "Out of the app"; alpha 2 = milestone 2:
   v0.2.0 "Push and pull", v0.2.1 "Edges and points" (confirmed good), v0.2.2 "Draw on
-  faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool).
-- **Next:** building v0.2.3 "Outlines and holes" (agreed 2026-11-20).
+  faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool),
+  v0.2.3 "Outlines and holes".
+- **Released v0.2.3 "Outlines and holes".** Next: the user tries it; then v0.2.4 "Cut
+  and divide" is planned with them click by click.
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.

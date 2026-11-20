@@ -4,6 +4,33 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.3 "Outlines and holes"
+- **Holes:** `throughDistance` (a drawn shape whose outline edges are all shared with
+  faces in its plane or at right angles; the nearest parallel face facing the other
+  way whose surface holds the projected outline) and `pushThrough` (the outline cut
+  into the far surface, walls for edges inside the face, and for edges on its border,
+  e.g. a doorway's sill, `openSide` takes the strip out of the face at right angles).
+  Push/pull stops at that distance and makes the hole ("Through to the other side").
+- **Outlines:** `makeOutline` (outline and holes: checked for crossings, holes joined by
+  bridges, split into 3- and 4-corner faces facing the viewer; double-sided option).
+  Draw's fourth choice, 2D views only: clicks on the view's plane through the origin,
+  grid / point snapping, axis lock, first point closes, outlines inside are holes.
+- **Surfaces (found while testing in the app):** after one cut a face is several
+  pieces, and a new shape had to fit inside one piece (a doorway next to a window was
+  refused). `cutShape` now works on the flat, joined group of faces (`surfaceOf`: its
+  outline and holes): a shape inside becomes a hole of the surface filled by its own
+  faces (rebuilt with bridges); a line or a shape touching the outline splits the
+  surface, holes going with the side they lie in. Also found in the app: rectangles
+  took the clicked piece's first edge as their direction (skewed on a cut wall); now
+  world X (or Y) on faces along an axis, else the face's longest edge. And Push/pull in
+  2D picked the tallest piece on a line; now the selected (just drawn) shape wins.
+- Tests: core 1027 checks (window, circle through a slab, doorway, corner doorway,
+  300 random shapes pushed through a wall, one wall with many holes one after another,
+  outlines with 0-2 holes, refusals, 300 random outlines with holes; the earlier 900
+  random cuts). New UI script `a2_holes` (window, doorway, outline with a hole pulled
+  up). Fifteen scripts at 1×, 2× and without anti-aliasing; idle 0 ticks.
+- Screenshot `m2-08-holes.png`. Version 0.2.3, README, Help → Controls, DEV, notes.
+
 ### 2026-11-20 — v0.2.3 agreed
 - Repo re-checked after the audit merge (build folders gone, release rule, export pair,
   view fallback, hashes); reported to the user. v0.2.3 proposal (holes by pushing

@@ -40,9 +40,11 @@ public:
         bool operator==(const Target& o) const { return face == o.face && verts == o.verts; }
     };
     // The face a push would start on at this point (-1: none).
-    static int faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy);
+    // In 2D, of faces lying on the same line, one in `prefer` (the selection) wins.
+    static int faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy, const std::set<int>* prefer = nullptr);
     // What a push would start on here for the selection mode (edges, points, else faces).
-    static Target targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode);
+    static Target targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode,
+                           const std::set<int>* prefer = nullptr);
     // Applies the pending push (Return). False if there is none or it isn't possible.
     bool apply(ToolEnv& env);
     // Scripts and the typed field: the pending push's distance.
@@ -59,6 +61,8 @@ private:
     std::set<int> region_, movedRegion_; // the faces pushed together, before / in the preview
     bool forceNew_ = false;
     int kind_ = 0;         // PushKind at the start (face mode)
+    double throughAt_ = 0; // pushed in this far it goes through (0: it can't)
+    bool through_ = false; // the preview is a hole
     Vec3 origin_, normal_; // centre and normal before the push
     double distance_ = 0;
     double startDistance_ = 0, startT_ = 0; // at the press

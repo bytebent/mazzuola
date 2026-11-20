@@ -17,7 +17,7 @@ namespace mazz {
 
 class DrawTool : public Tool {
 public:
-    enum class Shape { Rectangle, Circle, Line };
+    enum class Shape { Rectangle, Circle, Line, Outline };
     enum class Snap { None, Grid, Point, Midpoint, Edge, Centre };
 
     const char* name() const override { return "Draw"; }
@@ -42,10 +42,12 @@ public:
     bool drawing() const { return phase_ != Phase::Idle; }
     bool fits() const { return fits_; }
     Snap lastSnap() const { return cursor_.snap; }
+    void setTwoSided(bool b) { twoSided_ = b; }
+    int outlineLoops() const { return (int)holes_.size() + (outer_.empty() ? 0 : 1); }
     int lastAxis() const { return cursor_.axis; }
 
 private:
-    enum class Phase { Idle, Placing, Adjust, Line };
+    enum class Phase { Idle, Placing, Adjust, Line, Outline };
     struct Cursor {
         bool ok = false;
         Vec3 p;
@@ -73,9 +75,23 @@ private:
     int lockAxis_ = -1;       // Shift held: this direction stays
 
     Cursor snapAt(const ToolEnv& env, const ViewGeom& g, double sx, double sy, bool shift) const;
+
+    // Outline (v0.2.3): drawn on the 2D view's plane through the origin, facing you.
+    std::vector<Vec3> current_;           // the loop being clicked
+    std::vector<Vec3> outer_;             // closed outline
+    std::vector<std::vector<Vec3>> holes_; // closed holes
+    Vec3 planeN_;                         // towards the viewer
+    bool twoSided_ = false;
+    bool closes_ = false;                 // the cursor is on the loop's first point
+    Cursor snapOutline(const ToolEnv& env, const ViewGeom& g, double sx, double sy, bool shift) const;
+    void pressOutline(ToolEnv& env, const Pointer& p);
+    void checkOutline(ToolEnv& env);
+    bool applyOutline(ToolEnv& env);
+    void drawOutline(const ViewGeom& g, int view, ImDrawList* dl) const;
     std::vector<Vec3> points() const;      // the shape so far (with the cursor while placing)
     void check(ToolEnv& env);              // fits_ / why_ from a trial cut
     void reset(ToolEnv& env);
+    void alignFrame(const Mesh& m, int face); // u_ along X (or Y) on faces along an axis
 };
 
 } // namespace mazz

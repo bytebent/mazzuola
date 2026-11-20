@@ -8,11 +8,12 @@ Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](doc
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
 **Status:** alpha 2 (milestone 2, modelling) has started. v0.2.0 "Push and pull" and
-v0.2.1 "Edges and points" and v0.2.2 "Draw on faces": push/pull (faces, edges, points),
-extrude, inset, drawing rectangles, circles and lines on faces, on top of alpha 1 (all primitive shapes and rocks;
+v0.2.1 "Edges and points", v0.2.2 "Draw on faces" and v0.2.3 "Outlines and holes":
+push/pull (faces, edges, points; through a shape: a hole), extrude, inset, drawing
+rectangles, circles, lines and outlines with holes, on top of alpha 1 (all primitive shapes and rocks;
 selecting pieces, faces, edges and points; moving, copying, resizing, turning, typed
 values, mirror, flatten; undo, save and open `.mazz`; export `.glb`, `.gltf`, `.obj`;
-reference images; a 175 cm scale figure). Next: v0.2.3 "Outlines and holes".
+reference images; a 175 cm scale figure). Next: v0.2.4 "Cut and divide".
 
 ## Download
 
@@ -31,7 +32,7 @@ including the planned ones with the milestone that brings them.
 | Export again (same file and format) | **Cmd+Shift+E** |
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
 | Tools (also the buttons on the left) | Select **Shift+S**, Vertex **Shift+V**, Primitives **Shift+B**, Push/pull **Shift+F**, Extrude **Shift+E**, Inset **Shift+I**, Draw **Shift+D** |
-| Draw | on a face (3D view: any face; 2D views: faces facing you). Rectangle: click a corner, click (or drag to) the opposite corner, then type the width / height or drag a corner. Circle: click the centre, click the radius; segments in Properties (8). Line: click, click, ... from one edge of the face to another, **Return** to finish, **Backspace** takes a point back. **Return** cuts it in (the shape is selected), **Esc** cancels; red when it doesn't fit. Snaps: green a point, cyan a midpoint, red an edge, blue the centre; a line piece close to X / Y / Z clicks onto it (axis colour), **Shift** keeps that direction. Push/pull on a drawn shape pushes all of it |
+| Draw | on a face (3D view: any face; 2D views: faces facing you). Rectangle: click a corner, click (or drag to) the opposite corner, then type the width / height or drag a corner. Circle: click the centre, click the radius; segments in Properties (8). Line: click, click, ... from one edge of the face to another, **Return** to finish, **Backspace** takes a point back. Outline (2D views): click points, click the first one to close; outlines clicked inside become holes; **Return** makes the flat shape (Double-sided option). **Return** cuts it in (the shape is selected), **Esc** cancels; red when it doesn't fit. Snaps: green a point, cyan a midpoint, red an edge, blue the centre; a line piece close to X / Y / Z clicks onto it (axis colour), **Shift** keeps that direction. Push/pull on a drawn shape pushes all of it; pushed in until it reaches the other side, it makes a hole (window, doorway) |
 | Push/pull | edge / point mode: drag an edge or a point along the surface's normal (the faces around tilt). Face mode: drag a face along its normal (3D view: any face; 2D views: a face seen edge-on); grid steps, or type the distance in Properties; **Return** applies, **Esc** cancels; the sides of a box stretch, otherwise new side faces (**Cmd**+drag: always new faces); a flat shape becomes a solid; pressing another face applies the pending push first |
 | Extrude | select faces (or open edges in edge mode); a live preview: drag its arrow or type the distance; Region / Each face, Along normals / Straight X Y Z, Keep original; **Return** applies and selects the new faces |
 | Inset | select faces; type the width and an optional depth (straight walls, flat frame); Region / Each face; red when too wide; **Return** applies and selects the inner faces (click faces to inset again) |
