@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -182,6 +183,13 @@ void Editor::stepScript() {
             if (path.empty()) scriptFail(cmd + " needs a path");
             else if (cmd == "saveas") savePath(path);
             else openPath(path);
+        } else if (cmd == "export") {
+            // export <file>: as File -> Export with that file (format from its extension).
+            std::string path;
+            std::getline(in >> std::ws, path);
+            ExportFormat f;
+            if (path.empty() || !exportFormatFromPath(path, f)) scriptFail("export needs a .glb, .gltf or .obj path");
+            else exportPath(path, f);
         } else if (cmd == "prim") {
             // prim <shape>: the Primitives tool with that shape (as the Create menu does).
             std::string name;
@@ -372,6 +380,26 @@ void Editor::stepScript() {
                 std::string t;
                 std::getline(in >> std::ws, t);
                 if (title_ != t) scriptFail("title is \"" + title_ + "\"");
+            } else if (what == "file") {
+                // expect file <path> <0|1>: the file exists or not.
+                std::string path;
+                int want = 1;
+                in >> path >> want;
+                if ((int)std::filesystem::exists(path) != want)
+                    scriptFail(path + (want ? " does not exist" : " exists"));
+            } else if (what == "figure") {
+                int want = 0;
+                in >> want;
+                if ((int)showFigure_ != want) scriptFail(std::string("scale figure is ") + (showFigure_ ? "on" : "off"));
+            } else if (what == "filehas") {
+                // expect filehas <path> <text>: the file contains that text somewhere.
+                std::string path, want;
+                in >> path;
+                std::getline(in >> std::ws, want);
+                std::ifstream f(path, std::ios::binary);
+                std::ostringstream all;
+                all << f.rdbuf();
+                if (all.str().find(want) == std::string::npos) scriptFail(path + " does not contain \"" + want + "\"");
             } else if (what == "fileline") {
                 // expect fileline <path> <exact line>: the file contains that line.
                 std::string path, want;

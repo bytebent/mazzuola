@@ -13,6 +13,10 @@ const ActionInfo kActions[] = {
     {Act::Open, "file.open", "Open...", "Cmd+O", 0},
     {Act::Save, "file.save", "Save", "Cmd+S", 0},
     {Act::SaveAs, "file.saveas", "Save as...", "Cmd+Shift+S", 0},
+    {Act::ExportGlb, "file.exportglb", "glTF binary (.glb)...", "", 0},
+    {Act::ExportGltf, "file.exportgltf", "glTF (.gltf + .bin)...", "", 0},
+    {Act::ExportObj, "file.exportobj", "Wavefront (.obj + .mtl)...", "", 0},
+    {Act::ExportAgain, "file.exportagain", "Export again", "Cmd+Shift+E", 0},
     {Act::Quit, "file.quit", "Quit", "Cmd+Q", 0},
 
     {Act::Undo, "edit.undo", "Undo", "Cmd+Z", 0},
@@ -75,6 +79,7 @@ const ActionInfo kActions[] = {
     {Act::MaximiseView, "view.maximise", "Maximise view under the cursor", "", 0},
     {Act::ResetLayout, "view.resetlayout", "Reset layout", "", 0},
     {Act::PaintWindow, "view.paintwindow", "Paint window", "", 0},
+    {Act::ScaleFigure, "view.scalefigure", "Scale figure", "", 0},
 
     {Act::Controls, "help.controls", "Controls", "F1", 0},
     {Act::About, "help.about", "About Mazzuola", "", 0},

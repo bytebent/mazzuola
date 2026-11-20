@@ -4,6 +4,7 @@
 #include "core/document.hpp"
 #include "core/grid.hpp"
 #include "core/ops.hpp"
+#include "io/export.hpp"
 #include "render/view_draw.hpp"
 #include "tools/prim_tool.hpp"
 #include "tools/select_tool.hpp"
@@ -97,6 +98,8 @@ private:
     void fileSave(bool saveAs);
     bool openPath(const std::string& path);
     bool savePath(const std::string& path);
+    void fileExport(ExportFormat f);                        // asks where, then exports
+    bool exportPath(const std::string& path, ExportFormat f); // exports there (no questions)
     void whenSaved(std::function<void()> then); // asks "save changes?" first if needed
     void askPath(const std::string& title, bool saving, const std::string& start,
                  std::function<void(const std::string&)> done);
@@ -138,6 +141,12 @@ private:
     Document doc_;
     std::string path_;  // the open model's file ("" = never saved)
     double texel_ = 0.5; // texture pixels per cm, kept from the file (milestone 5)
+    // The last export of this model (Export again, Cmd+Shift+E); forgotten on New / Open.
+    std::string exportPath_;
+    ExportFormat exportFormat_ = ExportFormat::Glb;
+    std::string exportNote_;    // "Exported to lamp.glb" in the status bar...
+    long exportNoteMesh_ = -1;  // ...until the model changes
+    bool showFigure_ = false;   // View -> Scale figure (not saved)
     SelectTool selectTool_;
     VertexTool vertexTool_;
     PrimTool primTool_;

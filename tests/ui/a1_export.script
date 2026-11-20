@@ -1,0 +1,65 @@
+# Alpha 1, v0.1.4: export (ARCHITECTURE §7 "Alpha 1 export"). Z-up cm in the model,
+# Y-up metres in the files: (x, y, z) cm -> (x, z, -y) / 100.
+# Nothing to export in an empty model: Export again asks nothing and writes nothing.
+action file.exportagain
+wait 2
+expect file model.glb 0
+addbox 0 0 0 100 50 62.5
+expect faces 6
+
+# ---- File -> Export as .obj (here: a typed path, no native dialog on Linux)
+action file.exportobj
+wait 2
+type box.obj
+uikey Enter
+wait 2
+expect file box.obj 1
+expect file box.mtl 1
+expect fileline box.obj v 1 0.625 -0.5
+expect fileline box.obj mtllib box.mtl
+expect fileline box.mtl newmtl grey
+
+# ---- Export again (Cmd+Shift+E) goes to the same file, same format, no questions
+addbox 200 0 0 300 100 100
+key Cmd+Shift+E
+wait 2
+expect fileline box.obj v 3 1 -1
+expect op none
+
+# ---- .glb and .gltf (+ .bin); the extension follows the format
+export lamp.glb
+expect file lamp.glb 1
+action file.exportgltf
+wait 2
+type lamp
+uikey Enter
+wait 2
+expect file lamp.gltf 1
+expect file lamp.bin 1
+expect filehas lamp.gltf "generator": "Mazzuola 0.1.4"
+# Export again now repeats the .gltf
+key Cmd+Shift+E
+wait 2
+expect file lamp.gltf 1
+
+# ---- New forgets the last export; a saved model's name is suggested
+action file.new
+wait 2
+addbox 0 0 0 40 40 90
+saveas chair.mazz
+action file.exportglb
+wait 2
+uikey Enter
+wait 2
+expect file chair.glb 1
+action file.new
+wait 2
+addbox 0 0 0 10 10 10
+action file.exportagain
+wait 2
+type small.glb
+uikey Enter
+wait 2
+expect file small.glb 1
+shot a1-export.png
+quit

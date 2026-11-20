@@ -107,6 +107,10 @@ bool Editor::enabled(Act a) const {
     case Act::SelectShrink: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
     case Act::SelectLoop:
     case Act::SelectRing: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
+    case Act::ExportGlb:
+    case Act::ExportGltf:
+    case Act::ExportObj:
+    case Act::ExportAgain: return !doc_.mesh.faces.empty();
     case Act::Undo: return doc_.canUndo();
     case Act::Redo: return doc_.canRedo();
     default: return true;
@@ -121,6 +125,13 @@ void Editor::run(Act a) {
     case Act::Open: fileOpen(); break;
     case Act::Save: fileSave(false); break;
     case Act::SaveAs: fileSave(true); break;
+    case Act::ExportGlb: fileExport(ExportFormat::Glb); break;
+    case Act::ExportGltf: fileExport(ExportFormat::Gltf); break;
+    case Act::ExportObj: fileExport(ExportFormat::Obj); break;
+    case Act::ExportAgain:
+        if (exportPath_.empty()) fileExport(exportFormat_);
+        else exportPath(exportPath_, exportFormat_);
+        break;
     case Act::Undo: cancelTool(); if (doc_.undo()) touch(); break;
     case Act::Redo: cancelTool(); if (doc_.redo()) touch(); break;
     case Act::Delete: {
@@ -280,6 +291,7 @@ void Editor::run(Act a) {
         markViewsDirty();
         break;
     case Act::PaintWindow: paintWanted_ = !paintWanted_; break;
+    case Act::ScaleFigure: showFigure_ = !showFigure_; markViewsDirty(); break;
     case Act::Controls: controlsOpen_ = !controlsOpen_; break;
     case Act::About: aboutOpen_ = true; break;
     default: break;
@@ -459,8 +471,13 @@ void Editor::menuBar() {
         ImGui::Separator();
         menuItem(Act::Save);
         menuItem(Act::SaveAs);
-        if (ImGui::BeginMenu("Export", false)) ImGui::EndMenu();
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Coming in milestone 1");
+        if (ImGui::BeginMenu("Export", !doc_.mesh.faces.empty())) {
+            menuItem(Act::ExportGlb);
+            menuItem(Act::ExportGltf);
+            menuItem(Act::ExportObj);
+            ImGui::EndMenu();
+        }
+        menuItem(Act::ExportAgain);
         ImGui::Separator();
         menuItem(Act::Quit);
         ImGui::EndMenu();
@@ -569,6 +586,7 @@ void Editor::menuBar() {
         menuItem(Act::MaximiseView, layout_.maximised >= 0);
         menuItem(Act::ResetLayout);
         menuItem(Act::PaintWindow, paintWanted_);
+        menuItem(Act::ScaleFigure, showFigure_);
         ImGui::Separator();
         menuItem(Act::GridSmaller);
         menuItem(Act::GridLarger);
@@ -604,6 +622,8 @@ void Editor::statusBar() {
             ImGui::TextUnformatted(tool_->name());
             ImGui::TextDisabled("|");
             const char* hintText = flying_ ? "flying: WASD move, Q/E down/up, Shift fast, Z or Esc stops" : tool_->hint();
+            // Right after an export, until the model changes: where it went.
+            if (!flying_ && !exportNote_.empty() && exportNoteMesh_ == doc_.meshVersion()) hintText = exportNote_.c_str();
             const float hintX = ImGui::GetCursorScreenPos().x;
             const float hintY = ImGui::GetCursorScreenPos().y;
             std::string right;

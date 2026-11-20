@@ -9,7 +9,7 @@ namespace mazz {
 
 enum class Act {
     // File
-    New, Open, Save, SaveAs, Quit,
+    New, Open, Save, SaveAs, ExportGlb, ExportGltf, ExportObj, ExportAgain, Quit,
     // Edit
     Undo, Redo, Duplicate, Delete, SelectAll, SelectNone,
     // Select
@@ -25,6 +25,7 @@ enum class Act {
     // View
     GridSmaller, GridLarger, GridSet, ToggleGrid, ToggleSnap, FlyMode, OrbitOrigin,
     OrbitSelection, FrameSelection, BackToOrigin, MaximiseView, ResetLayout, PaintWindow,
+    ScaleFigure,
     // Help
     Controls, About,
     Count

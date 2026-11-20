@@ -1,6 +1,7 @@
 // New / open / save, the "save changes?" question, the typed-path dialog used where
 // native file dialogs aren't available (Linux), and the window title.
 #include "app/editor.hpp"
+#include "io/export.hpp"
 #include "io/mazz_file.hpp"
 #include "platform/file_dialog.hpp"
 #include <GLFW/glfw3.h>
@@ -8,6 +9,10 @@
 #include <cctype>
 #include <cstring>
 #include <filesystem>
+
+#ifndef MAZZ_VERSION
+#define MAZZ_VERSION "dev"
+#endif
 
 namespace fs = std::filesystem;
 
@@ -47,6 +52,8 @@ void Editor::fileNew() {
         cancelTool();
         doc_.reset();
         path_.clear();
+        exportPath_.clear();
+        exportNote_.clear();
         texel_ = 0.5;
         touch();
     });
@@ -63,6 +70,8 @@ bool Editor::openPath(const std::string& path) {
     doc_.reset(std::move(m.mesh));
     texel_ = m.texel;
     path_ = path;
+    exportPath_.clear();
+    exportNote_.clear();
     touch();
     return true;
 }
@@ -116,6 +125,46 @@ void Editor::fileSave(bool saveAs) {
     }
     askPath("Save model as", true, start.empty() ? name : (fs::path(start) / name).string(),
             [this, finish](const std::string& p) { finish(savePath(p)); });
+}
+
+// ---------------------------------------------------------------- export
+
+bool Editor::exportPath(const std::string& pathIn, ExportFormat f) {
+    // The format decides the extension: "lamp" or "lamp.mazz" become "lamp.glb".
+    std::string path = pathIn;
+    ExportFormat had;
+    if (!exportFormatFromPath(path, had) || had != f) path = fs::path(path).replace_extension(exportExtension(f)).string();
+    std::string err;
+    if (!exportModel(path, f, doc_.mesh, std::string("Mazzuola ") + MAZZ_VERSION, err)) {
+        showMessage("Could not export the model", fs::path(path).filename().string() + "\n\n" + err);
+        return false;
+    }
+    exportPath_ = path;
+    exportFormat_ = f;
+    exportNote_ = "Exported to " + fs::path(path).filename().string() + "  (Cmd+Shift+E exports again)";
+#if !defined(__APPLE__)
+    for (size_t p = exportNote_.find("Cmd"); p != std::string::npos; p = exportNote_.find("Cmd", p)) exportNote_.replace(p, 3, "Ctrl");
+#endif
+    exportNoteMesh_ = doc_.meshVersion();
+    return true;
+}
+
+void Editor::fileExport(ExportFormat f) {
+    // Starts where the last export went, else next to the model; named after the model.
+    const std::string ext = exportExtension(f);
+    std::string start, name = "model." + ext;
+    if (!exportPath_.empty()) start = fs::path(exportPath_).parent_path().string();
+    else if (!path_.empty()) start = fs::path(path_).parent_path().string();
+    if (!exportPath_.empty()) name = fs::path(exportPath_).stem().string() + "." + ext;
+    else if (!path_.empty()) name = fs::path(path_).stem().string() + "." + ext;
+    if (nativeDialogsAvailable()) {
+        std::string path;
+        if (saveFileDialog(start, name, {ext}, path)) exportPath(path, f);
+        return;
+    }
+    askPath(std::string("Export as ") + exportFormatName(f), true,
+            start.empty() ? name : (fs::path(start) / name).string(),
+            [this, f](const std::string& p) { exportPath(p, f); });
 }
 
 // ---------------------------------------------------------------- questions
