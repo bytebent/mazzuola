@@ -32,6 +32,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   **Released: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges, faces",
   v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).** The user tries
   v0.1.4; then milestone 2 is planned with them, click by click, before any code.
+- **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open
+  (they belong to the views); Export again is remembered only while the model is open.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
@@ -61,10 +63,6 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 
 ## Open questions (parked)
 
-- **Reference images on New / Open**: they stay (they belong to the views, not the
-  model). Ask the user whether a new or opened model should start without them.
-- **Export again across sessions**: the last export is remembered only while the model
-  stays open (not saved in the `.mazz`). Enough?
 
 
 

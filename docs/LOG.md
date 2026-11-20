@@ -4,6 +4,11 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.4 choices confirmed; milestone 2 planning starts
+- User: both v0.1.4 choices are fine (reference images stay on New / Open; Export again
+  only while the model is open). Parked questions removed from PLAN. Planning of
+  milestone 2 begins (proposal sent: releases and the first release click by click).
+
 ### 2026-11-20 — v0.1.4 "Out of the app" (steps A–E)
 - `io/export`: `.glb`, `.gltf` + `.bin`, `.obj` + `.mtl` through cgltf 1.15 (vendored in
   `third_party/cgltf`, the version Scalpellino uses). Z-up cm → Y-up m as
