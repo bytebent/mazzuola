@@ -79,6 +79,17 @@ expect dirty <0|1> | undo <steps> | faces <n> | verts <n> | selected <n>
 expect title <text>                 window title
 expect tool <Select|Primitives>     the active tool
 expect fileline <file> <line>       the file contains exactly that line
+expect filehas <file> <text>        the file contains that text somewhere
+expect file <file> <0|1>            the file exists or not
+export <file.glb|.gltf|.obj>        File -> Export to that file (format from the extension)
+testimage <file.png> <w> <h>        test helper: write a checkerboard PNG (top-left square red)
+refload <view> <file>               load a reference image into that view's direction (opens its window)
+refset <view> width|rot|transparency|front|centre <values>   as typed in the image window
+refwindow <view>|off                open / close the image's window
+refremove <view>                    remove that direction's image
+expect refimage <view> <0|1>        the view shows a reference image
+expect ref <view> <cu> <cv> <width> <rot>   where its image is (plane coords, ±0.01)
+expect figure <0|1>                 View -> Scale figure is on
 saveas <file> | open <file>         save / open without dialogs (relative to the temp folder)
 addbox <x0 y0 z0 x1 y1 z1>          test helper: add a box as one undo step, selected
 vworld <view> <x> <y> <z>           mouse over a world point as that view shows it

@@ -35,7 +35,9 @@ add_library(mazz_core STATIC
   src/core/primitives.cpp
   src/core/rock.cpp
   src/core/select_ops.cpp
-  src/core/ops.cpp)
+  src/core/ops.cpp
+  src/core/figure.cpp
+  src/core/ref_image.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -73,6 +75,8 @@ if(MAZZ_BUILD_APP)
     src/render/view_target.cpp
     src/render/view_draw.cpp
     src/render/model_draw.cpp
+    src/render/image_draw.cpp
+    src/app/ref_images.cpp
     src/ui/actions.cpp
     src/ui/theme.cpp
     src/ui/views_panel.cpp

@@ -1,4 +1,5 @@
 #include "render/view_draw.hpp"
+#include "core/figure.hpp"
 #include "core/grid_lines.hpp"
 #include "render/gl.hpp"
 #include <algorithm>
@@ -23,6 +24,7 @@ void View::setDir(ViewDir d) {
 ViewDrawer::~ViewDrawer() {
     delete renderer_;
     delete model_;
+    delete images_;
 }
 
 ModelRenderer& ViewDrawer::model() {
@@ -86,7 +88,38 @@ void ViewDrawer::build3D(const View& v, const Grid& grid) {
     batch_.line({0, 0, 0}, {0, 0, zLen}, viewcol::kAxis[2], withAlpha(viewcol::kAxis[2], 0.2));
 }
 
-void ViewDrawer::draw(View& v, const Grid& grid, double w, double h, double pxScale) {
+void ViewDrawer::buildFigure(const ViewExtras& x, bool fill) {
+    figure_.clear();
+    if (!x.figure) return;
+    for (const auto& b : figureBoxes(x.figureAt)) {
+        const Vec3& a = b.first;
+        const Vec3& c = b.second;
+        Vec3 p[8];
+        for (int i = 0; i < 8; ++i) p[i] = {(i & 1) ? c.x : a.x, (i & 2) ? c.y : a.y, (i & 4) ? c.z : a.z};
+        static const int kEdges[12][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {0, 2}, {1, 3},
+                                          {4, 6}, {5, 7}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+        for (const auto& e : kEdges) figure_.line(p[e[0]], p[e[1]], viewcol::kFigure);
+        if (!fill) continue;
+        static const int kQuads[6][4] = {{0, 2, 3, 1}, {4, 5, 7, 6}, {0, 1, 5, 4},
+                                         {2, 6, 7, 3}, {0, 4, 6, 2}, {1, 3, 7, 5}};
+        for (const auto& q : kQuads) {
+            figure_.tri(p[q[0]], p[q[1]], p[q[2]], viewcol::kFigureFill);
+            figure_.tri(p[q[0]], p[q[2]], p[q[3]], viewcol::kFigureFill);
+        }
+    }
+}
+
+void ViewDrawer::drawRef(const View& v, const ViewExtras& x, const Mat4& viewProj) {
+    if (!x.refTex || v.is3D()) return;
+    if (!images_) images_ = new ImageRenderer();
+    double u[4], vv[4];
+    x.ref.corners(u, vv);
+    Vec3 c[4];
+    for (int k = 0; k < 4; ++k) c[k] = v.ortho.planeToWorld(u[k], vv[k]);
+    images_->draw(x.refTex, c, (float)x.ref.alpha, viewProj);
+}
+
+void ViewDrawer::draw(View& v, const Grid& grid, double w, double h, double pxScale, const ViewExtras& extras) {
     const int pw = std::max(1, (int)std::lround(w * pxScale));
     const int ph = std::max(1, (int)std::lround(h * pxScale));
     const bool resized = v.target.resize(pw, ph);
@@ -104,14 +137,21 @@ void ViewDrawer::draw(View& v, const Grid& grid, double w, double h, double pxSc
         build2D(v, grid, w, h);
         viewProj = v.ortho.projection(w, h) * v.ortho.view();
     }
+    buildFigure(extras, v.is3D());
     v.target.begin(bg.r / 255.f, bg.g / 255.f, bg.b / 255.f);
     renderer_->draw(batch_, viewProj, v.is3D());
     if (v.is3D()) {
         // A light over the viewer's shoulder, so faces facing the camera are brightest.
         const Camera3D& c = v.cam3d;
         model().draw3D(viewProj, c.forward() * -1.0 + c.up() * 0.6 + c.right() * 0.3);
+        // The figure after the model: see-through, hidden where the model is in front.
+        renderer_->draw(figure_, viewProj, true, false);
     } else {
+        // Reference image behind or in front of the model; the figure on top (outlines).
+        if (!extras.ref.front) drawRef(v, extras, viewProj);
         model().draw2D(viewProj);
+        if (extras.ref.front) drawRef(v, extras, viewProj);
+        renderer_->draw(figure_, viewProj, false);
     }
     v.target.end();
 }

@@ -1,0 +1,99 @@
+# Alpha 1, v0.1.4: reference images and the scale figure (ARCHITECTURE §5).
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up), 3 Right. Grid 8, snap on.
+vworld 1 0 0 0
+wheel -12
+wait 2
+addbox 0 0 0 64 48 32
+expect selected 6
+testimage pic.png 200 100
+
+# ---- Load into the Top view: only views facing down show it, never the 3D view
+refload 1 pic.png
+expect refimage 1 1
+expect refimage 0 0
+expect refimage 2 0
+expect refimage 3 0
+# Typed values (as in its window)
+refset 1 width 200
+refset 1 centre 0 0
+expect ref 1 0 0 200 0
+
+# ---- While its window is open, the left mouse moves and resizes the image, not the model
+vworld 1 0 0 0
+wait 2
+press left
+wait 1
+vworld 1 20 12 0
+wait 1
+vworld 1 40 24 0
+wait 1
+release left
+wait 1
+expect ref 1 40 24 200 0
+expect selected 6
+expect bounds 0 0 0 64 48 32
+# A corner: the opposite one stays, proportions kept, width in grid steps
+# (top-right from (140, 74) to (340, 174))
+vworld 1 140 74 0
+wait 2
+press left
+wait 1
+vworld 1 240 124 0
+wait 1
+vworld 1 340 174 0
+wait 1
+release left
+wait 1
+expect ref 1 140 74 400 0
+# A click beside the image does nothing (the selection stays)
+vworld 1 -300 -300 0
+wait 2
+press left
+wait 1
+release left
+wait 1
+expect selected 6
+
+# ---- Views facing the same way share it
+viewdir 3 Top
+wait 2
+expect refimage 3 1
+expect ref 3 140 74 400 0
+viewdir 3 Right
+wait 2
+
+# ---- Window closed: the image can't be picked; clicks go to the tool again
+refwindow off
+vworld 1 300 150 0
+wait 2
+press left
+wait 1
+release left
+wait 1
+expect selected 0
+expect ref 1 140 74 400 0
+
+# ---- Turned, in front, more transparent; a second image for the Front view
+refset 1 rot 90
+expect ref 1 140 74 400 90
+refset 1 front 1
+refset 1 transparency 30
+testimage side.png 64 128
+refload 2 side.png
+expect refimage 2 1
+refwindow 2
+
+# ---- Scale figure: View -> Scale figure (beside the origin on -X, never part of the model)
+action view.scalefigure
+expect figure 1
+expect faces 6
+wait 3
+shot a1-reference.png
+action view.scalefigure
+expect figure 0
+
+# ---- Remove
+refremove 1
+expect refimage 1 0
+expect refimage 2 1
+quit

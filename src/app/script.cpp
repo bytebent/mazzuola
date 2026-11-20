@@ -3,6 +3,7 @@
 // queue, keys through Editor::keyPressed: the same paths as real input.
 // The command list is in docs/DEV.md ("Script language"); keep it in sync.
 #include "app/editor.hpp"
+#include "app/screenshot.hpp"
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <cstdio>
@@ -183,6 +184,50 @@ void Editor::stepScript() {
             if (path.empty()) scriptFail(cmd + " needs a path");
             else if (cmd == "saveas") savePath(path);
             else openPath(path);
+        } else if (cmd == "testimage") {
+            // testimage <file> <w> <h>: writes a checkerboard PNG to load as a reference.
+            std::string file;
+            int w = 0, h = 0;
+            in >> file >> w >> h;
+            if (w <= 0 || h <= 0 || !writeTestImage(file, w, h)) scriptFail("could not write " + file);
+        } else if (cmd == "refremove") {
+            int view = -1;
+            in >> view;
+            if (!refFor(view)) scriptFail("no reference image in view " + std::to_string(view));
+            else refRemove(refSlot(views_[view].dir));
+        } else if (cmd == "refload") {
+            // refload <view> <file>: as "Image..." in that view's header.
+            int view = -1;
+            std::string path;
+            in >> view;
+            std::getline(in >> std::ws, path);
+            if (view < 0 || view > 3 || path.empty()) scriptFail("refload needs a view and a file");
+            else refLoad(view, path);
+        } else if (cmd == "refset") {
+            // refset <view> width|rot|transparency|front|centre <values>: as typed in the window.
+            int view = -1;
+            std::string what;
+            in >> view >> what;
+            Editor::RefImage* r = refFor(view);
+            if (!r) scriptFail("no reference image in view " + std::to_string(view));
+            else if (what == "width") in >> r->place.width;
+            else if (what == "rot") in >> r->place.rot;
+            else if (what == "transparency") {
+                double t = 0;
+                in >> t;
+                r->place.alpha = 1.0 - t / 100.0;
+            } else if (what == "front") in >> r->place.front;
+            else if (what == "centre") in >> r->place.cu >> r->place.cv;
+            else scriptFail("unknown reference image setting " + what);
+            markViewsDirty();
+        } else if (cmd == "refwindow") {
+            // refwindow <view>: open that view's image window (as its header button); off: close.
+            std::string w;
+            in >> w;
+            if (w == "off") refEdit_ = -1;
+            else if (refFor(std::atoi(w.c_str()))) refEdit_ = refSlot(views_[std::atoi(w.c_str())].dir);
+            else scriptFail("no reference image in view " + w);
+            markViewsDirty();
         } else if (cmd == "export") {
             // export <file>: as File -> Export with that file (format from its extension).
             std::string path;
@@ -380,6 +425,25 @@ void Editor::stepScript() {
                 std::string t;
                 std::getline(in >> std::ws, t);
                 if (title_ != t) scriptFail("title is \"" + title_ + "\"");
+            } else if (what == "refimage") {
+                // expect refimage <view> <0|1>: the view shows a reference image.
+                int view = -1, want = 1;
+                in >> view >> want;
+                if ((refFor(view) != nullptr) != (want != 0)) scriptFail("view " + std::to_string(view) + (want ? " has no" : " has a") + " reference image");
+            } else if (what == "ref") {
+                // expect ref <view> <cu> <cv> <width> <rot>: where its image is (±0.01).
+                int view = -1;
+                double cu = 0, cv = 0, w = 0, rot = 0;
+                in >> view >> cu >> cv >> w >> rot;
+                const Editor::RefImage* r = refFor(view);
+                if (!r) scriptFail("no reference image in view " + std::to_string(view));
+                else if (std::fabs(r->place.cu - cu) > 0.01 || std::fabs(r->place.cv - cv) > 0.01 ||
+                         std::fabs(r->place.width - w) > 0.01 || std::fabs(r->place.rot - rot) > 0.01) {
+                    char buf[160];
+                    std::snprintf(buf, sizeof buf, "reference image is at %.3f %.3f, width %.3f, rot %.3f", r->place.cu,
+                                  r->place.cv, r->place.width, r->place.rot);
+                    scriptFail(buf);
+                }
             } else if (what == "file") {
                 // expect file <path> <0|1>: the file exists or not.
                 std::string path;

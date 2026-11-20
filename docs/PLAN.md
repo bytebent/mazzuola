@@ -30,8 +30,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
   **Released: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges, faces",
-  v0.1.3 "Typed values".** The user tries v0.1.3; their feedback comes before v0.1.4
-  (write its steps first).
+  v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).** The user tries
+  v0.1.4; then milestone 2 is planned with them, click by click, before any code.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
 - **Roadmap:** M1 mesh basics → M2 modelling → M3 lathe, loft, groups, smoothing, problems
   → M4 soft selection, vertex brush → M5 texture coordinates → M6 pixel painting → M7
@@ -54,12 +54,17 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 | Dep | Version |
 |---|---|
 | GLFW | 3.4 |
+| cgltf | 1.15 (vendored in `third_party/cgltf`, commit 360db1a95480fe102ae9c69b27c5d101167ff5ba) |
 | Dear ImGui | v1.93.0-docking (with its GLFW and OpenGL 3 backends) |
 | stb | commit 9600522de53973336fa033a289858a4354cbb04c |
 
-cgltf joins with export in milestone 1.
 
 ## Open questions (parked)
+
+- **Reference images on New / Open**: they stay (they belong to the views, not the
+  model). Ask the user whether a new or opened model should start without them.
+- **Export again across sessions**: the last export is remembered only while the model
+  stays open (not saved in the `.mazz`). Enough?
 
 
 

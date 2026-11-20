@@ -3,6 +3,8 @@
 // drawing its contents. Draws only when marked dirty.
 #include "core/camera.hpp"
 #include "core/grid.hpp"
+#include "core/ref_image.hpp"
+#include "render/image_draw.hpp"
 #include "render/lines.hpp"
 #include "render/model_draw.hpp"
 #include "render/view_target.hpp"
@@ -18,6 +20,9 @@ constexpr Rgba kMajor{178, 182, 191, 255};
 constexpr Rgba kAxis[3] = {{208, 62, 62, 255}, {58, 156, 74, 255}, {62, 102, 210, 255}};
 // Selection in the views (pink, distinct from the X axis red and the UI accent).
 constexpr Rgba kSelection{236, 92, 178, 255};
+// The scale figure (as in Scalpellino): light blue, see-through in 3D.
+constexpr Rgba kFigure{120, 220, 255, 255};
+constexpr Rgba kFigureFill{120, 220, 255, 60};
 } // namespace viewcol
 
 struct View {
@@ -32,11 +37,19 @@ struct View {
     void setDir(ViewDir d);
 };
 
+// What a view shows besides the grid and the model.
+struct ViewExtras {
+    bool figure = false;          // the scale figure, feet at figureAt
+    Vec3 figureAt;
+    unsigned refTex = 0;          // a reference image (2D views), 0 = none
+    RefPlacement ref;
+};
+
 class ViewDrawer {
 public:
     // Redraws `v` into its target if dirty or resized. Size in logical pixels and the
     // number of real pixels per logical pixel.
-    void draw(View& v, const Grid& grid, double w, double h, double pxScale);
+    void draw(View& v, const Grid& grid, double w, double h, double pxScale, const ViewExtras& extras);
     // The model, shared by all views (uploaded once per change).
     void setModel(const DrawData& d);
     void setSelection(const std::vector<unsigned>& tris, const std::vector<unsigned>& edges);
@@ -44,8 +57,11 @@ public:
 private:
     void build2D(const View& v, const Grid& grid, double w, double h);
     void build3D(const View& v, const Grid& grid);
-    Batch batch_;
+    void buildFigure(const ViewExtras& x, bool fill);
+    void drawRef(const View& v, const ViewExtras& x, const Mat4& viewProj);
+    Batch batch_, figure_;
     BatchRenderer* renderer_ = nullptr; // created on first use (needs a GL context)
+    ImageRenderer* images_ = nullptr;
     ModelRenderer* model_ = nullptr;
     ModelRenderer& model();
 public:

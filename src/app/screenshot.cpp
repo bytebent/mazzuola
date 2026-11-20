@@ -26,4 +26,20 @@ void saveScreenshot(GLFWwindow* w, const std::string& path) {
         std::fprintf(stderr, "Mazzuola: could not write %s\n", path.c_str());
 }
 
+bool writeTestImage(const std::string& path, int w, int h) {
+    // A checkerboard of 8 px squares with a red top-left square (to see which way is up).
+    std::vector<unsigned char> px((size_t)w * h * 4);
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x) {
+            unsigned char* p = &px[((size_t)y * w + x) * 4];
+            const bool dark = ((x / 8) + (y / 8)) % 2;
+            const bool mark = x < 8 && y < 8;
+            p[0] = mark ? 220 : dark ? 60 : 230;
+            p[1] = mark ? 40 : dark ? 90 : 230;
+            p[2] = mark ? 40 : dark ? 140 : 230;
+            p[3] = 255;
+        }
+    return stbi_write_png(path.c_str(), w, h, 4, px.data(), w * 4) != 0;
+}
+
 } // namespace mazz

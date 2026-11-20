@@ -169,6 +169,9 @@ void Editor::controlsWindow() {
             row("Orbit the 3D view", "right mouse drag", 0);
             row("Move while flying", "W A S D, Q/E down/up, Shift fast", 0);
             row("Resize the views", "drag the bars between them; double-click resets", 0);
+            row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
+            row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);
+            row("Scale figure (175 cm)", "View \xE2\x86\x92 Scale figure", 0);
             ImGui::EndTable();
         }
         ImGui::Spacing();
@@ -185,7 +188,7 @@ void Editor::aboutWindow() {
         ImGui::Text("Mazzuola %s", MAZZ_VERSION);
         dimText("A small, fast modeller for static low-poly models. Units: 1 unit = 1 cm.");
         ImGui::Spacing();
-        dimText("Uses GLFW, Dear ImGui, stb and the Roboto font (see docs/THIRD_PARTY.md).");
+        dimText("Uses GLFW, Dear ImGui, stb, cgltf and the Roboto font (see docs/THIRD_PARTY.md).");
     }
     ImGui::End();
 }

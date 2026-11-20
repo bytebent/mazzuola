@@ -394,6 +394,7 @@ bool Editor::frame(double dt) {
     ImGui::End();
 
     opWindow();
+    refWindow();
     fileDialogs();
     updateTitle();
     controlsWindow();

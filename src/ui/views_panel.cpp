@@ -104,6 +104,25 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
         ImGui::SameLine();
         toggle("Fly", flying_ && flyView_ == i, Act::FlyMode, "Fly mode: WASD, Q/E down/up, Shift fast; Z or Esc stops");
     }
+    if (!v.is3D()) {
+        // Reference image for this direction (shared by views facing the same way).
+        const int slot = refSlot(v.dir);
+        const bool has = refs_[slot].tex != 0, editing = refEdit_ == slot;
+        ImGui::SameLine();
+        if (editing) {
+            ImGui::PushStyleColor(ImGuiCol_Button, theme::kAccentSoft);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, theme::kAccentSoftHover);
+        }
+        if (ImGui::SmallButton(has ? "Image" : "Image...")) {
+            if (editing) refEdit_ = -1;
+            else if (has) refEdit_ = slot;
+            else refChooseFile(i);
+            markViewsDirty();
+        }
+        if (editing) ImGui::PopStyleColor(2);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip(has ? "Reference image: position, size, transparency" : "Load a reference image for this view");
+    }
     {
         // Right-aligned on the same line as the direction combo.
         const char* label = layout_.maximised == i ? "Restore" : "Maximise";
@@ -122,7 +141,7 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
     const ImVec2 imgSize{size.x, std::max(1.0f, size.y - headerH)};
     viewImgPos_[i] = imgPos;
     viewImgSize_[i] = imgSize;
-    drawer_.draw(v, grid_, imgSize.x, imgSize.y, viewScale());
+    drawer_.draw(v, grid_, imgSize.x, imgSize.y, viewScale(), viewExtras(i));
     ImGui::SetCursorScreenPos(imgPos);
     ImGui::InvisibleButton("##view", imgSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
     dl->AddImage(texId(v.target.texture()), imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, {0, 1}, {1, 0});
@@ -131,7 +150,8 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
     // The active tool's handles and previews, over the image (a light layer: the
     // model's drawing isn't rebuilt for them).
     dl->PushClipRect(imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, true);
-    tool_->overlay(toolEnv(), geom(i), i, dl);
+    if (refEdit_ >= 0 && refSlot(v.dir) == refEdit_) refOverlay(i, imgPos, imgSize, dl);
+    else tool_->overlay(toolEnv(), geom(i), i, dl);
     dl->PopClipRect();
 
     // An accent frame around the view the fly mode drives.
@@ -151,9 +171,13 @@ void Editor::viewInput(int i, ImVec2 imgPos, ImVec2 imgSize) {
 
     if (flying_ && flyView_ == i) return; // the fly camera owns the mouse
 
+    // While a reference image's window is open, the views facing its way move and
+    // resize the image with the left mouse instead of the tool.
+    const bool refTook = refInput(i, imgPos, imgSize);
+
     // Left mouse goes to the active tool (Space + left pans instead); not while an
     // operation window is open (its preview is a live edit).
-    if (op_ == Op::None) {
+    if (op_ == Op::None && !refTook) {
         const bool space = ImGui::IsKeyDown(ImGuiKey_Space);
         ToolEnv env = toolEnv();
         if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !space && toolView_ < 0) {

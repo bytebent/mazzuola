@@ -4,6 +4,40 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.4 "Out of the app" (steps A–E)
+- `io/export`: `.glb`, `.gltf` + `.bin`, `.obj` + `.mtl` through cgltf 1.15 (vendored in
+  `third_party/cgltf`, the version Scalpellino uses). Z-up cm → Y-up m as
+  (x, z, −y) / 100, flat normals, quads split by their stored diagonal (as drawn), one
+  grey material (0.75, exact in the file), `asset.extras` `{"sourceUnits":"cm",
+  "sourceUp":"Z"}`. OBJ numbers written exactly from the clean cm values (62.5 cm →
+  `0.625`). Written beside the target and renamed. Tests read them back with cgltf
+  (validate, counts, bounds, every point, unit normals, winding) and parse the OBJ; a
+  deliberately mirrored conversion made 9 checks fail, so they catch it. The Khronos
+  glTF validator finds 0 errors and 0 warnings in a `.glb` and a `.gltf` torus (only
+  the hint that bufferView targets are missing: cgltf leaves them out on purpose).
+- File → Export (three formats, the name of the model or the last export suggested),
+  Export again on Cmd+Shift+E (asks the first time; forgotten on New / Open), status
+  bar note "Exported to …" until the model changes.
+- Reference images (`core/ref_image`, `app/ref_images.cpp`, `render/image_draw`):
+  "Image..." in each 2D view's header; one per direction, shared, none in 3D, not
+  saved; fills the visible view (5 % margin), then width / rotation / transparency /
+  behind or in front in its window. While the window is open the views facing its way
+  move it (drag) and resize it (corner, opposite one fixed, proportions kept); when
+  snapping, moves go in grid steps and the width is whole steps (a first version
+  without that landed 0.13 cm off at the script's zoom, from pixel rounding). Kept on
+  New / Open for now (parked question).
+- Scale figure (`core/figure`): Scalpellino's boxes, 175 cm, light blue outlines in 2D,
+  see-through in 3D (drawn after the model without writing depth); stands at
+  x = floor(min(0, model's min x) − 25 − half its depth), y = 0, on the ground.
+- Script commands `export`, `testimage`, `refload`, `refset`, `refwindow`, `refremove`,
+  `expect file | filehas | refimage | ref | figure`. New UI scripts `a1_export`,
+  `a1_reference`; the idle scene now has two reference images (behind and in front)
+  and the figure.
+- Help → Controls and README rows, About lists cgltf, THIRD_PARTY, version 0.1.4,
+  release notes. Screenshot `m1-10-reference-figure.png`.
+- Tests: core 790 checks; ten UI scripts at 1× and 2×; idle 0 ticks at 1× and 2×
+  (control 873 ticks).
+
 ### 2026-11-20 — v0.1.4 design agreed; steps planned (docs only)
 - User tried v0.1.3 (Mesh menu found; works). Agreed for v0.1.4 ("yes to all"):
   File → Export with `.glb` / `.gltf` / `.obj`; export again on **Cmd+Shift+E** (Cmd+E

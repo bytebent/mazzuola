@@ -7,11 +7,12 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 1 (milestone 1, redone). v0.1.3 "Typed values": draw every primitive
-shape and rocks; select whole pieces, faces, edges or points; move, copy, resize and
-rotate them like brushes, along the arrows, or by typed values (Transform panel,
-Multi-Replicate, mirror, flatten); undo, save and open `.mazz`. Export, reference
-images and the size figure follow in v0.1.4.
+**Status:** alpha 1 (milestone 1, redone) is complete with v0.1.4 "Out of the app":
+draw every primitive shape and rocks; select whole pieces, faces, edges or points; move,
+copy, resize and rotate them like brushes, along the arrows, or by typed values
+(Transform panel, Multi-Replicate, mirror, flatten); undo, save and open `.mazz`; export
+`.glb`, `.gltf` and `.obj`; reference images in the 2D views; a 175 cm scale figure.
+Milestone 2 (modelling) is planned next.
 
 ## Download
 
@@ -26,6 +27,8 @@ including the planned ones with the milestone that brings them.
 | Action | Keys |
 |---|---|
 | New / open / save / save as | **Cmd+N** / **Cmd+O** / **Cmd+S** / **Cmd+Shift+S** |
+| Export (.glb, .gltf + .bin, .obj + .mtl; Y-up, metres) | File → Export |
+| Export again (same file and format) | **Cmd+Shift+E** |
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
 | Tools (also the buttons on the left) | Select **Shift+S**, Vertex **Shift+V**, Primitives **Shift+B** |
 | Selection mode: points / edges / faces / whole pieces | **1** / **2** / **3** / **4** (and the buttons at the top of the tool bar); switching converts the selection |
@@ -55,6 +58,8 @@ including the planned ones with the milestone that brings them.
 | Resize the views | drag the bars between them; double-click a bar to centre it |
 | Back to the origin | **Cmd+0** (all views) |
 | Reset the window layout | View → Reset layout |
+| Reference image (2D views) | **Image...** in the view's header; while its window is open, drag the picture to move it, a corner to resize it; width, rotation, transparency, behind / in front in the window. Shared by views facing the same way; not saved |
+| Scale figure (175 cm) | View → Scale figure |
 | Paint window (a second window, e.g. for an iPad through Sidecar) | View → Paint window; drag on its view to turn it, two-finger scroll zooms (painting arrives in milestone 6) |
 | Check pen and mouse input | Help → Pen and mouse test |
 | Quit | **Cmd+Q** |

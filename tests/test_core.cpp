@@ -1,4 +1,8 @@
 // Core tests: plain asserts, no framework. Run: ./build/mazz_core_tests
+#include "core/figure.hpp"
+#include "core/ref_image.hpp"
+#include "core/numbers.hpp"
+#include <algorithm>
 #include "core/camera.hpp"
 #include "core/grid.hpp"
 #include "core/grid_lines.hpp"
@@ -178,12 +182,75 @@ static void testGridLines() {
     for (const GridLine3D& l : l3) CHECK(l.a.z == 0 && l.b.z == 0);
 }
 
+static void testRefPlacement() {
+    RefPlacement r;
+    r.fit(-100, -50, 100, 50, 0.5); // 200 x 100 view, picture twice as wide as high
+    CHECK(r.width == 200 && r.height() == 100 && r.cu == 0 && r.cv == 0);
+    r.fit(-100, -50, 100, 50, 2.0); // tall picture: limited by the height
+    CHECK(r.width == 50 && r.height() == 100);
+    double u[4], v[4];
+    r = RefPlacement{};
+    r.cu = 10, r.cv = 20, r.width = 40, r.aspect = 0.5;
+    r.corners(u, v);
+    CHECK(u[0] == -10 && v[0] == 10 && u[2] == 30 && v[2] == 30);
+    r.rot = 90; // a quarter turn: exact
+    r.corners(u, v);
+    CHECK(u[0] == 20 && v[0] == 0);
+    double s, t;
+    CHECK(r.toPicture(u[0], v[0], s, t) && near(s, 0) && near(t, 0));
+    CHECK(r.toPicture(u[2], v[2], s, t) && near(s, 1) && near(t, 1));
+    CHECK(!r.toPicture(100, 100, s, t));
+    // Dragging a corner: the opposite one stays, proportions kept.
+    r.rot = 30;
+    r.corners(u, v);
+    const double fu = u[0], fv = v[0];
+    r.dragCorner(0, u[0] + (u[2] - u[0]) * 2, v[0] + (v[2] - v[0]) * 2, 1);
+    CHECK(near(r.width, 80, 1e-9) && near(r.aspect, 0.5));
+    r.corners(u, v);
+    CHECK(near(u[0], fu, 1e-9) && near(v[0], fv, 1e-9));
+    r.dragCorner(0, fu - 500, fv - 500, 1); // past the fixed corner: smallest, no flip
+    CHECK(r.width == 1);
+    // Snapping: whole grid steps.
+    r.rot = 0;
+    r.width = 40;
+    r.corners(u, v);
+    r.dragCorner(0, u[0] + 83, v[0] + 41.5, 1, 8);
+    CHECK(r.width == 80);
+    r.dragCorner(0, u[0], v[0], 1, 8);
+    CHECK(r.width == 8);
+}
+
+static void testFigure() {
+    // 175 cm tall, feet on the ground, standing on -X beside the model, never touching it.
+    Mesh m;
+    Vec3 spot = figureSpot(m);
+    CHECK(spot.z == 0 && spot.y == 0 && spot.x < 0 && isClean(spot.x));
+    double top = 0, bottom = 1e9, maxX = -1e9;
+    for (const auto& b : figureBoxes(spot)) {
+        top = std::max(top, b.second.z);
+        bottom = std::min(bottom, b.first.z);
+        maxX = std::max(maxX, b.second.x);
+    }
+    CHECK(near(top, 175, 1e-9));
+    CHECK(near(bottom, 0, 1e-9));
+    CHECK(maxX < 0);
+    addBox(m, {-300, -20, 0}, {50, 20, 400});
+    spot = figureSpot(m);
+    for (const auto& b : figureBoxes(spot)) CHECK(b.second.x < -300);
+    // A model far on +X: the figure stays beside the origin.
+    Mesh far;
+    addBox(far, {1000, 0, 0}, {1100, 100, 100});
+    CHECK(figureSpot(far).x == figureSpot(Mesh()).x);
+}
+
 int main() {
     testGrid();
     testOrthoAxes();
     testOrthoCamera();
     testCamera3D();
     testGridLines();
+    testFigure();
+    testRefPlacement();
     testModel();
     testIo();
     testExport();

@@ -93,7 +93,7 @@ void BatchRenderer::upload(const std::vector<ColorVertex>& v) {
     glBufferData(GL_ARRAY_BUFFER, (long)(v.size() * sizeof(ColorVertex)), v.data(), GL_STREAM_DRAW);
 }
 
-void BatchRenderer::draw(const Batch& batch, const Mat4& viewProj, bool depthTest) {
+void BatchRenderer::draw(const Batch& batch, const Mat4& viewProj, bool depthTest, bool depthWrite) {
     if (!program_) return;
     glUseProgram(program_);
     glUniformMatrix4fv(locMvp_, 1, GL_FALSE, viewProj.m);
@@ -105,7 +105,9 @@ void BatchRenderer::draw(const Batch& batch, const Mat4& viewProj, bool depthTes
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     if (!batch.tris().empty()) {
         upload(batch.tris());
+        if (!depthWrite) glDepthMask(GL_FALSE);
         glDrawArrays(GL_TRIANGLES, 0, (int)batch.tris().size());
+        glDepthMask(GL_TRUE);
     }
     if (!batch.lines().empty()) {
         glDepthMask(GL_FALSE); // lines never hide each other

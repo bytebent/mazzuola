@@ -118,6 +118,22 @@ private:
     void refreshOpPreview();
     void opWindow();
 
+    // ---- reference images and the scale figure (app/ref_images.cpp)
+    struct RefImage {
+        unsigned tex = 0;       // GPU picture, 0 = none
+        std::string name;       // file name, for the window
+        RefPlacement place;
+    };
+    static int refSlot(ViewDir d) { return d == ViewDir::Persp ? -1 : (int)d; } // one per direction
+    RefImage* refFor(int view);                     // the image a 2D view shows (nullptr: none / 3D)
+    bool refLoad(int view, const std::string& path); // replaces that direction's image, fills the view
+    void refRemove(int slot);
+    void refChooseFile(int view);                   // file dialog, then refLoad
+    void refWindow();                               // the image's settings while refEdit_ >= 0
+    bool refInput(int view, ImVec2 imgPos, ImVec2 imgSize); // handles; true if it took the mouse
+    void refOverlay(int view, ImVec2 imgPos, ImVec2 imgSize, ImDrawList* dl);
+    ViewExtras viewExtras(int view);
+
     // ---- tools
     ToolEnv toolEnv();
     void setTool(Tool* t);
@@ -147,6 +163,14 @@ private:
     std::string exportNote_;    // "Exported to lamp.glb" in the status bar...
     long exportNoteMesh_ = -1;  // ...until the model changes
     bool showFigure_ = false;   // View -> Scale figure (not saved)
+    Vec3 figureAt_;             // where it stands (follows the model's box)
+    long figureMesh_ = -1;      // model version figureAt_ was worked out for
+    RefImage refs_[6];          // reference images by view direction (not saved)
+    int refEdit_ = -1;          // direction whose settings window is open, -1 = none
+    int refDragView_ = -1;      // view where an image move / resize is going on
+    int refDragCorner_ = -1;    // -1 = moving, else the corner held still while resizing
+    double refGrabU_ = 0, refGrabV_ = 0;   // where the pointer went down (plane coords)
+    double refStartU_ = 0, refStartV_ = 0; // the image's centre then
     SelectTool selectTool_;
     VertexTool vertexTool_;
     PrimTool primTool_;

@@ -39,7 +39,8 @@ public:
 
     bool ok() const { return program_ != 0; }
     // Draws triangles first, then lines, with the given view-projection matrix.
-    void draw(const Batch& batch, const Mat4& viewProj, bool depthTest);
+    // `depthWrite` false: triangles don't hide what is drawn after them (see-through).
+    void draw(const Batch& batch, const Mat4& viewProj, bool depthTest, bool depthWrite = true);
 
 private:
     void upload(const std::vector<ColorVertex>& v);

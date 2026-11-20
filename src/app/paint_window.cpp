@@ -185,7 +185,7 @@ void PaintWindow::ui(const Grid& grid) {
     const ImVec2 pos = ImGui::GetCursorScreenPos();
     const ImVec2 size = ImGui::GetContentRegionAvail();
     const double scale = io.DisplayFramebufferScale.x > 0 ? io.DisplayFramebufferScale.x : 1.0;
-    drawer_->draw(view_, grid, std::max(1.0f, size.x), std::max(1.0f, size.y), scale);
+    drawer_->draw(view_, grid, std::max(1.0f, size.x), std::max(1.0f, size.y), scale, ViewExtras{});
     ImGui::InvisibleButton("##view", ImVec2(std::max(1.0f, size.x), std::max(1.0f, size.y)));
     ImGui::GetWindowDrawList()->AddImage(texId(view_.target.texture()), pos, {pos.x + size.x, pos.y + size.y}, {0, 1}, {1, 0});
     dragging_ = ImGui::IsItemActive();
