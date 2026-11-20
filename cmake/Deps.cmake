@@ -18,7 +18,7 @@ FetchContent_Declare(glfw
 # Dear ImGui v1.93.0-docking (commit b916186e66aa3c02b72c6ca17455516512ed8049) — UI, with its own GLFW + OpenGL 3 backends
 FetchContent_Declare(imgui
   URL https://github.com/ocornut/imgui/archive/refs/tags/v1.93.0-docking.tar.gz
-  URL_HASH SHA256=f36d290f96372cec39c8b44bbd863df421ce2b31efcd6bdfc250824428d8bf3d
+  URL_HASH SHA256=746c265540bd3aa109570f29492ef4d8f5b421dd9fd0049c35ca35f21496f1a5
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
 # stb (single-file image libraries; no releases, pinned commit)
