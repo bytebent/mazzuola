@@ -33,8 +33,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).**
 - **Milestone 2 (alpha 2) started.** Released: **v0.2.0 "Push and pull"** (steps A–E).
   **v0.2.1 "Edges and points"** released after the user's feedback; confirmed good.
-  Now: building v0.2.2 "Draw on faces" (agreed 2026-11-20; the user: "just go ahead,
-  worst case we revert"). Keep it in its own tool so reverting is easy.
+  **v0.2.2 "Draw on faces"** released (agreed 2026-11-20; the user: "just go ahead,
+  worst case we revert"; it is its own tool, easy to take out). The user tries it;
+  then v0.2.3 "Outlines and holes" is planned with them.
 - **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open
   (they belong to the views); Export again is remembered only while the model is open.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).

@@ -4,6 +4,34 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.2 "Draw on faces"
+- `core/draw_ops`: `faceFrame`, `splitPolygon` (convex: bands across; otherwise ear
+  clipping, best-shaped ear first, then pairs of triangles joined into convex quads;
+  points in a straight line allowed), `placeOnFace`, `cutShape` (closed shape inside:
+  the face becomes a frame joined by two bridges; closed shape touching the border in
+  one stretch, or an open line: split along the path; neighbours get the new border
+  points, all of a neighbour's edges at once), `rectanglePoints`, `circlePoints`. Cuts
+  leaving a face under 0.001 cm² are refused. `core/model_ops`: `pushKind` and
+  `pushPullFaces` for several flat faces together.
+- Bugs found by a random test (shapes and lines on boxes and a cylinder, 300 rounds per
+  model, 2000 tried once): a neighbour bordering the cut face along two edges got only
+  one new point (open surface); an ear whose cut ran through another point (in a line,
+  off by the 0.001 rounding) left a gap; the last triangle of an ear clip could be
+  turned over and was dropped. All fixed; every round now leaves a closed model with
+  good faces, or refuses and changes nothing.
+- `DrawTool` (Shift+D, button): rectangle (two clicks or press-drag-release; typed
+  width / height; corners dragged), circle (centre, radius; typed radius, segments),
+  line (clicks, Return, Backspace, double-click finishes); trial cut on a copy for the
+  red "doesn't fit" and the reason; snapping (points on the plane, midpoints, edges
+  with grid steps along axis edges, centre, grid in world or face frame); direction
+  lock by screen distance to the axis line (8 px), Shift keeps it; markers only for
+  non-grid snaps; no face highlight (user). Push/pull on a selected drawn shape pushes
+  all of its flat, joined, selected faces.
+- Tests: core 937 checks; new UI script `a2_draw` (rectangle typed, pushed up; too big
+  refused; door from the floor; circle 12 segments; line with Z lock); fourteen
+  scripts at 1× and 2×; idle 0 ticks.
+- Screenshot `m2-06-draw.png`. Version 0.2.2, README, Help → Controls, DEV, notes.
+
 ### 2026-11-20 — v0.2.1 confirmed; planning v0.2.2 "Draw on faces"
 - User: v0.2.1 all good. Proposal for v0.2.2 sent (click by click). Answers: no hover
   highlight; rectangles, circles, lines as proposed; snapping hints yes; direction lock

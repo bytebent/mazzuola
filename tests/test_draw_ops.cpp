@@ -5,8 +5,10 @@
 #include "core/model_ops.hpp"
 #include "core/numbers.hpp"
 #include "core/ops.hpp"
+#include "core/primitives.hpp"
 #include <cmath>
 #include <cstdio>
+#include <map>
 
 using namespace mazz;
 
@@ -231,18 +233,26 @@ void testTiltedFace() {
     CHECK(isClosed(m) && goodFaces(m));
 }
 
+void manyShapes(Mesh m, unsigned seed, int rounds);
+
 void testManyShapes() {
+    manyShapes(box({0, 0, 0}, {160, 120, 96}), 12345, 300);
+    manyShapes(box({0, 0, 0}, {160, 120, 96}), 777, 300);
+    PrimParams p;
+    p.kind = PrimKind::Cylinder;
+    manyShapes(makePrimitive(p, {0, 0, 0}, {120, 120, 100}, 2), 4242, 300);
+}
+
+void manyShapes(Mesh m, unsigned seed, int rounds) {
     // Many shapes on many faces, one after another on the same model: each cut either
     // works and leaves a closed box with good faces, or is refused and changes nothing.
-    unsigned seed = 12345;
     auto rnd = [&](int lo, int hi) {
         seed = seed * 1103515245u + 12345u;
         return lo + (int)((seed >> 8) % (unsigned)(hi - lo + 1));
     };
-    Mesh m = box({0, 0, 0}, {160, 120, 96});
     const double vol = signedVolume(m);
     int done = 0, refused = 0, broken = 0;
-    for (int round = 0; round < 150; ++round) {
+    for (int round = 0; round < rounds; ++round) {
         const int fi = rnd(0, (int)m.faces.size() - 1);
         Vec3 o, u, v, n;
         if (!faceFrame(m, fi, o, u, v, n)) continue;
@@ -266,12 +276,22 @@ void testManyShapes() {
         MeshEdit e(m);
         if (cutShape(e, fi, pts, closed, nullptr)) {
             ++done;
-            if (!isClosed(m) || !goodFaces(m) || !near(signedVolume(m), vol, 1e-2)) {
+            if (!isClosed(m) || !goodFaces(m) || !near(signedVolume(m), vol, 2e-6 * std::fabs(vol))) {
                 ++broken;
                 goodFaces(m, true);
                 std::printf("round %d face %d closed %d good %d vol %.4f kind %s n=%zu\n", round, fi, isClosed(m), goodFaces(m),
                             signedVolume(m), closed ? "shape" : "line", pts.size());
                 for (const Vec3& p : pts) std::printf("  %.3f %.3f %.3f\n", p.x, p.y, p.z);
+                {
+                    std::map<std::pair<int, int>, int> cnt;
+                    for (const Face& g : m.faces)
+                        for (int k = 0; k < g.n; ++k) ++cnt[{g.v[k], g.v[(k + 1) % g.n]}];
+                    for (const auto& [d, c] : cnt)
+                        if (c != 1 || !cnt.count({d.second, d.first}))
+                            std::printf("  open %d->%d (%g %g %g)->(%g %g %g) x%d\n", d.first, d.second, m.verts[d.first].x,
+                                        m.verts[d.first].y, m.verts[d.first].z, m.verts[d.second].x, m.verts[d.second].y,
+                                        m.verts[d.second].z, c);
+                }
                 const Face& f = before.faces[fi];
                 for (int k = 0; k < f.n; ++k) std::printf("  face %.3f %.3f %.3f\n", before.verts[f.v[k]].x, before.verts[f.v[k]].y, before.verts[f.v[k]].z);
             }

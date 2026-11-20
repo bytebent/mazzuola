@@ -1,0 +1,130 @@
+# Alpha 2, v0.2.2: the Draw tool (ARCHITECTURE §6 Draw, agreed 2026-11-20).
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up), 3 Right. Grid 8, snap on.
+vworld 1 0 0 0
+wheel -2
+vworld 2 0 0 0
+wheel -2
+wait 2
+addbox 0 0 0 96 80 64
+expect faces 6
+key Shift+D
+expect tool Draw
+
+# ---- Rectangle on the top (Top view): corner, opposite corner; snaps to the grid
+vworld 1 17 15 64
+wait 2
+expect drawsnap grid
+press left
+release left
+wait 1
+expect drawing 1
+vworld 1 55 49 64
+wait 2
+press left
+release left
+wait 1
+expect fits 1
+expect faces 6
+# Typed size, then Return cuts it in: the rectangle is selected
+toolset draw size 40 32
+key Return
+wait 1
+expect drawing 0
+expect undo 2
+expect selected 1
+expect selbounds 16 16 64 56 48 64
+expect faces 10
+
+# ---- Push/pull pulls the drawn rectangle up (new side faces)
+key Shift+F
+vworld 2 36 0 64
+wait 2
+press left
+wait 1
+vworld 2 36 0 72
+wait 1
+vworld 2 36 0 81
+wait 1
+release left
+wait 1
+toolset pushpull distance 16
+key Return
+wait 1
+expect undo 3
+expect bounds 0 0 0 96 80 80
+expect faces 14
+
+# ---- Too big: red, Return does nothing
+key Shift+D
+vworld 2 8 0 8
+wait 2
+press left
+release left
+vworld 2 120 0 40
+wait 2
+press left
+release left
+wait 1
+expect fits 0
+key Return
+expect drawing 1
+expect undo 3
+key Esc
+expect drawing 0
+
+# ---- A door on the front from the floor (Front view): touching the edge is fine
+vworld 2 64 0 0
+wait 2
+expect drawsnap edge
+press left
+release left
+vworld 2 80 0 40
+wait 2
+press left
+release left
+wait 1
+expect fits 1
+key Return
+wait 1
+expect undo 4
+expect selbounds 64 0 0 80 0 40
+
+# ---- Circle on the front: centre, radius; 8 segments
+toolset draw shape 1
+vworld 2 24 0 32
+wait 2
+press left
+release left
+vworld 2 40 0 32
+wait 2
+press left
+release left
+wait 1
+expect fits 1
+toolset draw segments 12
+key Return
+wait 1
+expect undo 5
+expect selbounds 8 0 16 40 0 48
+
+# ---- Line across the right side, edge to edge, with the axis lock
+toolset draw shape 2
+vworld 3 96 40 0
+wait 2
+expect drawsnap midpoint
+press left
+release left
+vworld 3 96 42 18
+wait 2
+expect drawaxis Z
+vworld 3 96 40 64
+wait 2
+press left
+release left
+key Return
+wait 1
+expect undo 6
+expect drawing 0
+wait 2
+shot a2-draw.png
+quit

@@ -113,27 +113,43 @@ std::vector<std::vector<int>> splitPoly2D(const std::vector<int>& ids, const std
     for (int i = 0; i < n; ++i) L[i] = i;
     std::vector<std::array<int, 3>> tris;
     int guard = 0;
+    // The smallest angle of a triangle (as its sine): ears are cut best-shaped first, so
+    // the pieces are as even as possible (no fans of slivers).
+    auto quality = [&](int a, int b, int c) {
+        const P2 A = pts[a], B = pts[b], C = pts[c];
+        const double ab = len(B - A), bc = len(C - B), ca = len(A - C);
+        const double area = std::fabs(cross(B - A, C - A));
+        if (ab * bc * ca <= 0) return 0.0;
+        return std::min({area / (ab * ca), area / (ab * bc), area / (bc * ca)});
+    };
     while (L.size() > 3 && guard++ < 10000) {
-        bool clipped = false;
         const int m = (int)L.size();
+        int bestK = -1;
+        double bestQ = -1;
         for (int k = 0; k < m; ++k) {
             const int a = L[(k + m - 1) % m], b = L[k], c = L[(k + 1) % m];
             if (turn(pts[a], pts[b], pts[c]) <= 0) continue;
             bool blocked = false;
             for (int q : L)
-                if (q != a && q != b && q != c && inTriangle(pts[q], pts[a], pts[b], pts[c])) {
+                if (q != a && q != b && q != c &&
+                    (inTriangle(pts[q], pts[a], pts[b], pts[c]) || segPointDist(pts[q], pts[a], pts[c]) < kOn)) {
                     blocked = true;
                     break;
                 }
             if (blocked) continue;
-            tris.push_back({a, b, c});
-            L.erase(L.begin() + k);
-            clipped = true;
-            break;
+            const double qv = quality(a, b, c);
+            if (qv > bestQ) bestQ = qv, bestK = k;
         }
-        if (!clipped) return {};
+        if (bestK < 0) return {};
+        tris.push_back({L[(bestK + m - 1) % m], L[bestK], L[(bestK + 1) % m]});
+        L.erase(L.begin() + bestK);
     }
-    if (L.size() == 3 && turn(pts[L[0]], pts[L[1]], pts[L[2]]) > 0) tris.push_back({L[0], L[1], L[2]});
+    if (L.size() == 3) {
+        const double t = turn(pts[L[0]], pts[L[1]], pts[L[2]]);
+        if (t > 0) tris.push_back({L[0], L[1], L[2]});
+        else if (t < 0) return {}; // the rest turned over (a sliver bent the wrong way): can't
+        // straight: three points in a line, nothing left to fill
+    }
     // Join triangles sharing an edge into convex quads, greedily.
     std::vector<char> used(tris.size(), 0);
     for (size_t t = 0; t < tris.size(); ++t) {
@@ -340,32 +356,35 @@ struct Cutter {
         return loop;
     }
 
-    // Faces next to the cut face get the new points on their shared edge.
+    // Faces next to the cut face get the new points on their shared edges (all of a
+    // face's edges at once: a face can border the cut face along two edges).
     bool fixNeighbours() {
+        const Mesh& m = e.mesh();
+        std::map<int, std::map<int, std::vector<int>>> todo; // face -> its edge index -> points (in its order)
         for (const auto& [k, pts] : inserted) {
             const int a = orig.v[k], b = orig.v[(k + 1) % orig.n];
-            const Mesh& m = e.mesh();
-            const int count = (int)m.faces.size(); // faces added below are pieces already done
-            for (int g = 0; g < count; ++g) {
-                if (g == face || g >= origCount) continue;
-                const Face gf = m.faces[g];
-                for (int j = 0; j < gf.n; ++j) {
-                    if (gf.v[j] != b || gf.v[(j + 1) % gf.n] != a) continue;
-                    std::vector<int> loop;
-                    for (int q = 0; q < gf.n; ++q) {
-                        loop.push_back(gf.v[q]);
-                        if (q == j) loop.insert(loop.end(), pts.rbegin(), pts.rend()); // b -> a: reversed
-                    }
-                    const Vec3 gn = faceNormal(m, g);
-                    auto pieces = splitPolygon(m, loop, gn);
-                    if (!piecesOk(m, pieces)) {
-                        why = "a face next to it can't take the new point";
-                        return false;
-                    }
-                    replaceFace(e, g, pieces);
-                    break;
-                }
+            for (int g = 0; g < origCount; ++g) {
+                if (g == face) continue;
+                const Face& gf = m.faces[g];
+                for (int j = 0; j < gf.n; ++j)
+                    if (gf.v[j] == b && gf.v[(j + 1) % gf.n] == a) todo[g][j] = std::vector<int>(pts.rbegin(), pts.rend());
             }
+        }
+        for (const auto& [g, edges] : todo) {
+            const Face gf = e.mesh().faces[g];
+            std::vector<int> loop;
+            for (int q = 0; q < gf.n; ++q) {
+                loop.push_back(gf.v[q]);
+                auto it = edges.find(q);
+                if (it != edges.end()) loop.insert(loop.end(), it->second.begin(), it->second.end());
+            }
+            const Vec3 gn = faceNormal(e.mesh(), g);
+            auto pieces = splitPolygon(e.mesh(), loop, gn);
+            if (!piecesOk(e.mesh(), pieces)) {
+                why = "a face next to it can't take the new point";
+                return false;
+            }
+            replaceFace(e, g, pieces);
         }
         return true;
     }

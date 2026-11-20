@@ -85,6 +85,12 @@ addquad <x0> <y0> <x1> <y1> <z>      test helper: one flat face facing up, selec
 toolset pushpull distance <d>       Push/pull: as typed in Properties
 toolset extrude distance|each|straight|axis|keep <v>   Extrude settings (preview follows)
 toolset inset width|depth|each <v>  Inset settings (preview follows)
+toolset draw shape <0|1|2>          Draw: rectangle, circle, line
+toolset draw size <w> <h> | radius <r> | segments <n>   Draw: typed values while adjusting
+expect drawing <0|1>                Draw has a shape going
+expect fits <0|1>                   that shape fits its face
+expect drawsnap none|grid|point|midpoint|edge|centre   what the Draw cursor snapped to
+expect drawaxis X|Y|Z|-             the line piece is locked onto that axis
 expect armed <0|1>                  the tool's preview is up (Push/pull: a push pending)
 expect opvalid <0|1>                that preview is possible (else red, Return does nothing)
 expect pushdist <d>                 the pending push's distance

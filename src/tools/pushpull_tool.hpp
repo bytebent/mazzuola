@@ -56,6 +56,7 @@ private:
     State state_ = State::Idle;
     Target target_;        // what is pushed (indices in the model before the push)
     int moved_ = -1;       // face mode: where the face is in the preview
+    std::set<int> region_, movedRegion_; // the faces pushed together, before / in the preview
     bool forceNew_ = false;
     int kind_ = 0;         // PushKind at the start (face mode)
     Vec3 origin_, normal_; // centre and normal before the push

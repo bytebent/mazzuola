@@ -258,6 +258,7 @@ void Editor::run(Act a) {
     case Act::ToolPushPull: setTool(&pushPullTool_); break;
     case Act::ToolExtrude: setTool(&extrudeTool_); break;
     case Act::ToolInset: setTool(&insetTool_); break;
+    case Act::ToolDraw: setTool(&drawTool_); break;
     case Act::ToolVertex:
         // The Vertex tool works on points.
         setTool(&vertexTool_);
@@ -530,7 +531,8 @@ void Editor::menuBar() {
                       Act::ToolPaint, Act::ToolColour})
             menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_) ||
                             (a == Act::ToolVertex && tool_ == &vertexTool_) || (a == Act::ToolPushPull && tool_ == &pushPullTool_) ||
-                            (a == Act::ToolExtrude && tool_ == &extrudeTool_) || (a == Act::ToolInset && tool_ == &insetTool_));
+                            (a == Act::ToolExtrude && tool_ == &extrudeTool_) || (a == Act::ToolInset && tool_ == &insetTool_) ||
+                            (a == Act::ToolDraw && tool_ == &drawTool_));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Create")) {

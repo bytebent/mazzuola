@@ -88,7 +88,8 @@ void Editor::toolBar() {
                            {Act::ToolPrimitives, "Primitives", &primTool_},
                            {Act::ToolPushPull, "Push/pull", &pushPullTool_},
                            {Act::ToolExtrude, "Extrude", &extrudeTool_},
-                           {Act::ToolInset, "Inset", &insetTool_}};
+                           {Act::ToolInset, "Inset", &insetTool_},
+                           {Act::ToolDraw, "Draw", &drawTool_}};
     for (const Entry& e : tools) {
         if (accentButton(e.label, tool_ == e.tool, ImVec2(full, ImGui::GetFrameHeight() * 1.2f))) run(e.act);
         tip(e.act);
@@ -175,6 +176,7 @@ void Editor::controlsWindow() {
             row("Push or pull a face (Push/pull)", "drag it (2D views: a face seen edge-on); Return applies; Cmd+drag: new side faces", 0);
             row("Push/pull an edge or point", "in edge / point mode: drag it along the surface's normal; the faces around tilt", 0);
             row("Extrude / inset", "select faces (or open edges); drag the arrow or type in Properties; Return applies", 0);
+            row("Draw on a face (Draw)", "rectangle: two corners; circle: centre, radius; line: edge to edge; Return cuts it in; Shift: keep the direction", 0);
             row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
             row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);
             row("Scale figure (175 cm)", "View \xE2\x86\x92 Scale figure", 0);

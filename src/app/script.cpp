@@ -290,6 +290,16 @@ void Editor::stepScript() {
                 else if (what == "keep") p.keepOriginal = v != 0;
                 else scriptFail("unknown extrude setting " + what);
                 extrudeTool_.changed(env);
+            } else if (t == "draw") {
+                // toolset draw shape 0|1|2 (rectangle, circle, line) | size <w> <h> | radius | segments
+                if (what == "shape") drawTool_.setShape(env, (DrawTool::Shape)(int)v);
+                else if (what == "size") {
+                    double h = 0;
+                    in >> h;
+                    drawTool_.setSize(env, v, h);
+                } else if (what == "radius") drawTool_.setRadius(env, v);
+                else if (what == "segments") drawTool_.setSegments(env, (int)v);
+                else scriptFail("unknown draw setting " + what);
             } else if (t == "inset") {
                 InsetParams& p = insetTool_.params();
                 if (what == "width") p.width = v;
@@ -468,6 +478,24 @@ void Editor::stepScript() {
                 else if (tool_ == &insetTool_) armed = insetTool_.armed(), valid = insetTool_.valid();
                 const bool have = what == "armed" ? armed : valid;
                 if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "drawing" || what == "fits") {
+                int want = 0;
+                in >> want;
+                const bool have = what == "drawing" ? drawTool_.drawing() : drawTool_.fits();
+                if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "drawsnap") {
+                // expect drawsnap none|grid|point|midpoint|edge|centre: what the Draw cursor snapped to
+                std::string want;
+                in >> want;
+                static const char* names[] = {"none", "grid", "point", "midpoint", "edge", "centre"};
+                const std::string have = names[(int)drawTool_.lastSnap()];
+                if (have != want) scriptFail("snap is " + have);
+            } else if (what == "drawaxis") {
+                std::string want;
+                in >> want;
+                const int a = drawTool_.lastAxis();
+                const std::string have = a < 0 ? "-" : std::string(1, "XYZ"[a]);
+                if (have != want) scriptFail("axis is " + have);
             } else if (what == "pushdist") {
                 double want = 0;
                 in >> want;

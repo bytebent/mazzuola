@@ -135,11 +135,38 @@ void PushPullTool::begin(ToolEnv& env, const Target& t, bool forceNew) {
     Document& doc = env.doc;
     target_ = t;
     moved_ = t.face;
+    // A drawn shape is selected as several flat faces: pushing one of them pushes them
+    // all (the selected faces lying flat with it and joined to it).
+    region_ = {t.face};
+    if (t.face >= 0 && doc.sel.mode == SelectMode::Face && doc.sel.faces.count(t.face)) {
+        const Vec3 n = faceNormal(doc.mesh, t.face), c = faceCentre(doc.mesh, t.face);
+        std::vector<int> todo = {t.face};
+        while (!todo.empty()) {
+            const int f = todo.back();
+            todo.pop_back();
+            for (int g : doc.sel.faces) {
+                if (region_.count(g)) continue;
+                if (dot(faceNormal(doc.mesh, g), n) < 1 - 1e-9 || std::fabs(dot(faceCentre(doc.mesh, g) - c, n)) > 1e-6) continue;
+                // Joined: they share an edge.
+                const Face& a = doc.mesh.faces[f];
+                const Face& b = doc.mesh.faces[g];
+                bool shares = false;
+                for (int i = 0; i < a.n && !shares; ++i)
+                    for (int j = 0; j < b.n; ++j)
+                        if (a.v[i] == b.v[(j + 1) % b.n] && a.v[(i + 1) % a.n] == b.v[j]) shares = true;
+                if (shares) {
+                    region_.insert(g);
+                    todo.push_back(g);
+                }
+            }
+        }
+    }
+    movedRegion_ = region_;
     forceNew_ = forceNew;
     frame(doc.mesh, t, origin_, normal_);
     distance_ = 0;
     valid_ = true;
-    kind_ = t.face >= 0 ? (int)pushKind(doc.mesh, t.face, forceNew) : 0;
+    kind_ = t.face >= 0 ? (int)pushKind(doc.mesh, region_, forceNew) : 0;
     doc.beginLive();
 }
 
@@ -150,11 +177,17 @@ void PushPullTool::refresh(ToolEnv& env) {
     e.revert();
     valid_ = true;
     moved_ = target_.face;
+    movedRegion_ = region_;
     if (distance_ != 0) {
         if (target_.face >= 0) {
-            int moved = -1;
-            valid_ = pushPull(e, target_.face, distance_, forceNew_, &moved);
-            if (valid_) moved_ = moved;
+            std::set<int> moved;
+            valid_ = pushPullFaces(e, region_, distance_, forceNew_, &moved);
+            if (valid_) {
+                movedRegion_ = moved;
+                // The clicked face's place among them (they keep their order).
+                const int pos = (int)std::distance(region_.begin(), region_.find(target_.face));
+                moved_ = *std::next(moved.begin(), std::min(pos, (int)moved.size() - 1));
+            }
         } else {
             valid_ = pushPoints(e, target_.verts, normal_, distance_);
         }
@@ -177,7 +210,7 @@ void PushPullTool::press(ToolEnv& env, const Pointer& p) {
         if (!at.valid()) return;
         // What is being pushed: carry on with this push (edges and points keep their
         // indices; a face may have moved to a new one).
-        const bool same = target_.face >= 0 ? (at.face == moved_ || at.face == target_.face) : at.verts == target_.verts;
+        const bool same = target_.face >= 0 ? (movedRegion_.count(at.face) || at.face == target_.face) : at.verts == target_.verts;
         if (same) {
             state_ = State::Dragging;
             view_ = p.view;
@@ -240,6 +273,8 @@ bool PushPullTool::apply(ToolEnv& env) {
     state_ = State::Idle;
     target_ = Target{};
     moved_ = -1;
+    region_.clear();
+    movedRegion_.clear();
     env.touch();
     return true;
 }
@@ -262,6 +297,8 @@ void PushPullTool::cancel(ToolEnv& env) {
     state_ = State::Idle;
     target_ = Target{};
     moved_ = -1;
+    region_.clear();
+    movedRegion_.clear();
     distance_ = 0;
     view_ = -1;
     env.touch();
@@ -284,10 +321,13 @@ void PushPullTool::overlay(const ToolEnv& env, const ViewGeom& g, int view, ImDr
     };
     if (state_ != State::Idle) {
         const ImU32 col = valid_ ? hoverColour() : badColour();
-        mark(target_, col, 2.5f, target_.face >= 0 ? (valid_ ? moved_ : target_.face) : -1);
+        if (target_.face >= 0)
+            for (int f : valid_ ? movedRegion_ : region_) mark(target_, col, 2.5f, f);
+        else
+            mark(target_, col, 2.5f, -1);
         drawDirArrow(dl, g, origin_ + normal_ * distance_, normal_, 40, col, state_ == State::Dragging);
     }
-    if (hover_.valid() && view == hoverView_ && !(hover_ == target_) && (hover_.face < 0 || hover_.face != moved_))
+    if (hover_.valid() && view == hoverView_ && !(hover_ == target_) && (hover_.face < 0 || !movedRegion_.count(hover_.face)))
         mark(hover_, hoverColour(), 1.5f, hover_.face);
 }
 

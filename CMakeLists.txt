@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Mazzuola VERSION 0.2.1 LANGUAGES C CXX)
+project(Mazzuola VERSION 0.2.2 LANGUAGES C CXX)
 # Objective-C++ (native macOS file dialogs, tablet input later) and Objective-C (GLFW's
 # Cocoa files; without OBJC enabled, CMake would compile those .m files as Objective-C++,
 # which fails). Must be enabled here, at the top level, before any dependency is added.
@@ -73,6 +73,7 @@ if(MAZZ_BUILD_APP)
     src/tools/selection_op_tool.cpp
     src/tools/extrude_tool.cpp
     src/tools/inset_tool.cpp
+    src/tools/draw_tool.cpp
     src/app/script.cpp
     src/app/paint_window.cpp
     src/app/screenshot.cpp

@@ -6,6 +6,7 @@
 #include "core/ops.hpp"
 #include "io/export.hpp"
 #include "render/view_draw.hpp"
+#include "tools/draw_tool.hpp"
 #include "tools/extrude_tool.hpp"
 #include "tools/inset_tool.hpp"
 #include "tools/prim_tool.hpp"
@@ -180,6 +181,7 @@ private:
     PushPullTool pushPullTool_;
     ExtrudeTool extrudeTool_;
     InsetTool insetTool_;
+    DrawTool drawTool_;
     Tool* tool_ = &selectTool_;
     LastBox lastBox_;
     // What the views last drew (compared with the document's counters each frame).
