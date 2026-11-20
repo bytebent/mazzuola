@@ -14,8 +14,12 @@ design in [`ARCHITECTURE.md`](ARCHITECTURE.md), status in [`PLAN.md`](PLAN.md), 
 - **Dependencies** (GLFW, Dear ImGui, stb) are fetched by CMake at pinned versions, see
   `cmake/Deps.cmake` and the table in `PLAN.md`. To update one, change the URL and note
   it in the LOG.
+- **Fingerprints:** each download is checked against the SHA-256 in `cmake/Deps.cmake`;
+  a changed archive stops the configure step. Updating a dep means updating its hash
+  (the error message prints the new one; check it comes from the intended tag).
 - **AI workspace:** GitHub archive downloads are blocked, so FetchContent fails. Clone the
-  deps with git at the pinned refs into a scratch folder and configure with
+  deps with git at the pinned commits (in `Deps.cmake`; check `git rev-parse HEAD`) into a
+  scratch folder and configure with
   `-DFETCHCONTENT_SOURCE_DIR_GLFW=… -DFETCHCONTENT_SOURCE_DIR_IMGUI=…
   -DFETCHCONTENT_SOURCE_DIR_STB=…`.
 - **OpenGL functions:** macOS links the system framework; elsewhere `render/gl.hpp`
@@ -132,6 +136,8 @@ Views are numbered 0–3: top-left, top-right, bottom-left, bottom-right.
 - Automated runs never read or write the user's layout settings.
 - Linux headless: `xvfb-run -a -s "-screen 0 1600x1000x24" build/Mazzuola --screenshot x.png`.
 - Environment: `MAZZ_VIEW_SCALE=<n>` overrides the scale of the view images (tests only).
+  `MAZZ_VIEW_SAMPLES=0` draws the views without anti-aliasing, the fallback used when the
+  GPU can't make the anti-aliased buffer (tests only).
 
 ## Idle check
 
@@ -159,11 +165,14 @@ policy), with everything it can show open, not only an empty app.
 `.github/workflows/build.yml`:
 - **macos:** Intel (`macos-15-intel`): build, core tests, ad-hoc sign, zip
   `Mazzuola-intel.zip`.
-- **linux:** build, core tests, UI scripts at 1× and 2×, the idle check (control, 1×, 2×),
-  screenshots as an artifact.
-- **release:** after both pass, on pushes to `main`: replaces the "Latest build"
-  pre-release, and makes a version release for every `docs/releases/vX.Y.Z.md` that has no
-  release yet.
+- **linux:** build, core tests, UI scripts at 1×, 2× and without anti-aliasing, the idle
+  check (control, 1×, 2×), screenshots as an artifact.
+- **release:** after both pass, on pushes to `main`. For each `docs/releases/vX.Y.Z.md`
+  without a release: tags the commit that added the notes file, using this run's build
+  only if its code (everything outside `docs/`) is the same as that commit's. Otherwise
+  it warns and publishes nothing for that version: re-run the build of the commit that
+  added the notes (e.g. after its macOS job was cancelled). Then, only on the newest
+  commit of `main`, it replaces the "Latest build" pre-release.
 - Apple Silicon builds are on demand only: Actions tab → **apple-silicon** → Run workflow.
 - The macOS Intel job sometimes waits in the queue and gets cancelled (no steps run).
   Re-run it: `gh api -X POST repos/bytebent/mazzuola/actions/runs/<id>/rerun-failed-jobs`.
@@ -172,7 +181,9 @@ policy), with everything it can show open, not only an empty app.
 
 Version: `v0.<milestone>.<patch>`, set in `project(... VERSION ...)` in `CMakeLists.txt`.
 Add `docs/releases/vX.Y.Z.md` (append `docs/releases/INSTALL.md`) and push to `main`. CI
-makes the tag and release after the builds pass (about 7–8 minutes). Tag pushes are
+makes the tag and release after the builds pass (about 7–8 minutes). Add the notes in the
+release's last code commit (docs may follow): commits after it that change code make CI
+hold the release back with a warning. Tag pushes are
 blocked in the AI workspace, so this file-driven route is the one to use.
 
 ## Per-step checklist

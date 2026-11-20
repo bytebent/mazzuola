@@ -1,6 +1,7 @@
 #pragma once
 // Offscreen image a view draws into: a multisampled colour + depth buffer (smooth
 // lines), resolved into a plain texture that the UI shows. Sized in real pixels.
+// If the multisampled buffer can't be made, the view draws straight into the texture.
 namespace mazz {
 
 class ViewTarget {
@@ -25,9 +26,10 @@ public:
     void release();
 
 private:
+    void releaseMultisample();
     int w_ = 0, h_ = 0;
     unsigned msFbo_ = 0, msColor_ = 0, msDepth_ = 0;
-    unsigned fbo_ = 0, tex_ = 0;
+    unsigned fbo_ = 0, tex_ = 0, depth_ = 0; // depth_: only without anti-aliasing
     int prevFbo_ = 0;
 };
 

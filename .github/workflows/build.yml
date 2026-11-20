@@ -60,6 +60,8 @@ jobs:
         run: tests/ui/run.sh "$PWD/build/Mazzuola" ui-shots
       - name: UI tests at Retina (2x) view scale
         run: MAZZ_VIEW_SCALE=2 tests/ui/run.sh "$PWD/build/Mazzuola"
+      - name: UI tests without anti-aliasing (the fallback view buffer)
+        run: MAZZ_VIEW_SAMPLES=0 tests/ui/run.sh "$PWD/build/Mazzuola"
       - name: Idle CPU check (control, 1x, 2x)
         run: |
           tests/ui/idle.sh "$PWD/build/Mazzuola" --control
@@ -75,8 +77,10 @@ jobs:
 
   # Publishes the Mac builds on the repo's Releases page:
   #  - every push to main updates the "latest" pre-release (newest working build)
-  #  - a version release (v0.1.0, ...) is created for every docs/releases/vX.Y.Z.md that
-  #    has no release yet (at the commit that pushed it); pushing a vX.Y.Z tag also works
+  #  - a version release (v0.1.0, ...) for each docs/releases/vX.Y.Z.md without one, tagged
+  #    at the commit that added that file and published only from a build of the same code
+  #    (outside docs/). A later build with other code only warns: re-run the build of the
+  #    commit that added the notes. Pushing a vX.Y.Z tag also works.
   release:
     needs: [macos, linux]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
@@ -89,6 +93,9 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # history, to find the commit that added each notes file
+          filter: blob:none    # commits and trees only, no old file contents
       - uses: actions/download-artifact@v4
         with:
           pattern: Mazzuola-*
@@ -105,9 +112,28 @@ jobs:
             gh release create "${GITHUB_REF_NAME}" dist/*.zip \
               --title "Mazzuola ${GITHUB_REF_NAME}" --notes-file "$notes" --verify-tag
           else
+            # Version releases first, so they don't depend on main not having moved on.
+            newest="$(ls docs/releases/v*.md | xargs -n1 basename | sed 's/\.md$//' | sort -V | tail -1)"
+            for notes in docs/releases/v*.md; do
+              [ -f "$notes" ] || continue
+              tag="$(basename "$notes" .md)"
+              gh release view "$tag" >/dev/null 2>&1 && continue
+              added="$(git log -1 --diff-filter=A --format=%H -- "$notes")"
+              if [ -n "$added" ] && { [ "$added" = "${GITHUB_SHA}" ] ||
+                   git diff --quiet --no-renames "$added" "${GITHUB_SHA}" -- . ':(exclude)docs'; }; then
+                latest=false; [ "$tag" = "$newest" ] && latest=true
+                gh release create "$tag" dist/*.zip --target "$added" --latest="$latest" \
+                  --title "Mazzuola ${tag}" --notes-file "$notes"
+              else
+                echo "::warning::${tag} has no release yet. Its notes were added in ${added::7}," \
+                  "whose code differs from this build (${GITHUB_SHA::7}), so it is not published" \
+                  "from here. Re-run the build of ${added::7} to publish it with that code."
+              fi
+            done
+            # The "latest" pre-release: only from the newest commit on main.
             head="$(git ls-remote origin refs/heads/main | cut -f1)"
             if [ "$head" != "${GITHUB_SHA}" ]; then
-              echo "main has moved on (${head::7}); a newer run will publish. Skipping."
+              echo "main has moved on (${head::7}); a newer run will publish latest. Skipping."
               exit 0
             fi
             subject="$(git log -1 --format=%s)"
@@ -115,13 +141,4 @@ jobs:
             gh release delete latest --yes --cleanup-tag || true
             gh release create latest dist/*.zip --prerelease --target "${GITHUB_SHA}" \
               --title "Latest build" --notes-file latest-notes.md
-            # Version releases from notes files that don't have a release yet.
-            for notes in docs/releases/v*.md; do
-              [ -f "$notes" ] || continue
-              tag="$(basename "$notes" .md)"
-              if ! gh release view "$tag" >/dev/null 2>&1; then
-                gh release create "$tag" dist/*.zip --target "${GITHUB_SHA}" --latest \
-                  --title "Mazzuola ${tag}" --notes-file "$notes"
-              fi
-            done
           fi

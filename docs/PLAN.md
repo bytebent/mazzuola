@@ -10,32 +10,17 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 
 ## Current status
 
-- **Released:** v0.0.0 … v0.0.7; v0.1.0 "Boxes" (alpha 1, first release). Milestone 0 (skeleton) is done, including the iPad
-  check: the whole app and the paint window work on the iPad with the Pencil (v0.0.6,
-  graphics switching); v0.0.7 cleaned up after the tests.
-- **Milestone 1 was built once and withdrawn** (v0.1.0, reverted 2026-11-19; see
-  LOG.md). Everything but the basic UI elements felt wrong to the user.
-- **Next: redesign milestone 1 with the user** before any code: how each basic action
-  works, click by click (pictures from the user), written into ARCHITECTURE. Then the
-  foundations (tool structure like Scalpellino's, clean numbers, undo, selection), then
-  small releases the user tries one by one.
-- **Agreed so far:** "brush feel" (ARCHITECTURE §6): models stay points and faces, but
-  making, selecting, resizing, rotating and moving work like Scalpellino's brushes.
-  Selecting click by click; main tools as buttons on the left (ARCHITECTURE §6).
-  Tool bar details and gesture hints in the status bar agreed.
-  Making a shape agreed (plain mesh after Return).
-  Parts renamed **groups** (Cmd+G), as in Scalpellino; the M0 "Parts" panel gets
-  renamed in code with milestone 1.
-  Transform panel, rings, arrows, vertex drag, pivot = world origin, reference images
-  agreed; alpha 1 split into five releases (below).
-  Foundations written (ARCHITECTURE §4, §5, §9, §10).
-  **Released: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges, faces",
-  v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).**
-- **Milestone 2 (alpha 2) started.** Released: **v0.2.0 "Push and pull"** (steps A–E).
-  **v0.2.1 "Edges and points"** released after the user's feedback; confirmed good.
-  **v0.2.2 "Draw on faces"** released (agreed 2026-11-20; the user: "just go ahead,
-  worst case we revert"; it is its own tool, easy to take out). The user tries it;
-  then v0.2.3 "Outlines and holes" is planned with them.
+- **Released:** v0.0.0 … v0.0.7 (milestone 0, the skeleton, incl. the iPad check);
+  alpha 1 = milestone 1: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges,
+  faces", v0.1.3 "Typed values", v0.1.4 "Out of the app"; alpha 2 = milestone 2:
+  v0.2.0 "Push and pull", v0.2.1 "Edges and points" (confirmed good), v0.2.2 "Draw on
+  faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool).
+- **Next:** the user tries v0.2.2; then v0.2.3 "Outlines and holes" is planned with them.
+- **Branch `audit-fixes`** (2026-11-20, not on main, no release): fixes from an audit:
+  release workflow, committed build folders, glTF export pair, view fallback without
+  anti-aliasing, dependency hashes. See LOG.md. Waiting for the user to merge.
+- Milestone 1 was first built in one go and withdrawn (v0.1.0, reverted 2026-11-19; see
+  LOG.md), then redesigned with the user click by click (ARCHITECTURE §4–§6, §9, §10).
 - **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open
   (they belong to the views); Export again is remembered only while the model is open.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
@@ -59,13 +44,22 @@ per-step checklist are in [`DEV.md`](DEV.md). One step per release: add
 
 | Dep | Version |
 |---|---|
-| GLFW | 3.4 |
+| GLFW | 3.4 (commit 7b6aead9fb88b3623e3b3725ebb42670cbe4c579) |
 | cgltf | 1.15 (vendored in `third_party/cgltf`, commit 360db1a95480fe102ae9c69b27c5d101167ff5ba) |
-| Dear ImGui | v1.93.0-docking (with its GLFW and OpenGL 3 backends) |
+| Dear ImGui | v1.93.0-docking (commit b916186e66aa3c02b72c6ca17455516512ed8049, with its GLFW and OpenGL 3 backends) |
 | stb | commit 9600522de53973336fa033a289858a4354cbb04c |
+
+Downloads are checked against the SHA-256 in `cmake/Deps.cmake`.
 
 
 ## Open questions (parked)
+
+- **Old build folders in history** (user's call): `build-core/` and `build-dbg/` were
+  committed from alpha 1 until the `audit-fixes` branch removed them. They hold AI
+  workspace build paths and a Linux version string (no details of the user's Mac).
+  Removing them from history means rewriting it (e.g. `git filter-repo --path build-core
+  --path build-dbg --invert-paths`) and force-pushing main and the tags; release tags
+  would point at new commits.
 
 
 

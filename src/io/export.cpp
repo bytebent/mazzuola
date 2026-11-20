@@ -107,16 +107,44 @@ bool writeFile(const std::string& path, const std::string& data, std::string& er
     return true;
 }
 
-// Renames every (temporary, final) pair; on failure removes the temporaries left.
-bool commitFiles(const std::vector<std::pair<std::string, std::string>>& files, std::string& error) {
-    for (size_t i = 0; i < files.size(); ++i)
-        if (std::rename(files[i].first.c_str(), files[i].second.c_str()) != 0) {
+} // namespace
+
+// Moves each existing final file aside first, then renames every temporary into place.
+// If any step fails, the files already moved in are removed and the old ones put back,
+// so a .gltf and its .bin (or an .obj and its .mtl) are always from the same export.
+bool commitExportFiles(const std::vector<std::pair<std::string, std::string>>& files,
+                       std::string& error) {
+    std::vector<std::string> backups(files.size()); // empty: no old file
+    size_t placed = 0;
+    auto undo = [&](size_t backedUp) {
+        for (size_t i = 0; i < placed; ++i) std::remove(files[i].second.c_str());
+        for (size_t i = 0; i < backedUp; ++i)
+            if (!backups[i].empty()) std::rename(backups[i].c_str(), files[i].second.c_str());
+        for (const auto& f : files) std::remove(f.first.c_str());
+    };
+    for (size_t i = 0; i < files.size(); ++i) {
+        std::error_code ec;
+        if (!fs::exists(files[i].second, ec)) continue;
+        backups[i] = files[i].second + ".previous";
+        if (std::rename(files[i].second.c_str(), backups[i].c_str()) != 0) {
             error = std::string("can't replace the file: ") + std::strerror(errno);
-            for (size_t j = i; j < files.size(); ++j) std::remove(files[j].first.c_str());
+            backups[i].clear();
+            undo(i);
             return false;
         }
+    }
+    for (; placed < files.size(); ++placed)
+        if (std::rename(files[placed].first.c_str(), files[placed].second.c_str()) != 0) {
+            error = std::string("can't replace the file: ") + std::strerror(errno);
+            undo(files.size());
+            return false;
+        }
+    for (const auto& b : backups)
+        if (!b.empty()) std::remove(b.c_str());
     return true;
 }
+
+namespace {
 
 bool exportGltf(const std::string& path, bool binary, const Mesh& m, const std::string& generator,
                 std::string& error) {
@@ -245,7 +273,7 @@ bool exportGltf(const std::string& path, bool binary, const Mesh& m, const std::
         return false;
     }
     files.push_back({tmp, path});
-    return commitFiles(files, error);
+    return commitExportFiles(files, error);
 }
 
 bool exportObj(const std::string& path, const Mesh& m, const std::string& generator, std::string& error) {
@@ -262,7 +290,7 @@ bool exportObj(const std::string& path, const Mesh& m, const std::string& genera
         std::remove(mtlTmp.c_str());
         return false;
     }
-    return commitFiles({{mtlTmp, mtlPath}, {tmp, path}}, error);
+    return commitExportFiles({{mtlTmp, mtlPath}, {tmp, path}}, error);
 }
 
 } // namespace

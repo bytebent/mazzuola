@@ -4,6 +4,34 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — Audit fixes (branch `audit-fixes`, no release)
+- **Releases shipped later code** (twice: v0.0.0 got a later build fix, v0.1.0 later
+  docs): any run on main published every notes file without a release, with its own
+  build. Now a version release is tagged at the commit that added its notes and only
+  published from a build whose code (outside `docs/`) matches that commit; otherwise
+  the run warns. The `--latest` mark only goes to the newest version. Checked against
+  the real history: the new rule holds back v0.0.0 and tags v0.1.0 at its notes commit.
+- **Build folders removed** from the repo: `build-core/` (61 MB) and `build-dbg/`
+  (42 MB), committed since alpha 1, with workspace paths and a Linux version string.
+  `.gitignore` covers `build-*/`. They are still in history (parked in PLAN.md).
+- **glTF export pair:** the `.bin` was renamed into place before the `.gltf`; if the
+  second rename failed, an old `.gltf` was left next to a new `.bin`. Now
+  `commitExportFiles` moves the old files aside first and puts them back on any
+  failure. Probe: with the old loop the new test fails (2 checks: old `.bin` gone);
+  with the fix it passes.
+- **Views without anti-aliasing as a fallback:** if the multisampled view buffer can't
+  be made (GPU memory, huge view), the view draws straight into its texture with its
+  own depth buffer instead of staying blank. `MAZZ_VIEW_SAMPLES=0` forces this path; CI
+  runs all UI scripts that way too. Screenshot: `m2-07-views-without-antialiasing.png`.
+- **Dependency fingerprints:** GLFW, Dear ImGui and stb downloads are checked against
+  SHA-256 in `cmake/Deps.cmake` (hashes of the archives as made from the pinned
+  commits; confirmed by CI's download).
+- PLAN.md status rewritten (it still said "redesign milestone 1" above v0.2.x);
+  HANDOFF "where things stand" and mistakes updated; DEV.md: fingerprints,
+  `MAZZ_VIEW_SAMPLES`, release rules.
+- Tests: core 971 checks; UI scripts at 1×, 2× and without anti-aliasing pass; idle
+  check control, 1×, 2× and without anti-aliasing: 0 ticks.
+
 ### 2026-11-20 — v0.2.2 "Draw on faces"
 - `core/draw_ops`: `faceFrame`, `splitPolygon` (convex: bands across; otherwise ear
   clipping, best-shaped ear first, then pairs of triangles joined into convex quads;

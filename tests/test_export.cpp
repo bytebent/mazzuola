@@ -33,7 +33,7 @@ std::string readText(const fs::path& p) {
 
 bool noLeftovers(const fs::path& dir) {
     for (const auto& e : fs::directory_iterator(dir))
-        if (e.path().extension() == ".saving") return false;
+        if (e.path().extension() == ".saving" || e.path().extension() == ".previous") return false;
     return true;
 }
 
@@ -147,6 +147,10 @@ void testGltfWithBin() {
     const std::string json = readText(dir / "My box.gltf");
     CHECK(json.find("\"uri\"") != std::string::npos);
     CHECK(json.find("Mazzuola test") != std::string::npos);
+    checkGltf(dir / "My box.gltf", m);
+    CHECK(noLeftovers(dir));
+    // Again over the old pair: replaced, nothing left aside.
+    CHECK(exportModel((dir / "My box.gltf").string(), ExportFormat::Gltf, m, "Mazzuola test", err));
     checkGltf(dir / "My box.gltf", m);
     CHECK(noLeftovers(dir));
     fs::remove_all(dir);
@@ -263,6 +267,48 @@ void testFormats() {
     CHECK(!fs::exists("never.glb"));
 }
 
+void writeText(const fs::path& p, const std::string& s) {
+    std::ofstream f(p, std::ios::binary);
+    f << s;
+}
+
+void testCommitAllOrNothing() {
+    // The .bin goes in first; if the .gltf then fails, the old .bin must come back,
+    // never an old .gltf next to a new .bin.
+    const fs::path dir = tempDir();
+    const fs::path bin = dir / "m.bin", gltf = dir / "m.gltf";
+    writeText(bin, "old bin");
+    writeText(gltf, "old gltf");
+    writeText(dir / "m.bin.saving", "new bin"); // no m.gltf.saving: its rename fails
+    const std::vector<std::pair<std::string, std::string>> files = {
+        {(dir / "m.bin.saving").string(), bin.string()}, {(dir / "m.gltf.saving").string(), gltf.string()}};
+    std::string err;
+    CHECK(!commitExportFiles(files, err));
+    CHECK(!err.empty());
+    CHECK(readText(bin) == "old bin");
+    CHECK(readText(gltf) == "old gltf");
+    CHECK(noLeftovers(dir));
+
+    // A first export (no old files) that fails leaves nothing behind.
+    fs::remove(bin);
+    fs::remove(gltf);
+    writeText(dir / "m.bin.saving", "new bin");
+    CHECK(!commitExportFiles(files, err));
+    CHECK(!fs::exists(bin) && !fs::exists(gltf));
+    CHECK(noLeftovers(dir));
+
+    // Both in place: the new pair replaces the old one.
+    writeText(bin, "old bin");
+    writeText(gltf, "old gltf");
+    writeText(dir / "m.bin.saving", "new bin");
+    writeText(dir / "m.gltf.saving", "new gltf");
+    CHECK(commitExportFiles(files, err));
+    CHECK(readText(bin) == "new bin");
+    CHECK(readText(gltf) == "new gltf");
+    CHECK(noLeftovers(dir));
+    fs::remove_all(dir);
+}
+
 } // namespace
 
 void testExport() {
@@ -273,4 +319,5 @@ void testExport() {
     testObj();
     testSmallNumbers();
     testFormats();
+    testCommitAllOrNothing();
 }

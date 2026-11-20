@@ -7,6 +7,7 @@
 #include "core/mesh.hpp"
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace mazz {
@@ -32,7 +33,7 @@ ExportMesh buildExportMesh(const Mesh& m);
 
 // Writes the model. `generator` goes into the glTF asset ("Mazzuola 0.1.4"). Files are
 // written next to the target first and renamed, so a failed export never leaves a
-// half-written file. Returns false with `error` set on failure (or an empty model).
+// half-written file, and a .gltf is never left paired with another export's .bin. Returns false with `error` set on failure (or an empty model).
 bool exportModel(const std::string& path, ExportFormat f, const Mesh& m, const std::string& generator,
                  std::string& error);
 
@@ -40,5 +41,10 @@ bool exportModel(const std::string& path, ExportFormat f, const Mesh& m, const s
 std::string writeObj(const Mesh& m, const std::string& objectName, const std::string& mtlName,
                      const std::string& generator);
 std::string writeMtl();
+
+// Renames each (temporary, final) pair into place, all or nothing: on failure the old
+// files are back and the temporaries removed (exposed for tests).
+bool commitExportFiles(const std::vector<std::pair<std::string, std::string>>& files,
+                       std::string& error);
 
 } // namespace mazz

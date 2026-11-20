@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wall -Wextra -fsanitize=address,undefined -g CMakeFiles/mazz_core_tests.dir/tests/test_core.cpp.o CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o CMakeFiles/mazz_core_tests.dir/tests/test_io.cpp.o -o mazz_core_tests  libmazz_io.a libmazz_core.a 

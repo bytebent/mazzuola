@@ -1,9 +1,10 @@
 # Third-party dependencies, fetched at configure time and pinned to exact versions.
-# To update one: change the URL, then note it in docs/PLAN.md.
+# Each download is checked against its SHA-256: a changed or swapped archive stops the
+# build. To update one: change the URL, the hash and the commit, then note it in the LOG.
 include(FetchContent)
 set(FETCHCONTENT_QUIET ON)
 
-# GLFW 3.4 — windows, input, OpenGL context
+# GLFW 3.4 (commit 7b6aead9fb88b3623e3b3725ebb42670cbe4c579) — windows, input, OpenGL context
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
@@ -11,16 +12,19 @@ set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_WAYLAND  OFF CACHE BOOL "" FORCE) # X11 on Linux (CI runs under Xvfb)
 FetchContent_Declare(glfw
   URL https://github.com/glfw/glfw/archive/refs/tags/3.4.tar.gz
+  URL_HASH SHA256=659815746e0ebd1f3ccc384f08c4783175745464abcaf1b52e8d580df609ca4b
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
-# Dear ImGui (docking branch) — UI, with its own GLFW + OpenGL 3 backends
+# Dear ImGui v1.93.0-docking (commit b916186e66aa3c02b72c6ca17455516512ed8049) — UI, with its own GLFW + OpenGL 3 backends
 FetchContent_Declare(imgui
   URL https://github.com/ocornut/imgui/archive/refs/tags/v1.93.0-docking.tar.gz
+  URL_HASH SHA256=f36d290f96372cec39c8b44bbd863df421ce2b31efcd6bdfc250824428d8bf3d
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
 # stb (single-file image libraries; no releases, pinned commit)
 FetchContent_Declare(stb
   URL https://github.com/nothings/stb/archive/9600522de53973336fa033a289858a4354cbb04c.tar.gz
+  URL_HASH SHA256=0dcea62e78e3bcc650a96f28f9998ccd217481ea1c0662f30f7536fb91be323c
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
 FetchContent_MakeAvailable(glfw imgui stb)

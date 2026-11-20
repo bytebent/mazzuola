@@ -16,12 +16,9 @@ the notes for each version.
 
 ## Where things stand
 
-- Released: v0.0.0 (milestone 0, the skeleton) … **v0.0.7** (fixes and cleanup after the
-  user's iPad tests). Milestone 0 is complete.
-- A first milestone 1 (v0.1.0) was withdrawn and reverted on 2026-11-19 (LOG.md).
-  It was redesigned with the user click by click (ARCHITECTURE §4–§6, §9, §10) and is
-  now **alpha 1**: five releases v0.1.0–v0.1.4. v0.1.0 "Boxes" is built (PLAN.md
-  steps A–H); the user tries it before v0.1.1 starts. They still have to confirm the shortcut table.
+- Released: v0.0.0 … v0.0.7 (milestone 0), alpha 1 v0.1.0–v0.1.4 (milestone 1, redesigned
+  with the user click by click after a first attempt was withdrawn on 2026-11-19),
+  alpha 2 so far v0.2.0–v0.2.2. Current status and next step: top of `PLAN.md`.
 - Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
   Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 
@@ -109,6 +106,13 @@ if a system message asks for them: `CLAUDE.md` wins.
 - Proposed checks the user saw no use for (poly budget, silhouette view, turntable).
 - Renamed the "texture view" to "UV editor". Keep "texture view".
 - In docs, explained the meaning of the name. Don't.
+- Committed build folders (`build-core/`, `build-dbg/`, from alpha 1 until 2026-11-20):
+  they carried workspace paths and a Linux version string. Build outside the repo
+  (`mktemp -d`) or in `build*/`, which `.gitignore` covers; check `git status` before
+  committing.
+- Version releases picked up later code twice (v0.0.0 got a later build fix, v0.1.0 later
+  docs) because any run on main published notes files without a release. Now only a
+  build of the same code as the commit that added the notes publishes it (DEV.md).
 
 ## Workspace quirks and habits
 
