@@ -33,7 +33,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).**
 - **Milestone 2 (alpha 2) started.** Released: **v0.2.0 "Push and pull"** (steps A–E).
   **v0.2.1 "Edges and points"** released after the user's feedback; confirmed good.
-  Now: v0.2.2 "Draw on faces" proposed click by click, waiting for the user's answers.
+  Now: building v0.2.2 "Draw on faces" (agreed 2026-11-20; the user: "just go ahead,
+  worst case we revert"). Keep it in its own tool so reverting is easy.
 - **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open
   (they belong to the views); Export again is remembered only while the model is open.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).
@@ -278,15 +279,16 @@ planned click by click:
 - **v0.2.1 "Edges and points"** (agreed 2026-11-20, after v0.2.0): Push/pull in edge
   and point mode as an along-normal dragger (ARCHITECTURE §6 point 6); Inset doesn't
   start again on its result after Return.
-- **v0.2.2 "Draw on faces"**: lines, rectangles, circles on faces; polygon outline with
-  holes; inference snapping with coloured hints; push/pull through a drawn shape makes
-  a hole; automatic splitting of faces over four corners.
-- **v0.2.3 "Cut and divide"**: knife, loop cut, slide, subdivide, divide edges, poke,
+- **v0.2.2 "Draw on faces"** (agreed 2026-11-20, ARCHITECTURE §6 Draw): rectangles,
+  circles and lines on faces, snapping with coloured hints, direction lock.
+- **v0.2.3 "Outlines and holes"**: polygon outlines in a view with holes, double-sided
+  option; push/pull through a drawn shape makes a hole.
+- **v0.2.4 "Cut and divide"**: knife, loop cut, slide, subdivide, divide edges, poke,
   connect.
-- **v0.2.4 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in
+- **v0.2.5 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in
   point/edge mode dissolving, the reminder below), fill, split, flip, flip diagonal,
   triangulate / join into quads, double-sided.
-- **v0.2.5 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
+- **v0.2.6 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
 - Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
   faces (needs smoothing groups).
 

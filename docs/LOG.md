@@ -5,7 +5,11 @@ long, move the oldest entries to `LOG-archive.md` (newest first there too). Stat
 and open questions are in [`PLAN.md`](PLAN.md).
 
 ### 2026-11-20 — v0.2.1 confirmed; planning v0.2.2 "Draw on faces"
-- User: v0.2.1 all good. Proposal for v0.2.2 sent (click by click), waiting for answers.
+- User: v0.2.1 all good. Proposal for v0.2.2 sent (click by click). Answers: no hover
+  highlight; rectangles, circles, lines as proposed; snapping hints yes; direction lock
+  yes (after an explanation); push/pull "snap to a point's height" dropped. The user
+  found the drawing plan confusing and said to go ahead (revert if needed). Split:
+  v0.2.2 "Draw on faces", v0.2.3 "Outlines and holes"; later releases move up one.
 
 ### 2026-11-20 — v0.2.1 "Edges and points"
 - Agreed ("perfect"): Push/pull in edge and point mode as an along-normal dragger, and

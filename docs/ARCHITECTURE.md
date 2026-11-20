@@ -334,11 +334,28 @@ the model gets:
   group or auto smooth; box-projected texture coordinates at the texel target.
 - **Draw** (Shift+D):
   - on a face: lines, rectangles and circles drawn onto a face split it into new faces;
+    v0.2.2 (agreed 2026-11-20; the user found the plan hard to picture and said to go
+    ahead and revert if it doesn't work out): Properties chooses Rectangle / Circle /
+    Line. No face highlight while hovering; only a snap marker when a snap catches.
+    Works on any face in 3D, on faces facing you in 2D. Rectangle: click a corner,
+    click the opposite corner, lined up with the face's first edge; then typed width /
+    height or dragged corners; Return cuts it in, Esc cancels. Circle: click the centre,
+    click the radius; typed radius and segments (8 to start). Line: click, click, ...
+    Return; it must run from an edge of the face to another edge (else red). The shape
+    becomes its own face(s); the rest of the face is split into 3- and 4-corner faces;
+    neighbours sharing a split edge get the new point too (the surface stays closed).
+    The shape ends up selected. A shape must stay inside the one face (touching its
+    edge is fine: a door from the floor). Push/pull on a selected drawn shape pushes
+    all of it (its faces are coplanar and connected, and selected).
+  - snapping while drawing: grid, points (green), midpoints (cyan), on an edge (red),
+    face centres (blue); a line segment close to X / Y / Z clicks onto it and shows in
+    that axis's colour; Shift locks the direction. Push/pull keeps grid steps only (the
+    "snap to a point's height" idea was dropped, 2026-11-20).
   - in a view: a polygon outline point by point (click the first point to close),
     filled automatically; holes allowed; option to make it double-sided.
 - **Push/pull** (Shift+F): click a face (or a drawn shape on a face), drag in or out
   along its normal, or type the distance; pushing all the way through a solid cuts a
-  hole (with drawing on faces, v0.2.2). Click by click (agreed 2026-11-20):
+  hole (v0.2.3). Click by click (agreed 2026-11-20):
   1. The face under the cursor lights up: any face in the 3D view; in a 2D view a face
      seen edge-on (a line), dragged across the view like a brush side.
   2. Press and drag moves it along its normal; side walls appear live; the distance
@@ -355,7 +372,7 @@ the model gets:
      distance, Return / Esc as with faces. In 2D views: when that normal isn't pointing
      at the viewer (stacked points: the nearest one).
      Extruding inner edges or points is not planned (fins and loose lines; a spike
-     from a point is Poke, v0.2.3).
+     from a point is Poke, v0.2.4).
 - **Inference snapping** while drawing, pushing and moving: endpoints, midpoints, edges,
   face centres, axis directions, parallel and perpendicular to edges; a coloured hint
   shows the active snap; holding Shift locks the current direction.
@@ -375,7 +392,7 @@ the model gets:
   changing a setting does not start a new inset on the inner faces; clicking faces
   does (agreed 2026-11-20, after v0.2.0).
 - **Bevel** (edges or corners, typed width, 1–3 segments) shares the Extrude tool
-  (v0.2.5).
+  (v0.2.6).
 - **Tool buttons** (agreed 2026-11-20): every tool gets a button in the Tools panel
   under Select / Vertex / Primitives (Push/pull, Extrude, Inset; later Draw, Cut, ...).
   One-step commands (Mirror, Flatten, later Merge, Flip, Subdivide, ...) stay in the
