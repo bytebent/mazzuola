@@ -4,6 +4,11 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.3 agreed
+- Repo re-checked after the audit merge (build folders gone, release rule, export pair,
+  view fallback, hashes); reported to the user. v0.2.3 proposal (holes by pushing
+  through, Outline with holes, double-sided): "yep to all".
+
 ### 2026-11-20 — Audit fixes (merged into main by the user's go-ahead, no version release)
 - **Releases shipped later code** (twice: v0.0.0 got a later build fix, v0.1.0 later
   docs): any run on main published every notes file without a release, with its own

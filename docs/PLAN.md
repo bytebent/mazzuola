@@ -15,7 +15,7 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   faces", v0.1.3 "Typed values", v0.1.4 "Out of the app"; alpha 2 = milestone 2:
   v0.2.0 "Push and pull", v0.2.1 "Edges and points" (confirmed good), v0.2.2 "Draw on
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool).
-- **Next:** the user tries v0.2.2; then v0.2.3 "Outlines and holes" is planned with them.
+- **Next:** building v0.2.3 "Outlines and holes" (agreed 2026-11-20).
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -276,8 +276,9 @@ planned click by click:
   start again on its result after Return.
 - **v0.2.2 "Draw on faces"** (agreed 2026-11-20, ARCHITECTURE §6 Draw): rectangles,
   circles and lines on faces, snapping with coloured hints, direction lock.
-- **v0.2.3 "Outlines and holes"**: polygon outlines in a view with holes, double-sided
-  option; push/pull through a drawn shape makes a hole.
+- **v0.2.3 "Outlines and holes"** (agreed 2026-11-20, ARCHITECTURE §6 Draw): push/pull
+  through a drawn shape makes a hole (window first, then doorways touching an edge);
+  Outline in Draw (2D views) with holes; double-sided.
 - **v0.2.4 "Cut and divide"**: knife, loop cut, slide, subdivide, divide edges, poke,
   connect.
 - **v0.2.5 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in

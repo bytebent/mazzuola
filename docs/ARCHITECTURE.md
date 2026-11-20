@@ -347,6 +347,13 @@ the model gets:
     The shape ends up selected. A shape must stay inside the one face (touching its
     edge is fine: a door from the floor). Push/pull on a selected drawn shape pushes
     all of it (its faces are coplanar and connected, and selected).
+  - v0.2.3 (agreed 2026-11-20, "yep to all"): (1) pushing a drawn shape into a solid
+    until it reaches the face on the other side makes a hole straight through (both
+    shapes go, walls join them; less is a recess); (2) Draw's fourth choice
+    **Outline**: in a 2D view, click points (grid snapping), click the first point to
+    close; it becomes a flat shape facing you, which Push/pull can make solid; (3) after
+    closing, outlines clicked inside it become holes; Return finishes; (4) a
+    Double-sided checkbox for outlines.
   - snapping while drawing: grid, points (green), midpoints (cyan), on an edge (red),
     face centres (blue); a line segment close to X / Y / Z clicks onto it and shows in
     that axis's colour; Shift locks the direction. Push/pull keeps grid steps only (the
