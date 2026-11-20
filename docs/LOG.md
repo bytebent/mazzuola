@@ -9,7 +9,8 @@ and open questions are in [`PLAN.md`](PLAN.md).
   docs): any run on main published every notes file without a release, with its own
   build. Now a version release is tagged at the commit that added its notes and only
   published from a build whose code (outside `docs/`) matches that commit; otherwise
-  the run warns. The `--latest` mark only goes to the newest version. Checked against
+  the run warns. The `--latest` mark only goes to the newest version (counting notes on
+  main, so a late re-run of an old build doesn't take it). Checked against
   the real history: the new rule holds back v0.0.0 and tags v0.1.0 at its notes commit.
 - **Build folders removed** from the repo: `build-core/` (61 MB) and `build-dbg/`
   (42 MB), committed since alpha 1, with workspace paths and a Linux version string.
@@ -18,7 +19,8 @@ and open questions are in [`PLAN.md`](PLAN.md).
   second rename failed, an old `.gltf` was left next to a new `.bin`. Now
   `commitExportFiles` moves the old files aside first and puts them back on any
   failure. Probe: with the old loop the new test fails (2 checks: old `.bin` gone);
-  with the fix it passes.
+  with the fix it passes. Only plain files are replaced: a folder with the export's name
+  is refused with an error and left alone (first version moved it aside; found by hand).
 - **Views without anti-aliasing as a fallback:** if the multisampled view buffer can't
   be made (GPU memory, huge view), the view draws straight into its texture with its
   own depth buffer instead of staying blank. `MAZZ_VIEW_SAMPLES=0` forces this path; CI
@@ -30,8 +32,12 @@ and open questions are in [`PLAN.md`](PLAN.md).
 - PLAN.md status rewritten (it still said "redesign milestone 1" above v0.2.x);
   HANDOFF "where things stand" and mistakes updated; DEV.md: fingerprints,
   `MAZZ_VIEW_SAMPLES`, release rules.
-- Tests: core 971 checks; UI scripts at 1×, 2× and without anti-aliasing pass; idle
-  check control, 1×, 2× and without anti-aliasing: 0 ticks.
+- Tests: core 976 checks; UI scripts at 1×, 2×, without anti-aliasing and both together
+  pass; idle check control, 1×, 2× and without anti-aliasing: 0 ticks. By hand: exports
+  over existing files (.gltf twice, .glb, .obj) read back with an outside glTF/OBJ
+  reader, `.bin` size matches the `.gltf`, no leftovers. The release script was dry-run
+  with a fake `gh` against real commits (v0.0.0 held back, v0.1.0 tagged at its notes
+  commit, `--latest` only on the newest).
 
 ### 2026-11-20 — v0.2.2 "Draw on faces"
 - `core/draw_ops`: `faceFrame`, `splitPolygon` (convex: bands across; otherwise ear

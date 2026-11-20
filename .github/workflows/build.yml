@@ -113,7 +113,10 @@ jobs:
               --title "Mazzuola ${GITHUB_REF_NAME}" --notes-file "$notes" --verify-tag
           else
             # Version releases first, so they don't depend on main not having moved on.
-            newest="$(ls docs/releases/v*.md | xargs -n1 basename | sed 's/\.md$//' | sort -V | tail -1)"
+            # Newest version, also counting notes on main (a re-run of an old build must not
+            # mark its version as the latest one).
+            newest="$( { ls docs/releases/; git ls-tree --name-only origin/main docs/releases/ 2>/dev/null; } |
+              xargs -n1 basename | grep -E '^v[0-9.]+\.md$' | sed 's/\.md$//' | sort -V | tail -1)"
             for notes in docs/releases/v*.md; do
               [ -f "$notes" ] || continue
               tag="$(basename "$notes" .md)"

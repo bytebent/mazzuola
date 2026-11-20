@@ -306,6 +306,18 @@ void testCommitAllOrNothing() {
     CHECK(readText(bin) == "new bin");
     CHECK(readText(gltf) == "new gltf");
     CHECK(noLeftovers(dir));
+
+    // A folder with the .gltf's name: refused before anything moves, folder untouched.
+    fs::remove(gltf);
+    fs::create_directories(gltf);
+    writeText(gltf / "keep.txt", "keep");
+    writeText(dir / "m.bin.saving", "newer bin");
+    writeText(dir / "m.gltf.saving", "newer gltf");
+    CHECK(!commitExportFiles(files, err));
+    CHECK(!err.empty());
+    CHECK(fs::is_directory(gltf) && readText(gltf / "keep.txt") == "keep");
+    CHECK(readText(bin) == "new bin");
+    CHECK(noLeftovers(dir));
     fs::remove_all(dir);
 }
 

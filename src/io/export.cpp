@@ -122,6 +122,16 @@ bool commitExportFiles(const std::vector<std::pair<std::string, std::string>>& f
             if (!backups[i].empty()) std::rename(backups[i].c_str(), files[i].second.c_str());
         for (const auto& f : files) std::remove(f.first.c_str());
     };
+    // Only plain files get replaced: a folder (or anything else) with the name is left alone.
+    for (const auto& f : files) {
+        std::error_code ec;
+        const fs::file_status st = fs::symlink_status(f.second, ec);
+        if (fs::exists(st) && !fs::is_regular_file(st)) {
+            error = "there is a folder or other non-file named " + fs::path(f.second).filename().string();
+            for (const auto& g : files) std::remove(g.first.c_str());
+            return false;
+        }
+    }
     for (size_t i = 0; i < files.size(); ++i) {
         std::error_code ec;
         if (!fs::exists(files[i].second, ec)) continue;

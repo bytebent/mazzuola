@@ -181,8 +181,8 @@ policy), with everything it can show open, not only an empty app.
 
 Version: `v0.<milestone>.<patch>`, set in `project(... VERSION ...)` in `CMakeLists.txt`.
 Add `docs/releases/vX.Y.Z.md` (append `docs/releases/INSTALL.md`) and push to `main`. CI
-makes the tag and release after the builds pass (about 7–8 minutes). Add the notes in the
-release's last code commit (docs may follow): commits after it that change code make CI
+makes the tag and release after the builds pass (about 7–8 minutes). Add the notes on `main`
+in the release's last code commit (docs may follow): commits after it that change code make CI
 hold the release back with a warning. Tag pushes are
 blocked in the AI workspace, so this file-driven route is the one to use.
 
