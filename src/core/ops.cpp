@@ -49,6 +49,8 @@ Face flipped(const Face& f) {
         g.uv[k] = f.uv[f.n - 1 - k];
         g.col[k] = f.col[f.n - 1 - k];
     }
+    // Reversed, the old v0-v2 diagonal runs between the new v3 and v1: keep the same split.
+    if (f.n == 4) g.diag = !f.diag;
     return g;
 }
 

@@ -210,7 +210,7 @@ to the GPU → one redraw of the views that show it.
 
 | Action | Keys |
 |---|---|
-| Tools: Select / Vertex / Primitives / Draw / Push-pull / Extrude / Cut / Lathe-loft / Vertex brush / Mapping / Paint / Vertex colour | **Shift+S** / **Shift+V** / **Shift+B** / **Shift+D** / **Shift+F** / **Shift+E** / **Shift+X** / **Shift+C** / **Shift+G** / **Shift+A** / **Shift+P** / **Shift+O** |
+| Tools: Select / Vertex / Primitives / Draw / Push-pull / Extrude / Inset / Cut / Lathe-loft / Vertex brush / Mapping / Paint / Vertex colour | **Shift+S** / **Shift+V** / **Shift+B** / **Shift+D** / **Shift+F** / **Shift+E** / **Shift+I** / **Shift+X** / **Shift+C** / **Shift+G** / **Shift+A** / **Shift+P** / **Shift+O** |
 | Selection mode: vertex / edge / face / piece | **1** / **2** / **3** / **4** |
 | Select all / none | **Cmd+A** / **Esc** |
 | Shrink / grow selection | **Cmd+è** / **Cmd++** (user, 2026-11-19; like the grid keys) |
@@ -338,15 +338,39 @@ the model gets:
     filled automatically; holes allowed; option to make it double-sided.
 - **Push/pull** (Shift+F): click a face (or a drawn shape on a face), drag in or out
   along its normal, or type the distance; pushing all the way through a solid cuts a
-  hole.
+  hole (with drawing on faces, v0.2.1). Click by click (agreed 2026-11-20):
+  1. The face under the cursor lights up: any face in the 3D view; in a 2D view a face
+     seen edge-on (a line), dragged across the view like a brush side.
+  2. Press and drag moves it along its normal; side walls appear live; the distance
+     snaps to grid steps and shows in Properties, where it can be typed.
+  3. Return applies, Esc cancels; releasing the mouse keeps the preview (to type a
+     value). Starting to push another face applies the pending push first.
+  4. Faces around it at right angles to it (a box's sides) stretch: pushing a box's
+     side makes the box longer. Otherwise new side faces are made. Holding **Cmd** when
+     the drag starts always makes new faces.
+  5. Only the face clicked, never the selection (several faces: extrude).
 - **Inference snapping** while drawing, pushing and moving: endpoints, midpoints, edges,
   face centres, axis directions, parallel and perpendicular to edges; a coloured hint
   shows the active snap; holding Shift locks the current direction.
 - **Extrude** (Shift+E): faces as one region or each on its own, along normals or in a
   straight direction, typed distance; edges too. **Keep original** leaves a reversed copy
   behind (turns a flat shape into a solid). New side faces get smoothing groups by angle
-  or as one group. **Inset** (region / each face) and **bevel** (edges or corners, typed
-  width, 1–3 segments) share the tool.
+  or as one group (milestone 3, with smoothing groups). Agreed 2026-11-20: acts on the
+  selected faces, or on selected open edges (those extrude straight, making a strip
+  of faces); Properties: Region / Each face, Along normals / Straight (X, Y or Z),
+  Distance, Keep original; a live preview with an arrow to drag in the views; Return
+  applies, Esc cancels; the new end faces (or new edges) end up selected, ready to
+  extrude again.
+- **Inset** (Shift+I, its own tool and button; agreed 2026-11-20): a smaller copy of a
+  face inside it, with a ring of new faces round it. Region / Each face, typed width,
+  optional depth (inset and push in one step). The inner faces end up selected. Too
+  wide for the face: the preview turns red and Return does nothing.
+- **Bevel** (edges or corners, typed width, 1–3 segments) shares the Extrude tool
+  (v0.2.4).
+- **Tool buttons** (agreed 2026-11-20): every tool gets a button in the Tools panel
+  under Select / Vertex / Primitives (Push/pull, Extrude, Inset; later Draw, Cut, ...).
+  One-step commands (Mirror, Flatten, later Merge, Flip, Subdivide, ...) stay in the
+  menus only.
 - **Bridge** (join two open edge loops), **shell** (give an open surface a typed
   thickness: inner wall plus rim).
 - **Divide**: **subdivide** selected faces (2×2 or N×M; plain or smoothed), **divide

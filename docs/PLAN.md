@@ -267,7 +267,39 @@ each tried by the user before the next starts:
 Before each of v0.1.1–v0.1.4 starts, write its steps here the same way as v0.1.0's,
 taking in the user's feedback on the release before.
 
-## Milestone 2 — Modelling
+## Milestone 2 — Modelling: **alpha 2**
+
+**Releases (agreed with the user 2026-11-20).** Each is tried before the next is
+planned click by click:
+- **v0.2.0 "Push and pull"**: push/pull, extrude, inset (design: ARCHITECTURE §6,
+  agreed 2026-11-20), tool buttons in the Tools panel.
+- **v0.2.1 "Draw on faces"**: lines, rectangles, circles on faces; polygon outline with
+  holes; inference snapping with coloured hints; push/pull through a drawn shape makes
+  a hole; automatic splitting of faces over four corners.
+- **v0.2.2 "Cut and divide"**: knife, loop cut, slide, subdivide, divide edges, poke,
+  connect.
+- **v0.2.3 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in
+  point/edge mode dissolving, the reminder below), fill, split, flip, flip diagonal,
+  triangulate / join into quads, double-sided.
+- **v0.2.4 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
+- Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
+  faces (needs smoothing groups).
+
+**Steps of v0.2.0:**
+- **A. Core operations** (`core/model_ops`): push/pull of one face (stretch the
+  neighbours at right angles, else new side faces; forced new faces), extrude faces
+  (region / each, along normals / straight, keep original), extrude open edges, inset
+  (region / each, width, depth, "too wide" check). Tests: valid mesh, closed stays
+  closed, winding outward, exact positions, counts.
+- **B. Push/pull tool** (Shift+F, button): hover, drag along the normal (3D any face,
+  2D edge-on faces), grid steps, typed distance, Return / Esc, release keeps the
+  preview, a new push applies the pending one, Cmd = new faces. UI script.
+- **C. Extrude tool** (Shift+E, button): Properties, live preview, arrow handle,
+  Return / Esc, result selected. UI script.
+- **D. Inset tool** (Shift+I, button): Properties, live preview, red when too wide,
+  inner faces selected. UI script.
+- **E. Release v0.2.0**: Tools menu entries, controls, README, release notes,
+  screenshots, idle check.
 
 **Reminder (user, 2026-11-19):** consider making Delete in point/edge mode dissolve
 automatically (keep the surface closed) instead of removing the faces around.

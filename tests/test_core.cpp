@@ -16,6 +16,7 @@ using namespace mazz;
 void testModel(); // test_model.cpp
 void testIo();    // test_io.cpp
 void testExport(); // test_export.cpp
+void testModelOps(); // test_model_ops.cpp
 
 static void testGrid() {
     Grid g;
@@ -254,6 +255,7 @@ int main() {
     testModel();
     testIo();
     testExport();
+    testModelOps();
     if (gFailures) {
         std::fprintf(stderr, "%d of %d checks failed\n", gFailures, gChecks);
         return 1;
