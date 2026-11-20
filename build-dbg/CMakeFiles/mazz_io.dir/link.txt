@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmazz_io.a CMakeFiles/mazz_io.dir/src/io/mazz_file.cpp.o CMakeFiles/mazz_io.dir/src/io/export.cpp.o
+/usr/bin/ranlib libmazz_io.a

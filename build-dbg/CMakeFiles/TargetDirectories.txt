@@ -1,0 +1,6 @@
+/home/claude/mazzuola/build-dbg/CMakeFiles/mazz_core.dir
+/home/claude/mazzuola/build-dbg/CMakeFiles/mazz_io.dir
+/home/claude/mazzuola/build-dbg/CMakeFiles/mazz_core_tests.dir
+/home/claude/mazzuola/build-dbg/CMakeFiles/test.dir
+/home/claude/mazzuola/build-dbg/CMakeFiles/edit_cache.dir
+/home/claude/mazzuola/build-dbg/CMakeFiles/rebuild_cache.dir

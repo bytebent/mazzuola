@@ -21,6 +21,10 @@ PushKind pushKind(const Mesh& m, int face, bool forceNew);
 // Pushes `face` by `distance` cm along its normal (negative: in). On success `moved`
 // (if given) is the pushed face's index afterwards.
 bool pushPull(MeshEdit& e, int face, double distance, bool forceNew, int* moved = nullptr);
+// The same for several faces lying flat together (a drawn shape split into pieces):
+// they go as one. `moved` gets where they are afterwards.
+PushKind pushKind(const Mesh& m, const std::set<int>& faces, bool forceNew);
+bool pushPullFaces(MeshEdit& e, const std::set<int>& faces, double distance, bool forceNew, std::set<int>* moved = nullptr);
 
 // ---- push/pull in edge and point mode: an along-normal dragger (no new faces)
 // The surface's normal at an edge (faces using both its points) or at points (faces

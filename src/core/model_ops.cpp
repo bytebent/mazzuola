@@ -226,23 +226,27 @@ double signedVolume(const Mesh& m) {
 
 // ---------------------------------------------------------------- push/pull
 
-PushKind pushKind(const Mesh& m, int face, bool forceNew) {
-    const std::set<DirEdge> mine = directedEdges(m, {face});
+PushKind pushKind(const Mesh& m, int face, bool forceNew) { return pushKind(m, std::set<int>{face}, forceNew); }
+
+PushKind pushKind(const Mesh& m, const std::set<int>& region, bool forceNew) {
+    const std::set<DirEdge> mine = directedEdges(m, region);
     std::set<DirEdge> others;
     for (int fi = 0; fi < (int)m.faces.size(); ++fi)
-        if (fi != face) {
+        if (!region.count(fi)) {
             const Face& f = m.faces[fi];
             for (int k = 0; k < f.n; ++k) others.insert({f.v[k], f.v[(k + 1) % f.n]});
         }
     for (const DirEdge& d : mine)
-        if (!others.count({d.second, d.first})) return PushKind::Solid;
+        if (!mine.count({d.second, d.first}) && !others.count({d.second, d.first})) return PushKind::Solid;
     if (forceNew) return PushKind::NewFaces;
-    const Vec3 n = faceNormal(m, face);
+    const Vec3 n = faceNormal(m, *region.begin());
     std::set<int> verts;
-    const Face& f = m.faces[face];
-    for (int k = 0; k < f.n; ++k) verts.insert(f.v[k]);
+    for (int fi : region) {
+        const Face& f = m.faces[fi];
+        for (int k = 0; k < f.n; ++k) verts.insert(f.v[k]);
+    }
     for (int fi : facesUsing(m, verts)) {
-        if (fi == face) continue;
+        if (region.count(fi)) continue;
         const Vec3 o = faceNormal(m, fi);
         if (length(o) == 0 || std::fabs(dot(o, n)) > 1e-6) return PushKind::NewFaces;
     }
@@ -250,39 +254,43 @@ PushKind pushKind(const Mesh& m, int face, bool forceNew) {
 }
 
 bool pushPull(MeshEdit& e, int face, double distance, bool forceNew, int* moved) {
+    std::set<int> out;
+    if (!pushPullFaces(e, {face}, distance, forceNew, &out)) return false;
+    if (moved) *moved = *out.begin();
+    return true;
+}
+
+bool pushPullFaces(MeshEdit& e, const std::set<int>& region, double distance, bool forceNew, std::set<int>* moved) {
     const Mesh& m = e.mesh();
-    if (face < 0 || face >= (int)m.faces.size() || std::fabs(distance) < kTiny) return false;
-    const Vec3 n = faceNormal(m, face);
+    if (region.empty() || std::fabs(distance) < kTiny) return false;
+    for (int f : region)
+        if (f < 0 || f >= (int)m.faces.size()) return false;
+    const Vec3 n = faceNormal(m, *region.begin());
     if (length(n) == 0) return false;
-    switch (pushKind(m, face, forceNew)) {
+    switch (pushKind(m, region, forceNew)) {
     case PushKind::Stretch: {
         std::set<int> verts;
-        const Face f = m.faces[face];
-        for (int k = 0; k < f.n; ++k) verts.insert(f.v[k]);
+        for (int fi : region) {
+            const Face& f = m.faces[fi];
+            for (int k = 0; k < f.n; ++k) verts.insert(f.v[k]);
+        }
         const std::set<int> around = facesUsing(m, verts);
         std::map<int, Vec3> before;
         for (int fi : around) before[fi] = faceNormal(m, fi);
         for (int v : verts) e.setVert(v, m.verts[v] + n * distance);
         for (int fi : around)
             if (!faceOk(e.mesh(), e.mesh().faces[fi], &before[fi])) return false;
-        if (moved) *moved = face;
+        if (moved) *moved = region;
         return true;
     }
-    case PushKind::NewFaces: {
-        ExtrudeParams p;
-        p.distance = distance;
-        std::set<int> out;
-        if (!extrudeFaces(e, {face}, p, &out)) return false;
-        if (moved) *moved = *out.begin();
-        return true;
-    }
+    case PushKind::NewFaces:
     case PushKind::Solid: {
         ExtrudeParams p;
         p.distance = distance;
-        p.keepOriginal = true;
+        p.keepOriginal = pushKind(m, region, forceNew) == PushKind::Solid;
         std::set<int> out;
-        if (!extrudeFaces(e, {face}, p, &out)) return false;
-        if (moved) *moved = *out.begin();
+        if (!extrudeFaces(e, region, p, &out)) return false;
+        if (moved) *moved = out;
         return true;
     }
     }
