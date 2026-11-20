@@ -1,0 +1,71 @@
+# Alpha 2, v0.2.1: Push/pull in edge and point mode (ARCHITECTURE §6 point 6): the
+# edge or point under the cursor moves along the surface's normal; faces tilt, none new.
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up), 3 Right. Grid 8, snap on.
+vworld 2 0 0 0
+wheel -3
+vworld 1 0 0 0
+wheel -3
+wait 2
+addbox 0 0 0 64 48 32
+key 2
+key Shift+F
+expect tool Push/pull
+
+# ---- Edge: the top-front edge (seen end-on in the Front view, the front one is nearer)
+# Its normal is halfway between up and front; dragging up 16 along it.
+vworld 2 32 0 32
+wait 2
+press left
+wait 1
+vworld 2 32 0 38
+wait 1
+vworld 2 32 0 44
+wait 1
+release left
+wait 1
+expect armed 1
+expect pushdist 16
+expect faces 6
+expect verts 8
+expect bounds 0 -11.314 0 64 48 43.314
+key Return
+wait 1
+expect undo 2
+expect faces 6
+
+# ---- Point: the bottom-back-right corner (Right view, nearer than the left one),
+# typed 16 along (1, 1, -1)/sqrt(3)
+key 1
+vworld 3 64 48 0
+wait 2
+press left
+wait 1
+vworld 3 64 54 -6
+wait 1
+release left
+wait 1
+expect armed 1
+toolset pushpull distance 16
+expect bounds 0 -11.314 -9.238 73.238 57.238 43.314
+expect faces 6
+wait 2
+shot a2-push-point.png
+key Return
+expect undo 3
+
+# ---- Too far: faces would turn over, red, Return does nothing
+vworld 1 0 0 32
+wait 2
+press left
+wait 1
+vworld 1 6 6 32
+wait 1
+release left
+wait 1
+toolset pushpull distance -200
+expect opvalid 0
+key Return
+expect undo 3
+key Esc
+expect armed 0
+quit

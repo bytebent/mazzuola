@@ -44,6 +44,7 @@ void InsetTool::properties(ToolEnv& env) {
     if (ImGui::RadioButton("Region", !params_.each)) params_.each = false, ch = true;
     ImGui::SameLine();
     if (ImGui::RadioButton("Each face", params_.each)) params_.each = true, ch = true;
+    if (afterApply_ && !armed_) dimWrapped("Done. Click faces to inset again.");
     applyButtons(env, "Too wide for these faces.");
     if (ch) changed(env);
 }

@@ -9,7 +9,10 @@
 //  - faces around it at right angles stretch, else new side faces; Cmd at the press
 //    always makes new faces; a flat shape becomes a solid;
 //  - only the face clicked, never the selection.
+// In edge and point mode (point 6) it drags the edge or point under the cursor along
+// the surface's normal there; the faces around tilt, no new faces.
 #include "tools/tool.hpp"
+#include <set>
 
 namespace mazz {
 
@@ -28,8 +31,18 @@ public:
     void cancel(ToolEnv& env) override;
     bool busy() const override { return state_ != State::Idle; }
 
+    // What a push works on: a face, or the points of an edge or a single point.
+    struct Target {
+        int face = -1;       // face mode
+        std::set<int> verts; // edge (2 points) or point (1) mode
+        bool edge = false;
+        bool valid() const { return face >= 0 || !verts.empty(); }
+        bool operator==(const Target& o) const { return face == o.face && verts == o.verts; }
+    };
     // The face a push would start on at this point (-1: none).
     static int faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy);
+    // What a push would start on here for the selection mode (edges, points, else faces).
+    static Target targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode);
     // Applies the pending push (Return). False if there is none or it isn't possible.
     bool apply(ToolEnv& env);
     // Scripts and the typed field: the pending push's distance.
@@ -41,19 +54,22 @@ public:
 private:
     enum class State { Idle, Dragging, Pending };
     State state_ = State::Idle;
-    int face_ = -1;          // the face pushed (index in the model before the push)
-    int moved_ = -1;         // where it is in the preview
+    Target target_;        // what is pushed (indices in the model before the push)
+    int moved_ = -1;       // face mode: where the face is in the preview
     bool forceNew_ = false;
-    int kind_ = 0;           // PushKind at the start
-    Vec3 origin_, normal_;   // the face's centre and normal before the push
+    int kind_ = 0;         // PushKind at the start (face mode)
+    Vec3 origin_, normal_; // centre and normal before the push
     double distance_ = 0;
     double startDistance_ = 0, startT_ = 0; // at the press
     int view_ = -1;
     bool valid_ = true;
-    int hover_ = -1, hoverView_ = -1;       // highlighted face
+    Target hover_; // highlighted
+    int hoverView_ = -1;
 
-    void begin(ToolEnv& env, int face, bool forceNew);
+    void begin(ToolEnv& env, const Target& t, bool forceNew);
     void refresh(ToolEnv& env);
+    // The target's centre and push direction; false if it has none.
+    static bool frame(const Mesh& m, const Target& t, Vec3& origin, Vec3& normal);
 };
 
 } // namespace mazz

@@ -37,6 +37,9 @@ protected:
     // Builds the result into `e` from `source`; sets `result` (the new selection).
     virtual bool compute(MeshEdit& e, const Selection& source, Selection& result) = 0;
     virtual std::string stepName() const = 0;
+    // After Return, does changing a setting start again on the result? (Extrude: yes,
+    // ready to extrude again; Inset: no, until faces are clicked again.)
+    virtual bool againAfterApply() const { return true; }
     // Optional drag handle (Extrude's arrow): true if the press grabbed it.
     virtual bool pressHandle(ToolEnv&, const Pointer&) { return false; }
     virtual void dragHandle(ToolEnv&, const Pointer&) {}
@@ -51,6 +54,7 @@ protected:
     bool armed_ = false, valid_ = true;
     bool picking_ = false, dragging_ = false;
     bool wantArm_ = false;
+    bool afterApply_ = false; // Return was the last thing; nothing new picked since
     long seenSel_ = -1;       // selection version when the preview last stopped
 
     void arm(ToolEnv& env);

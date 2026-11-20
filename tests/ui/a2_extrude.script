@@ -77,9 +77,20 @@ wait 1
 expect undo 3
 expect faces 18
 expect selected 1
-# Too wide: red, Return does nothing
+# After Return, a new width waits for faces to be clicked (no inset inside the inset)
 toolset inset depth 0
 toolset inset width 30
+expect armed 0
+expect faces 18
+expect undo 3
+vworld 1 32 24 0
+wait 2
+press left
+wait 1
+release left
+wait 2
+expect armed 1
+# Too wide: red, Return does nothing
 expect opvalid 0
 key Return
 expect undo 3

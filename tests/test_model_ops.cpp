@@ -292,6 +292,38 @@ void testInsetRegion() {
     CHECK(isClosed(t));
 }
 
+void testPushEdgesAndPoints() {
+    // A box's top-front edge: normal halfway between up and front; pushing it out
+    // tilts the top and the front, no new faces.
+    Mesh m = box({0, 0, 0}, {100, 100, 100});
+    std::set<int> edge;
+    for (int i = 0; i < (int)m.verts.size(); ++i)
+        if (m.verts[i].y == 0 && m.verts[i].z == 100) edge.insert(i);
+    CHECK(edge.size() == 2);
+    const Vec3 n = surfaceNormal(m, edge, true);
+    CHECK(nearV(n, Vec3{0, -1, 1} * (1 / std::sqrt(2.0)), 1e-12));
+    MeshEdit e(m);
+    CHECK(pushPoints(e, edge, n, 10 * std::sqrt(2.0)));
+    CHECK(m.faces.size() == 6 && m.verts.size() == 8 && isClosed(m));
+    for (int v : edge) CHECK(nearV(m.verts[v], {m.verts[v].x, -10, 110}, 1e-9));
+    // Pushed in so far the top turns over: refused.
+    Mesh r = box({0, 0, 0}, {100, 100, 100});
+    MeshEdit er(r);
+    CHECK(!pushPoints(er, edge, n, -200));
+    // A corner point: along (1, 1, 1).
+    Mesh c = box({0, 0, 0}, {100, 100, 100});
+    int corner = -1;
+    for (int i = 0; i < (int)c.verts.size(); ++i)
+        if (nearV(c.verts[i], {100, 100, 100}, 0)) corner = i;
+    CHECK(nearV(surfaceNormal(c, {corner}, false), Vec3{1, 1, 1} * (1 / std::sqrt(3.0)), 1e-12));
+    // The edge of a lone flat face: straight up (its only face).
+    Mesh q = quad(100, 100);
+    CHECK(nearV(surfaceNormal(q, {2, 3}, true), {0, 0, 1}, 1e-12));
+    MeshEdit eq(q);
+    CHECK(pushPoints(eq, {2, 3}, {0, 0, 1}, 40));
+    CHECK(q.verts[2].z == 40 && q.verts[3].z == 40 && q.verts[0].z == 0);
+}
+
 void testFlippedKeepsDiagonal() {
     // Turning a quad round keeps the same triangles (the split stays on the same points).
     Face f;
@@ -316,4 +348,5 @@ void testModelOps() {
     testInset();
     testInsetRegion();
     testFlippedKeepsDiagonal();
+    testPushEdgesAndPoints();
 }

@@ -22,6 +22,15 @@ PushKind pushKind(const Mesh& m, int face, bool forceNew);
 // (if given) is the pushed face's index afterwards.
 bool pushPull(MeshEdit& e, int face, double distance, bool forceNew, int* moved = nullptr);
 
+// ---- push/pull in edge and point mode: an along-normal dragger (no new faces)
+// The surface's normal at an edge (faces using both its points) or at points (faces
+// using any of them): the average of those faces' normals, unit length; zero if none
+// or they cancel out.
+Vec3 surfaceNormal(const Mesh& m, const std::set<int>& verts, bool edge);
+// Moves the points by distance along dir; the faces around tilt. False if one would
+// vanish or turn over.
+bool pushPoints(MeshEdit& e, const std::set<int>& verts, const Vec3& dir, double distance);
+
 // ---- extrude
 struct ExtrudeParams {
     bool each = false;         // each face on its own (else the selection as one region)

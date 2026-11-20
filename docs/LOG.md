@@ -4,6 +4,24 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.1 "Edges and points"
+- Agreed ("perfect"): Push/pull in edge and point mode as an along-normal dragger, and
+  Inset not starting again on its result; shipped as a small v0.2.1, so the later
+  releases move up by one (Draw on faces is now v0.2.2 ... Bevel v0.2.5).
+- `core/model_ops`: `surfaceNormal` (edge: faces using both its points; point: faces
+  using it; the unit average), `pushPoints` (moves the points; refused when a face
+  around vanishes or turns over).
+- `PushPullTool`: targets a face, an edge or a point by the selection mode; edges and
+  points are picked when their normal isn't within ~25° of the view direction (stacked
+  points in 2D: the nearest); highlight and arrow for edges and points.
+- `SelectionOpTool`: `againAfterApply()` (Extrude yes, Inset no); Inset says "Done.
+  Click faces to inset again."
+- Tests: core 876 checks (edge normal, edge pushed out / too far, corner normal, open
+  edge of a flat face); new UI script `a2_push_edges`, `a2_extrude` checks that a new
+  width after Return waits for a click; thirteen scripts at 1× and 2×; idle 0 ticks.
+- Screenshot `m2-05-push-point.png`. Version 0.2.1, README, Help → Controls, release
+  notes.
+
 ### 2026-11-20 — after v0.2.0: inset count checked; push/pull for edges and points agreed
 - User: inset seems to make more than 4 faces. Tested in the app: a lone 80 cm square,
   inset 10 → 5 faces, 8 points (4 new faces), as designed. Possible sources sent to

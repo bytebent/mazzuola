@@ -338,7 +338,7 @@ the model gets:
     filled automatically; holes allowed; option to make it double-sided.
 - **Push/pull** (Shift+F): click a face (or a drawn shape on a face), drag in or out
   along its normal, or type the distance; pushing all the way through a solid cuts a
-  hole (with drawing on faces, v0.2.1). Click by click (agreed 2026-11-20):
+  hole (with drawing on faces, v0.2.2). Click by click (agreed 2026-11-20):
   1. The face under the cursor lights up: any face in the 3D view; in a 2D view a face
      seen edge-on (a line), dragged across the view like a brush side.
   2. Press and drag moves it along its normal; side walls appear live; the distance
@@ -349,12 +349,13 @@ the model gets:
      side makes the box longer. Otherwise new side faces are made. Holding **Cmd** when
      the drag starts always makes new faces.
   5. Only the face clicked, never the selection (several faces: extrude).
-  6. Edge and point mode (agreed 2026-11-20, details still to settle): Push/pull drags
-     the edge or point under the cursor along the surface's normal there (the average
-     of its faces' normals); the faces around it tilt, no new faces. A shortcut for
-     moving it along that direction, with the same Return / Esc and typed distance.
+  6. Edge and point mode (agreed 2026-11-20): Push/pull drags the edge or point under
+     the cursor (it lights up) along the surface's normal there (the average of the
+     normals of its faces); the faces around it tilt, no new faces. Grid steps, typed
+     distance, Return / Esc as with faces. In 2D views: when that normal isn't pointing
+     at the viewer (stacked points: the nearest one).
      Extruding inner edges or points is not planned (fins and loose lines; a spike
-     from a point is Poke, v0.2.2).
+     from a point is Poke, v0.2.3).
 - **Inference snapping** while drawing, pushing and moving: endpoints, midpoints, edges,
   face centres, axis directions, parallel and perpendicular to edges; a coloured hint
   shows the active snap; holding Shift locks the current direction.
@@ -370,9 +371,11 @@ the model gets:
 - **Inset** (Shift+I, its own tool and button; agreed 2026-11-20): a smaller copy of a
   face inside it, with a ring of new faces round it. Region / Each face, typed width,
   optional depth (inset and push in one step). The inner faces end up selected. Too
-  wide for the face: the preview turns red and Return does nothing.
+  wide for the face: the preview turns red and Return does nothing. After Return,
+  changing a setting does not start a new inset on the inner faces; clicking faces
+  does (agreed 2026-11-20, after v0.2.0).
 - **Bevel** (edges or corners, typed width, 1–3 segments) shares the Extrude tool
-  (v0.2.4).
+  (v0.2.5).
 - **Tool buttons** (agreed 2026-11-20): every tool gets a button in the Tools panel
   under Select / Vertex / Primitives (Push/pull, Extrude, Inset; later Draw, Cut, ...).
   One-step commands (Mirror, Flatten, later Merge, Flip, Subdivide, ...) stay in the

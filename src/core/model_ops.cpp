@@ -289,6 +289,33 @@ bool pushPull(MeshEdit& e, int face, double distance, bool forceNew, int* moved)
     return false;
 }
 
+Vec3 surfaceNormal(const Mesh& m, const std::set<int>& verts, bool edge) {
+    Vec3 sum{0, 0, 0};
+    for (int fi = 0; fi < (int)m.faces.size(); ++fi) {
+        const Face& f = m.faces[fi];
+        int uses = 0;
+        for (int k = 0; k < f.n; ++k) uses += (int)verts.count(f.v[k]);
+        if (uses == 0 || (edge && uses < 2)) continue;
+        sum = sum + faceNormal(m, fi);
+    }
+    return length(sum) < 1e-9 ? Vec3{0, 0, 0} : unit(sum);
+}
+
+bool pushPoints(MeshEdit& e, const std::set<int>& verts, const Vec3& dir, double distance) {
+    const Mesh& m = e.mesh();
+    if (verts.empty() || length(dir) < 1e-9 || std::fabs(distance) < kTiny) return false;
+    const std::set<int> around = facesUsing(m, verts);
+    std::map<int, Vec3> before;
+    for (int fi : around) before[fi] = faceNormal(m, fi);
+    for (int v : verts) e.setVert(v, m.verts[v] + dir * distance);
+    for (int fi : around) {
+        const Face& f = e.mesh().faces[fi];
+        if (length(areaVector(e.mesh(), f)) * 0.5 < kTiny) return false;
+        if (dot(unit(areaVector(e.mesh(), f)), before[fi]) <= 0) return false; // turned over
+    }
+    return true;
+}
+
 // ---------------------------------------------------------------- extrude
 
 bool extrudeFaces(MeshEdit& e, const std::set<int>& faces, const ExtrudeParams& p, std::set<int>* out) {

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <vector>
 
 namespace mazz {
 
@@ -44,8 +45,9 @@ void outlineFace(ImDrawList* dl, const ViewGeom& g, const Mesh& m, int fi, ImU32
 } // namespace
 
 const char* PushPullTool::hint() const {
-    if (state_ == State::Idle) return "drag a face: push or pull it  (2D views: a face seen edge-on)  Cmd+drag: always new faces";
-    return "drag: distance  Return: apply  Esc: cancel  another face: applies this one first";
+    if (state_ == State::Idle)
+        return "drag a face (edge / point mode: an edge or point) along its normal  (2D: faces seen edge-on)  Cmd+drag: new faces";
+    return "drag: distance  Return: apply  Esc: cancel  pushing something else applies this one first";
 }
 
 int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy) {
@@ -81,16 +83,63 @@ int PushPullTool::faceAt(const Mesh& m, const ViewGeom& g, double sx, double sy)
     return best;
 }
 
-void PushPullTool::begin(ToolEnv& env, int face, bool forceNew) {
+PushPullTool::Target PushPullTool::targetAt(const Mesh& m, const ViewGeom& g, double sx, double sy, SelectMode mode) {
+    Target t;
+    Vec3 ro, rd;
+    g.ray(sx, sy, ro, rd);
+    if (mode == SelectMode::Edge) {
+        for (const Edge& e : edgesAt(m, g, sx, sy)) {
+            Target c;
+            c.verts = {e.first, e.second};
+            c.edge = true;
+            Vec3 o, n;
+            if (frame(m, c, o, n) && std::fabs(dot(n, rd)) < 0.9) return c; // can be dragged here
+        }
+        return t;
+    }
+    if (mode == SelectMode::Vert) {
+        // Stacked points (2D): the one nearest the viewer.
+        int best = -1;
+        double bestNear = 0;
+        for (int v : pointsAt(m, g, sx, sy)) {
+            const double nearness = -dot(m.verts[v], rd);
+            if (best < 0 || nearness > bestNear) best = v, bestNear = nearness;
+        }
+        if (best < 0) return t;
+        Target c;
+        c.verts = {best};
+        Vec3 o, n;
+        if (frame(m, c, o, n) && std::fabs(dot(n, rd)) < 0.9) return c;
+        return t;
+    }
+    t.face = faceAt(m, g, sx, sy);
+    return t;
+}
+
+bool PushPullTool::frame(const Mesh& m, const Target& t, Vec3& origin, Vec3& normal) {
+    if (t.face >= 0) {
+        if (t.face >= (int)m.faces.size()) return false;
+        origin = faceCentre(m, t.face);
+        normal = faceNormal(m, t.face);
+    } else {
+        if (t.verts.empty()) return false;
+        Vec3 sum{0, 0, 0};
+        for (int v : t.verts) sum = sum + m.verts[v];
+        origin = sum * (1.0 / t.verts.size());
+        normal = surfaceNormal(m, t.verts, t.edge);
+    }
+    return length(normal) > 0.5;
+}
+
+void PushPullTool::begin(ToolEnv& env, const Target& t, bool forceNew) {
     Document& doc = env.doc;
-    face_ = face;
-    moved_ = face;
+    target_ = t;
+    moved_ = t.face;
     forceNew_ = forceNew;
-    origin_ = faceCentre(doc.mesh, face);
-    normal_ = faceNormal(doc.mesh, face);
+    frame(doc.mesh, t, origin_, normal_);
     distance_ = 0;
     valid_ = true;
-    kind_ = (int)pushKind(doc.mesh, face, forceNew);
+    kind_ = t.face >= 0 ? (int)pushKind(doc.mesh, t.face, forceNew) : 0;
     doc.beginLive();
 }
 
@@ -100,12 +149,16 @@ void PushPullTool::refresh(ToolEnv& env) {
     MeshEdit& e = doc.live();
     e.revert();
     valid_ = true;
-    moved_ = face_;
+    moved_ = target_.face;
     if (distance_ != 0) {
-        int moved = -1;
-        valid_ = pushPull(e, face_, distance_, forceNew_, &moved);
-        if (valid_) moved_ = moved;
-        else e.revert(); // shown as it was, outlined in red
+        if (target_.face >= 0) {
+            int moved = -1;
+            valid_ = pushPull(e, target_.face, distance_, forceNew_, &moved);
+            if (valid_) moved_ = moved;
+        } else {
+            valid_ = pushPoints(e, target_.verts, normal_, distance_);
+        }
+        if (!valid_) e.revert(); // shown as it was, outlined in red
     }
     env.touch();
 }
@@ -118,32 +171,34 @@ void PushPullTool::setDistance(ToolEnv& env, double d) {
 
 void PushPullTool::press(ToolEnv& env, const Pointer& p) {
     Document& doc = env.doc;
-    const int at = faceAt(doc.mesh, p.g, p.sx, p.sy);
+    const SelectMode mode = doc.sel.mode;
     if (state_ == State::Pending) {
-        if (at < 0) return;
-        // The face being pushed: carry on with this push.
-        if (at == moved_ || (valid_ && at == face_ && distance_ == 0)) {
+        const Target at = targetAt(doc.mesh, p.g, p.sx, p.sy, mode);
+        if (!at.valid()) return;
+        // What is being pushed: carry on with this push (edges and points keep their
+        // indices; a face may have moved to a new one).
+        const bool same = target_.face >= 0 ? (at.face == moved_ || at.face == target_.face) : at.verts == target_.verts;
+        if (same) {
             state_ = State::Dragging;
             view_ = p.view;
             startDistance_ = distance_;
-            // Measure along the line through the face where it is now.
             if (!lineParam(p.g, origin_, normal_, p.sx, p.sy, startT_)) state_ = State::Pending;
             return;
         }
-        // Another face: the pending push goes in first.
+        // Something else: the pending push goes in first.
         if (!apply(env)) cancel(env);
     }
-    const int face = faceAt(doc.mesh, p.g, p.sx, p.sy);
-    if (face < 0) return;
-    double t;
-    const Vec3 n = faceNormal(doc.mesh, face), c = faceCentre(doc.mesh, face);
-    if (!lineParam(p.g, c, n, p.sx, p.sy, t)) return; // pointing straight at the viewer
-    begin(env, face, p.cmd);
+    const Target t = targetAt(doc.mesh, p.g, p.sx, p.sy, mode);
+    if (!t.valid()) return;
+    Vec3 o, n;
+    double tp;
+    if (!frame(doc.mesh, t, o, n) || !lineParam(p.g, o, n, p.sx, p.sy, tp)) return; // pointing at the viewer
+    begin(env, t, p.cmd);
     state_ = State::Dragging;
     view_ = p.view;
     startDistance_ = 0;
-    startT_ = t;
-    hover_ = -1;
+    startT_ = tp;
+    hover_ = Target{};
     env.touch();
 }
 
@@ -170,8 +225,8 @@ void PushPullTool::release(ToolEnv& env, const Pointer&) {
 }
 
 void PushPullTool::hover(ToolEnv& env, const Pointer& p) {
-    const int at = faceAt(env.doc.mesh, p.g, p.sx, p.sy);
-    if (at != hover_ || p.view != hoverView_) {
+    const Target at = targetAt(env.doc.mesh, p.g, p.sx, p.sy, env.doc.sel.mode);
+    if (!(at == hover_) || p.view != hoverView_) {
         hover_ = at;
         hoverView_ = p.view;
         env.touch();
@@ -183,7 +238,8 @@ bool PushPullTool::apply(ToolEnv& env) {
     if (!valid_ || distance_ == 0) return false;
     env.doc.commitLive("Push/pull");
     state_ = State::Idle;
-    face_ = moved_ = -1;
+    target_ = Target{};
+    moved_ = -1;
     env.touch();
     return true;
 }
@@ -204,7 +260,8 @@ bool PushPullTool::key(ToolEnv& env, int key, bool shift, bool cmd) {
 void PushPullTool::cancel(ToolEnv& env) {
     if (state_ != State::Idle) env.doc.cancelLive();
     state_ = State::Idle;
-    face_ = moved_ = -1;
+    target_ = Target{};
+    moved_ = -1;
     distance_ = 0;
     view_ = -1;
     env.touch();
@@ -212,12 +269,26 @@ void PushPullTool::cancel(ToolEnv& env) {
 
 void PushPullTool::overlay(const ToolEnv& env, const ViewGeom& g, int view, ImDrawList* dl) const {
     const Mesh& m = env.doc.mesh;
+    auto mark = [&](const Target& t, ImU32 col, float w, int face) {
+        if (face >= 0) {
+            outlineFace(dl, g, m, face, col, w);
+            return;
+        }
+        std::vector<ImVec2> pts;
+        for (int v : t.verts) {
+            double x, y;
+            if (v < (int)m.verts.size() && g.project(m.verts[v], x, y)) pts.push_back(ImVec2((float)x, (float)y));
+        }
+        if (pts.size() == 2) dl->AddLine(pts[0], pts[1], col, w + 1.0f);
+        for (const ImVec2& q : pts) dl->AddRectFilled({q.x - 4, q.y - 4}, {q.x + 4, q.y + 4}, col);
+    };
     if (state_ != State::Idle) {
-        outlineFace(dl, g, m, valid_ ? moved_ : face_, valid_ ? hoverColour() : badColour(), 2.5f);
-        drawDirArrow(dl, g, origin_ + normal_ * distance_, normal_, 40, valid_ ? hoverColour() : badColour(),
-                     state_ == State::Dragging);
+        const ImU32 col = valid_ ? hoverColour() : badColour();
+        mark(target_, col, 2.5f, target_.face >= 0 ? (valid_ ? moved_ : target_.face) : -1);
+        drawDirArrow(dl, g, origin_ + normal_ * distance_, normal_, 40, col, state_ == State::Dragging);
     }
-    if (hover_ >= 0 && view == hoverView_ && hover_ != moved_) outlineFace(dl, g, m, hover_, hoverColour(), 1.5f);
+    if (hover_.valid() && view == hoverView_ && !(hover_ == target_) && (hover_.face < 0 || hover_.face != moved_))
+        mark(hover_, hoverColour(), 1.5f, hover_.face);
 }
 
 void PushPullTool::properties(ToolEnv& env) {
@@ -225,6 +296,7 @@ void PushPullTool::properties(ToolEnv& env) {
     if (state_ == State::Idle) {
         ImGui::TextWrapped("Drag a face to push or pull it. In a 2D view, drag a face you see edge-on (a line).");
         dimWrapped("Cmd+drag: always new side faces.");
+        dimWrapped("In edge or point mode: drag an edge or a point along the surface's normal; the faces around tilt.");
         return;
     }
     double d = distance_;
@@ -235,7 +307,8 @@ void PushPullTool::properties(ToolEnv& env) {
         apply(env);
     static const char* what[] = {"The faces around it stretch.", "New side faces.",
                                  "A flat shape: it becomes a solid."};
-    dimWrapped(what[std::clamp(kind_, 0, 2)]);
+    if (target_.face >= 0) dimWrapped(what[std::clamp(kind_, 0, 2)]);
+    else dimWrapped(target_.edge ? "The edge moves along the normal; the faces around tilt." : "The point moves along the normal; the faces around tilt.");
     if (!valid_) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.2f, 0.2f, 1));
         ImGui::TextWrapped("Can't push that far: faces would turn over.");

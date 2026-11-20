@@ -6,6 +6,7 @@ namespace mazz {
 
 void SelectionOpTool::activate(ToolEnv& env) {
     wantArm_ = true;
+    afterApply_ = false;
     update(env);
 }
 
@@ -23,6 +24,7 @@ void SelectionOpTool::arm(ToolEnv& env) {
     source_ = doc.sel;
     doc.beginLive();
     armed_ = true;
+    afterApply_ = false;
     refresh(env);
 }
 
@@ -52,7 +54,9 @@ void SelectionOpTool::disarm(ToolEnv& env) {
 
 void SelectionOpTool::changed(ToolEnv& env) {
     if (armed_) refresh(env);
-    else {
+    else if (afterApply_ && !againAfterApply()) {
+        // Kept for the next faces picked; the result just made stays as it is.
+    } else {
         wantArm_ = true;
         update(env);
     }
@@ -62,6 +66,7 @@ bool SelectionOpTool::apply(ToolEnv& env) {
     if (!armed_ || !valid_) return false;
     env.doc.commitLive(stepName());
     armed_ = false;
+    afterApply_ = true;
     seenSel_ = env.doc.selVersion(); // the result stays selected, no new preview
     env.touch();
     return true;

@@ -173,6 +173,7 @@ void Editor::controlsWindow() {
             row("Move while flying", "W A S D, Q/E down/up, Shift fast", 0);
             row("Resize the views", "drag the bars between them; double-click resets", 0);
             row("Push or pull a face (Push/pull)", "drag it (2D views: a face seen edge-on); Return applies; Cmd+drag: new side faces", 0);
+            row("Push/pull an edge or point", "in edge / point mode: drag it along the surface's normal; the faces around tilt", 0);
             row("Extrude / inset", "select faces (or open edges); drag the arrow or type in Properties; Return applies", 0);
             row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
             row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);

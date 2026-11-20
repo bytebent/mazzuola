@@ -20,6 +20,7 @@ protected:
     bool suits(const Mesh& m, const Selection& s) const override;
     bool compute(MeshEdit& e, const Selection& source, Selection& result) override;
     std::string stepName() const override { return "Inset"; }
+    bool againAfterApply() const override { return false; }
 
 private:
     InsetParams params_;
