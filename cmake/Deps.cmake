@@ -24,7 +24,7 @@ FetchContent_Declare(imgui
 # stb (single-file image libraries; no releases, pinned commit)
 FetchContent_Declare(stb
   URL https://github.com/nothings/stb/archive/9600522de53973336fa033a289858a4354cbb04c.tar.gz
-  URL_HASH SHA256=0dcea62e78e3bcc650a96f28f9998ccd217481ea1c0662f30f7536fb91be323c
+  URL_HASH SHA256=8546b1281cf61e4b5229e9eb05055d765f1b076f6ba03aab377df09a20fb613b
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
 FetchContent_MakeAvailable(glfw imgui stb)

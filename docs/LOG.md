@@ -24,8 +24,9 @@ and open questions are in [`PLAN.md`](PLAN.md).
   own depth buffer instead of staying blank. `MAZZ_VIEW_SAMPLES=0` forces this path; CI
   runs all UI scripts that way too. Screenshot: `m2-07-views-without-antialiasing.png`.
 - **Dependency fingerprints:** GLFW, Dear ImGui and stb downloads are checked against
-  SHA-256 in `cmake/Deps.cmake` (hashes of the archives as made from the pinned
-  commits; confirmed by CI's download).
+  SHA-256 in `cmake/Deps.cmake`. The hashes are of the archives as GitHub serves them
+  (taken from CI's download; GitHub compresses differently from a local `git archive`,
+  so they can't be made here). GLFW's matches the hash Homebrew publishes for 3.4.
 - PLAN.md status rewritten (it still said "redesign milestone 1" above v0.2.x);
   HANDOFF "where things stand" and mistakes updated; DEV.md: fingerprints,
   `MAZZ_VIEW_SAMPLES`, release rules.
