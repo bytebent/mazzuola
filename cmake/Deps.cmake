@@ -12,7 +12,7 @@ set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_WAYLAND  OFF CACHE BOOL "" FORCE) # X11 on Linux (CI runs under Xvfb)
 FetchContent_Declare(glfw
   URL https://github.com/glfw/glfw/archive/refs/tags/3.4.tar.gz
-  URL_HASH SHA256=659815746e0ebd1f3ccc384f08c4783175745464abcaf1b52e8d580df609ca4b
+  URL_HASH SHA256=c038d34200234d071fae9345bc455e4a8f2f544ab60150765d7704e08f3dac01
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
 
 # Dear ImGui v1.93.0-docking (commit b916186e66aa3c02b72c6ca17455516512ed8049) — UI, with its own GLFW + OpenGL 3 backends
