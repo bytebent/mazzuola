@@ -4,6 +4,9 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.1 confirmed; planning v0.2.2 "Draw on faces"
+- User: v0.2.1 all good. Proposal for v0.2.2 sent (click by click), waiting for answers.
+
 ### 2026-11-20 — v0.2.1 "Edges and points"
 - Agreed ("perfect"): Push/pull in edge and point mode as an along-normal dragger, and
   Inset not starting again on its result; shipped as a small v0.2.1, so the later
