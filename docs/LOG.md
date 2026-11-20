@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — after v0.2.0: inset count checked; push/pull for edges and points agreed
+- User: inset seems to make more than 4 faces. Tested in the app: a lone 80 cm square,
+  inset 10 → 5 faces, 8 points (4 new faces), as designed. Possible sources sent to
+  the user (the status bar counts triangles, 2 per quad; changing a setting after
+  Return starts a new inset on the inner face).
+- Agreed: Push/pull in edge and point mode drags along the surface normal (no new
+  faces). Extruding inner edges / points not planned. Recorded in ARCHITECTURE §6.
+
 ### 2026-11-20 — v0.2.0 "Push and pull" (steps A–E)
 - Agreed with the user: milestone 2 in five releases (v0.2.0–v0.2.4, PLAN), separate
   into group and smoothing of extruded sides moved to milestone 3; push/pull, extrude

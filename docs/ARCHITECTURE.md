@@ -349,6 +349,12 @@ the model gets:
      side makes the box longer. Otherwise new side faces are made. Holding **Cmd** when
      the drag starts always makes new faces.
   5. Only the face clicked, never the selection (several faces: extrude).
+  6. Edge and point mode (agreed 2026-11-20, details still to settle): Push/pull drags
+     the edge or point under the cursor along the surface's normal there (the average
+     of its faces' normals); the faces around it tilt, no new faces. A shortcut for
+     moving it along that direction, with the same Return / Esc and typed distance.
+     Extruding inner edges or points is not planned (fins and loose lines; a spike
+     from a point is Poke, v0.2.2).
 - **Inference snapping** while drawing, pushing and moving: endpoints, midpoints, edges,
   face centres, axis directions, parallel and perpendicular to edges; a coloured hint
   shows the active snap; holding Shift locks the current direction.

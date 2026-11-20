@@ -274,6 +274,9 @@ taking in the user's feedback on the release before.
 planned click by click:
 - **v0.2.0 "Push and pull"**: push/pull, extrude, inset (design: ARCHITECTURE §6,
   agreed 2026-11-20), tool buttons in the Tools panel.
+- **Next small step (agreed 2026-11-20):** Push/pull in edge and point mode as an
+  along-normal dragger (ARCHITECTURE §6, point 6). The user asked whether inset makes
+  more than 4 faces: tested, one square → 5 faces (4 new); asked what they saw.
 - **v0.2.1 "Draw on faces"**: lines, rectangles, circles on faces; polygon outline with
   holes; inference snapping with coloured hints; push/pull through a drawn shape makes
   a hole; automatic splitting of faces over four corners.
