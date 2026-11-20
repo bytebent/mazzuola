@@ -3,6 +3,7 @@
 // screenshots) go through the same paths: key chords -> actions, mouse -> ImGui IO.
 #include "core/document.hpp"
 #include "core/grid.hpp"
+#include "core/ops.hpp"
 #include "render/view_draw.hpp"
 #include "tools/prim_tool.hpp"
 #include "tools/select_tool.hpp"
@@ -34,6 +35,7 @@ struct ViewsLayout {
 
 class Editor {
 public:
+    enum class Op { None, Transform, Replicate, Flatten }; // operation windows
     Editor(GLFWwindow* window, const EditorOptions& opt);
     ~Editor();
 
@@ -106,6 +108,13 @@ private:
     // The model changed (geometry or selection): views redraw.
     void touch();
 
+    // ---- operation windows (ui/op_windows.cpp): stay open, live preview, Return / Esc
+    void openOp(Op op);
+    void applyOp();
+    void cancelOp();
+    void refreshOpPreview();
+    void opWindow();
+
     // ---- tools
     ToolEnv toolEnv();
     void setTool(Tool* t);
@@ -158,6 +167,14 @@ private:
     bool paintWanted_ = false, paintOpen_ = false;
     std::string paintShot_;
     double gridDialogValue_ = 8;
+
+    // operation window
+    Op op_ = Op::None;
+    Selection opSel_;           // the selection when the window opened
+    TransformParams opTransform_;
+    ReplicateParams opReplicate_;
+    int flattenAxis_ = 2;
+    FlattenTo flattenTo_ = FlattenTo::Average;
 
     // file pop-ups
     std::function<void()> afterSave_;  // what to do once the unsaved question is settled

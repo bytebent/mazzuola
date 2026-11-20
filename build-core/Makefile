@@ -309,6 +309,30 @@ src/core/numbers.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/numbers.cpp.s
 .PHONY : src/core/numbers.cpp.s
 
+src/core/ops.o: src/core/ops.cpp.o
+.PHONY : src/core/ops.o
+
+# target to build an object file
+src/core/ops.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/ops.cpp.o
+.PHONY : src/core/ops.cpp.o
+
+src/core/ops.i: src/core/ops.cpp.i
+.PHONY : src/core/ops.i
+
+# target to preprocess a source file
+src/core/ops.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/ops.cpp.i
+.PHONY : src/core/ops.cpp.i
+
+src/core/ops.s: src/core/ops.cpp.s
+.PHONY : src/core/ops.s
+
+# target to generate assembly for a file
+src/core/ops.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mazz_core.dir/build.make CMakeFiles/mazz_core.dir/src/core/ops.cpp.s
+.PHONY : src/core/ops.cpp.s
+
 src/core/pick.o: src/core/pick.cpp.o
 .PHONY : src/core/pick.o
 
@@ -603,6 +627,9 @@ help:
 	@echo "... src/core/numbers.o"
 	@echo "... src/core/numbers.i"
 	@echo "... src/core/numbers.s"
+	@echo "... src/core/ops.o"
+	@echo "... src/core/ops.i"
+	@echo "... src/core/ops.s"
 	@echo "... src/core/pick.o"
 	@echo "... src/core/pick.i"
 	@echo "... src/core/pick.s"

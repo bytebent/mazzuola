@@ -151,8 +151,9 @@ void Editor::viewInput(int i, ImVec2 imgPos, ImVec2 imgSize) {
 
     if (flying_ && flyView_ == i) return; // the fly camera owns the mouse
 
-    // Left mouse goes to the active tool (Space + left pans instead).
-    {
+    // Left mouse goes to the active tool (Space + left pans instead); not while an
+    // operation window is open (its preview is a live edit).
+    if (op_ == Op::None) {
         const bool space = ImGui::IsKeyDown(ImGuiKey_Space);
         ToolEnv env = toolEnv();
         if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !space && toolView_ < 0) {

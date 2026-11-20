@@ -39,6 +39,7 @@ void Editor::setTool(Tool* t) {
 }
 
 void Editor::cancelTool() {
+    cancelOp();
     ToolEnv env = toolEnv();
     tool_->cancel(env);
     toolView_ = -1;

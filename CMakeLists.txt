@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Mazzuola VERSION 0.1.2 LANGUAGES C CXX)
+project(Mazzuola VERSION 0.1.3 LANGUAGES C CXX)
 # Objective-C++ (native macOS file dialogs, tablet input later) and Objective-C (GLFW's
 # Cocoa files; without OBJC enabled, CMake would compile those .m files as Objective-C++,
 # which fails). Must be enabled here, at the top level, before any dependency is added.
@@ -34,7 +34,8 @@ add_library(mazz_core STATIC
   src/core/pick.cpp
   src/core/primitives.cpp
   src/core/rock.cpp
-  src/core/select_ops.cpp)
+  src/core/select_ops.cpp
+  src/core/ops.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -74,6 +75,7 @@ if(MAZZ_BUILD_APP)
     src/ui/actions.cpp
     src/ui/theme.cpp
     src/ui/views_panel.cpp
+    src/ui/op_windows.cpp
     src/ui/panels.cpp
     src/ui/imgui_checks.cpp
   )

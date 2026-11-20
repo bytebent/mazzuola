@@ -220,6 +220,34 @@ void Editor::stepScript() {
             else scriptFail("unknown setting " + what);
             p = clampParams(p);
             touch();
+        } else if (cmd == "opset") {
+            // opset <setting> <values>: as typed in the open operation window.
+            std::string what;
+            in >> what;
+            auto v3 = [&](Vec3& v) { in >> v.x >> v.y >> v.z; };
+            auto pivot = [&](PivotKind& k) {
+                std::string w;
+                in >> w;
+                k = w == "origin" ? PivotKind::Origin : w == "typed" ? PivotKind::Typed : PivotKind::Centre;
+            };
+            if (what == "move") v3(opTransform_.move);
+            else if (what == "rotate") v3(opTransform_.rotate);
+            else if (what == "scale") v3(opTransform_.scale);
+            else if (what == "normal") in >> opTransform_.alongNormal;
+            else if (what == "pivot") pivot(opTransform_.pivot);
+            else if (what == "copies") in >> opReplicate_.copies;
+            else if (what == "offset") v3(opReplicate_.offset);
+            else if (what == "turn") v3(opReplicate_.turn);
+            else if (what == "copyscale") v3(opReplicate_.scale);
+            else if (what == "scaleoffset") { int b = 0; in >> b; opReplicate_.scaleOffset = b != 0; }
+            else if (what == "copypivot") pivot(opReplicate_.pivot);
+            else if (what == "axis") in >> flattenAxis_;
+            else if (what == "to") {
+                std::string w;
+                in >> w;
+                flattenTo_ = w == "lowest" ? FlattenTo::Lowest : w == "highest" ? FlattenTo::Highest : FlattenTo::Average;
+            } else scriptFail("unknown setting " + what);
+            refreshOpPreview();
         } else if (cmd == "addbox") {
             // Test helper (until the box tool exists): adds a box as one undo step and
             // selects it.
@@ -331,6 +359,11 @@ void Editor::stepScript() {
                 int b = 0;
                 in >> b;
                 if (primTool_.hasPreview() != (b != 0)) scriptFail(std::string("preview is ") + (primTool_.hasPreview() ? "1" : "0"));
+            } else if (what == "op") {
+                std::string w;
+                in >> w;
+                const char* names[] = {"none", "transform", "replicate", "flatten"};
+                if (w != names[(int)op_]) scriptFail(std::string("operation window is ") + names[(int)op_]);
             } else if (what == "tool") {
                 std::string t;
                 in >> t;

@@ -445,6 +445,7 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
   /home/claude/mazzuola/src/core/math.hpp \
   /home/claude/mazzuola/src/core/mesh.hpp \
   /home/claude/mazzuola/src/core/numbers.hpp \
+  /home/claude/mazzuola/src/core/ops.hpp \
   /home/claude/mazzuola/src/core/pick.hpp \
   /home/claude/mazzuola/src/core/primitives.hpp \
   /home/claude/mazzuola/src/core/rock.hpp \
@@ -730,6 +731,8 @@ CMakeFiles/mazz_core_tests.dir/tests/test_model.cpp.o: /home/claude/mazzuola/tes
 /home/claude/mazzuola/src/core/rock.hpp:
 
 /home/claude/mazzuola/src/core/pick.hpp:
+
+/home/claude/mazzuola/src/core/ops.hpp:
 
 /home/claude/mazzuola/src/core/draw_data.hpp:
 

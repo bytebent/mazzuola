@@ -90,7 +90,19 @@ bool Editor::enabled(Act a) const {
     switch (a) {
     case Act::FlyMode: return flying_ || firstView3D() >= 0;
     case Act::MaximiseView: return layout_.maximised >= 0 || hoveredView_ >= 0;
-    case Act::Delete: return !doc_.sel.empty();
+    case Act::Delete:
+    case Act::Transform:
+    case Act::MovePoints:
+    case Act::Replicate:
+    case Act::Flatten:
+    case Act::Duplicate:
+    case Act::MirrorX:
+    case Act::MirrorY:
+    case Act::MirrorZ:
+    case Act::MirrorCloneX:
+    case Act::MirrorCloneY:
+    case Act::MirrorCloneZ:
+    case Act::SnapToGrid: return !doc_.sel.empty();
     case Act::SelectGrow:
     case Act::SelectShrink: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
     case Act::SelectLoop:
@@ -124,6 +136,53 @@ void Editor::run(Act a) {
         touch();
         break;
     }
+    case Act::Transform:
+    case Act::MovePoints: openOp(Op::Transform); break;
+    case Act::Replicate: openOp(Op::Replicate); break;
+    case Act::Flatten: openOp(Op::Flatten); break;
+    case Act::Duplicate:
+    case Act::MirrorX:
+    case Act::MirrorY:
+    case Act::MirrorZ:
+    case Act::MirrorCloneX:
+    case Act::MirrorCloneY:
+    case Act::MirrorCloneZ:
+    case Act::SnapToGrid: {
+        cancelTool();
+        if (doc_.sel.empty()) break;
+        const Selection was = doc_.sel;
+        const char* name = a == Act::Duplicate ? "Duplicate" : a == Act::SnapToGrid ? "Snap to grid"
+                           : (a == Act::MirrorCloneX || a == Act::MirrorCloneY || a == Act::MirrorCloneZ) ? "Mirror clone"
+                                                                                                          : "Mirror";
+        doc_.apply(name, [&](MeshEdit& e, Selection& sel) {
+            std::set<int> made;
+            switch (a) {
+            case Act::Duplicate: made = duplicate(e, was); break;
+            case Act::MirrorX: mirrorInPlace(e, was, 0); break;
+            case Act::MirrorY: mirrorInPlace(e, was, 1); break;
+            case Act::MirrorZ: mirrorInPlace(e, was, 2); break;
+            case Act::MirrorCloneX: made = mirrorClone(e, was, 0); break;
+            case Act::MirrorCloneY: made = mirrorClone(e, was, 1); break;
+            case Act::MirrorCloneZ: made = mirrorClone(e, was, 2); break;
+            default:
+                for (int v : selectedVerts(e.mesh(), was)) {
+                    const Vec3 q = e.mesh().verts[v];
+                    e.setVert(v, {grid_.snapValue(q.x), grid_.snapValue(q.y), grid_.snapValue(q.z)});
+                }
+                break;
+            }
+            if (!made.empty()) {
+                // The copy ends up selected, in the same mode.
+                Selection copy;
+                copy.mode = SelectMode::Face;
+                copy.faces = made;
+                sel = convertSelection(e.mesh(), copy, was.mode);
+            }
+            return true;
+        });
+        touch();
+        break;
+    }
     case Act::SelectAll: {
         Selection s;
         s.mode = SelectMode::Piece;
@@ -150,6 +209,8 @@ void Editor::run(Act a) {
                               : a == Act::ModeFace ? SelectMode::Face
                                                    : SelectMode::Piece;
         cancelTool();
+        // The Vertex tool works on points only: edges, faces or pieces go to Select.
+        if (tool_ == &vertexTool_ && to != SelectMode::Vert) setTool(&selectTool_);
         doc_.select(convertSelection(doc_.mesh, doc_.sel, to));
         touch();
         break;
@@ -246,6 +307,11 @@ void Editor::handleKeys() {
         if (flying_ && !c.cmd && (c.key == GLFW_KEY_W || c.key == GLFW_KEY_A || c.key == GLFW_KEY_S ||
                                   c.key == GLFW_KEY_D || c.key == GLFW_KEY_Q || c.key == GLFW_KEY_E))
             continue; // movement keys belong to the camera while flying
+        if (op_ != Op::None && !c.shift && !c.cmd && (c.key == GLFW_KEY_ENTER || c.key == GLFW_KEY_ESCAPE)) {
+            if (c.key == GLFW_KEY_ENTER) applyOp();
+            else cancelOp();
+            continue;
+        }
         {
             ToolEnv env = toolEnv();
             if (tool_->key(env, c.key, c.shift, c.cmd)) continue;
@@ -315,6 +381,7 @@ bool Editor::frame(double dt) {
     if (ImGui::Begin(kWinPalette)) palettePanel();
     ImGui::End();
 
+    opWindow();
     fileDialogs();
     updateTitle();
     controlsWindow();
@@ -462,10 +529,17 @@ void Editor::menuBar() {
     }
     if (ImGui::BeginMenu("Mesh")) {
         menuItem(Act::Transform);
+        menuItem(Act::Replicate);
         menuItem(Act::MovePoints);
         menuItem(Act::SnapToGrid);
-        plannedItem("Mirror / mirror clone", 1);
-        plannedItem("Flatten X / Y / Z", 1);
+        ImGui::Separator();
+        menuItem(Act::MirrorX);
+        menuItem(Act::MirrorY);
+        menuItem(Act::MirrorZ);
+        menuItem(Act::MirrorCloneX);
+        menuItem(Act::MirrorCloneY);
+        menuItem(Act::MirrorCloneZ);
+        menuItem(Act::Flatten);
         ImGui::Separator();
         plannedItem("Extrude, inset, bevel, bridge, shell", 2);
         plannedItem("Divide, cut, slide, merge, weld", 2);

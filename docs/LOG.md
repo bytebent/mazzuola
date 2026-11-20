@@ -4,6 +4,28 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.3 "Typed values" (steps A–E)
+- `core/ops`: transform about a pivot (scale, rotate X→Y→Z, move, along the
+  selection's normal; mirrored results turn their faces round), replicate (per-copy
+  scale / turn / offset, scaled offset, travelling / origin / typed pivot), duplicate,
+  mirror in place, mirror clone across the world plane, flatten average / lowest /
+  highest. Core tests (exact quarter turns, rows, rings, tapering, mirrored copies stay
+  closed and outward, flatten).
+- Operation windows (`ui/op_windows.cpp`): small windows that stay open over the app;
+  each change re-runs the operation on a live edit (reverted first), so the views show
+  it live; Return applies (one undo step), Esc / the close button / any tool switch,
+  undo or file action cancels; tools don't take clicks while one is open. Transform
+  (Cmd+T, also "Move points exactly" Cmd+Shift+T), Multi-Replicate (Cmd+Shift+D),
+  Flatten. Cmd+D Duplicate, Mirror / Mirror clone X/Y/Z, Snap points to grid (Cmd+B).
+- Found by the new script: after Esc, the Transform window brought back the cancelled
+  values next time (relative values, so a trap): it now opens at zero, keeping the
+  pivot choice. The window first opened over the 3D view (now top left): it now opens
+  over the texture view.
+- The Vertex tool works on points only (2/3/4 switch to Select).
+- Script commands `opset`, `expect op`. New UI script `a1_typed`.
+- Tests: core 667 checks; eight UI scripts at 1× and 2×; idle 0 ticks. Version 0.1.3,
+  release notes, README. Screenshot `m1-09-transform.png`.
+
 ### 2026-11-20 — v0.1.3 design agreed; steps planned (docs only)
 - Agreed (user: "yes to all"): Transform panel (Cmd+T) and Multi-Replicate
   (Cmd+Shift+D) as two windows like Scalpellino's, staying open with a live preview,

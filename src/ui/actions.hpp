@@ -18,7 +18,8 @@ enum class Act {
     ToolSelect, ToolVertex, ToolPrimitives, ToolDraw, ToolPushPull, ToolExtrude, ToolCut,
     ToolLatheLoft, ToolBrush, ToolMapping, ToolPaint, ToolColour,
     // Mesh
-    Transform, MovePoints, SnapToGrid, Problems,
+    Transform, Replicate, MovePoints, SnapToGrid, MirrorX, MirrorY, MirrorZ, MirrorCloneX, MirrorCloneY,
+    MirrorCloneZ, Flatten, Problems,
     // Texture
     ApplyTexture,
     // View

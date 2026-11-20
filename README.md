@@ -7,11 +7,11 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 1 (milestone 1, redone). v0.1.2 "Points, edges, faces": draw every
-primitive shape and rocks (boxes and cylinders with rounded edges); select whole
-pieces, faces, edges or points; move, copy, resize and rotate them like brushes or
-along the axis arrows; drag single points with the Vertex tool; edge loops and rings;
-undo, save and open `.mazz`. Typed transforms and export follow in v0.1.3 – v0.1.4.
+**Status:** alpha 1 (milestone 1, redone). v0.1.3 "Typed values": draw every primitive
+shape and rocks; select whole pieces, faces, edges or points; move, copy, resize and
+rotate them like brushes, along the arrows, or by typed values (Transform panel,
+Multi-Replicate, mirror, flatten); undo, save and open `.mazz`. Export, reference
+images and the size figure follow in v0.1.4.
 
 ## Download
 
@@ -39,6 +39,10 @@ including the planned ones with the milestone that brings them.
 | Edge loop / ring | double-click an edge / **Shift**+double-click (also in the Select menu) |
 | Grow / shrink selection | **Cmd++** / **Cmd+è** |
 | Delete | **Delete** (in point or edge mode: the faces that use them) |
+| Typed move / rotate / scale | **Cmd+T** (a window that stays open; the views show it live; **Return** applies, **Esc** cancels) |
+| Multi-Replicate (copies in a row, circle, spiral...) | **Cmd+Shift+D** (same kind of window) |
+| Duplicate in place | **Cmd+D** |
+| Mirror / mirror clone / flatten / snap points to grid | Mesh menu; snap **Cmd+B** |
 | Smaller / larger grid | **è** / **+** (the two keys right of P) |
 | Set the grid size | View → Set grid size… (1/8 cm to 512 cm; **Return** sets, **Esc** cancels) |
 | Show grid / snap to grid | **Shift+R** / **Shift+W** |

@@ -248,8 +248,10 @@ void testDrawData();
 void testTransformPick();
 void testPrimitives();
 void testSelectOps();
+void testOps();
 
 void testModel() {
+    testOps();
     testSelectOps();
     testPrimitives();
     testViewGeom();
@@ -712,4 +714,140 @@ void testSelectOps() {
     // Delete: faces using the selection.
     CHECK(facesToDelete(box, top).size() == 5); // all but the bottom
     CHECK(facesToDelete(box, oneEdge).size() == 2);
+}
+
+// ---------------------------------------------------------------- typed operations
+#include "core/ops.hpp"
+
+namespace {
+mazz::Selection allFaces(const mazz::Mesh& m) {
+    mazz::Selection s;
+    s.mode = mazz::SelectMode::Face;
+    for (int i = 0; i < (int)m.faces.size(); ++i) s.faces.insert(i);
+    return s;
+}
+} // namespace
+
+void testOps() {
+    using namespace mazz;
+    auto run = [](Document& d, const std::function<void(MeshEdit&)>& fn) {
+        d.apply("op", [&](MeshEdit& e, Selection&) {
+            fn(e);
+            return true;
+        });
+    };
+    auto boxDoc = [](Document& d, Vec3 a, Vec3 b) {
+        d.reset();
+        d.apply("box", [&](MeshEdit& e, Selection& s) {
+            Mesh m;
+            addBox(m, a, b);
+            for (const Vec3& v : m.verts) e.addVert(v);
+            for (const Face& f : m.faces) e.addFace(f);
+            s = allFaces(e.mesh());
+            return true;
+        });
+    };
+    Document d;
+    Vec3 mn, mx;
+    // Transform: turn a 40 x 20 x 10 box a quarter round its centre, exactly.
+    boxDoc(d, {0, 0, 0}, {40, 20, 10});
+    TransformParams t;
+    t.rotate = {0, 0, 90};
+    run(d, [&](MeshEdit& e) { applyTransform(e, d.sel, t); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == 10 && mx.x == 30 && mn.y == -10 && mx.y == 30 && mn.z == 0 && mx.z == 10);
+    // Scale 50% about the world origin, then move.
+    boxDoc(d, {0, 0, 0}, {40, 20, 10});
+    t = TransformParams();
+    t.scale = {50, 50, 50};
+    t.pivot = PivotKind::Origin;
+    t.move = {8, 0, 0};
+    run(d, [&](MeshEdit& e) { applyTransform(e, d.sel, t); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == 8 && mx.x == 28 && mx.y == 10 && mx.z == 5);
+    // A negative scale mirrors and the faces still point outward.
+    boxDoc(d, {0, 0, 0}, {40, 20, 10});
+    t = TransformParams();
+    t.scale = {-100, 100, 100};
+    run(d, [&](MeshEdit& e) { applyTransform(e, d.sel, t); });
+    CHECK(signedVolume(d.mesh) > 0 && closedAndConsistent(d.mesh));
+    // Move along the normal: the top face up by 6.
+    boxDoc(d, {0, 0, 0}, {40, 20, 10});
+    Selection topFace;
+    topFace.mode = SelectMode::Face;
+    topFace.faces = {1};
+    t = TransformParams();
+    t.alongNormal = 6;
+    run(d, [&](MeshEdit& e) { applyTransform(e, topFace, t); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mx.z == 16 && mn.z == 0);
+    CHECK(nearV(selectionNormal(d.mesh, topFace), {0, 0, 1}));
+
+    // Replicate: a row of 3 copies 32 apart; the copies are separate pieces.
+    boxDoc(d, {0, 0, 0}, {16, 16, 16});
+    ReplicateParams r;
+    r.copies = 3;
+    r.offset = {32, 0, 0};
+    std::set<int> made;
+    run(d, [&](MeshEdit& e) { made = replicate(e, d.sel, r); });
+    CHECK(made.size() == 18 && d.mesh.faces.size() == 24);
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == 0 && mx.x == 112);
+    std::vector<int> piece;
+    CHECK(pieceIds(d.mesh, piece) == 4);
+    // A circle: 3 copies turned 90° about the world origin with no offset.
+    boxDoc(d, {20, -4, 0}, {28, 4, 8});
+    r = ReplicateParams();
+    r.copies = 3;
+    r.offset = {0, 0, 0};
+    r.turn = {0, 0, 90};
+    r.pivot = PivotKind::Origin;
+    run(d, [&](MeshEdit& e) { replicate(e, d.sel, r); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == -28 && mx.x == 28 && mn.y == -28 && mx.y == 28);
+    // Tapering: each copy 50%, offset scaled too; mirrored scale per copy stays outward.
+    boxDoc(d, {0, 0, 0}, {16, 16, 16});
+    r = ReplicateParams();
+    r.copies = 2;
+    r.offset = {0, 0, 16};
+    r.scale = {50, 50, 50};
+    r.scaleOffset = true;
+    run(d, [&](MeshEdit& e) { replicate(e, d.sel, r); });
+    CHECK(d.mesh.faces.size() == 18 && signedVolume(d.mesh) > 0);
+    boxDoc(d, {0, 0, 0}, {16, 16, 16});
+    r = ReplicateParams();
+    r.copies = 3;
+    r.offset = {24, 0, 0};
+    r.scale = {-100, 100, 100};
+    run(d, [&](MeshEdit& e) { replicate(e, d.sel, r); });
+    CHECK(closedAndConsistent(d.mesh) && signedVolume(d.mesh) > 0);
+
+    // Duplicate, mirror in place, mirror clone across x = 0.
+    boxDoc(d, {8, 0, 0}, {24, 16, 16});
+    run(d, [&](MeshEdit& e) { duplicate(e, d.sel); });
+    CHECK(d.mesh.faces.size() == 12 && pieceIds(d.mesh, piece) == 2);
+    boxDoc(d, {8, 0, 0}, {24, 16, 16});
+    run(d, [&](MeshEdit& e) { mirrorInPlace(e, d.sel, 0); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == 8 && mx.x == 24 && signedVolume(d.mesh) > 0 && closedAndConsistent(d.mesh));
+    boxDoc(d, {8, 0, 0}, {24, 16, 16});
+    run(d, [&](MeshEdit& e) { mirrorClone(e, d.sel, 0); });
+    d.mesh.bounds(mn, mx);
+    CHECK(mn.x == -24 && mx.x == 24 && d.mesh.faces.size() == 12 && signedVolume(d.mesh) > 0 &&
+          closedAndConsistent(d.mesh));
+
+    // Flatten the top's points onto average / lowest / highest.
+    for (int to = 0; to < 3; ++to) {
+        boxDoc(d, {0, 0, 0}, {16, 16, 16});
+        // Lift one corner of the top so the top is uneven: 16, 16, 16, 24.
+        run(d, [&](MeshEdit& e) { e.setVert(7, {16, 16, 24}); });
+        Selection topPts;
+        topPts.mode = SelectMode::Vert;
+        topPts.verts = {4, 5, 6, 7};
+        run(d, [&](MeshEdit& e) { flatten(e, topPts, 2, (FlattenTo)to); });
+        const double want = to == 0 ? 18 : to == 1 ? 16 : 24;
+        bool flat = true;
+        for (int v : topPts.verts) flat = flat && d.mesh.verts[v].z == want;
+        CHECK(flat);
+    }
 }

@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/claude/mazzuola/src/core/grid_lines.cpp" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/grid_lines.cpp.o.d"
   "/home/claude/mazzuola/src/core/mesh.cpp" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/mesh.cpp.o.d"
   "/home/claude/mazzuola/src/core/numbers.cpp" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/numbers.cpp.o.d"
+  "/home/claude/mazzuola/src/core/ops.cpp" "CMakeFiles/mazz_core.dir/src/core/ops.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/ops.cpp.o.d"
   "/home/claude/mazzuola/src/core/pick.cpp" "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/pick.cpp.o.d"
   "/home/claude/mazzuola/src/core/primitives.cpp" "CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/primitives.cpp.o.d"
   "/home/claude/mazzuola/src/core/rock.cpp" "CMakeFiles/mazz_core.dir/src/core/rock.cpp.o" "gcc" "CMakeFiles/mazz_core.dir/src/core/rock.cpp.o.d"

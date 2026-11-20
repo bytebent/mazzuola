@@ -86,6 +86,11 @@ hold <shift|cmd|alt> / letgo <...>  hold / release a modifier for the next mouse
 varrow <view> <axis> <cm>           mouse on the selection's X/Y/Z arrow (0/1/2), cm along it
 expect bounds <x0 y0 z0 x1 y1 z1>   whole model bounds;  selbounds: the selection's
 expect preview <0|1>                the Primitives tool shows a preview box
+expect op <none|transform|replicate|flatten>   which operation window is open
+opset <setting> <values>            as typed in the open operation window: move/rotate/scale
+                                    x y z, normal cm, pivot centre|origin|typed; copies n,
+                                    offset/turn/copyscale x y z, scaleoffset 0|1, copypivot;
+                                    axis 0|1|2, to average|lowest|highest
 expect previewfaces <n>             faces of the previewed shape
 prim <shape> / primset <setting> <value>   choose a shape / set a setting (as in Properties):
                                     segx segy segz rows cols sides segments caprings hole
