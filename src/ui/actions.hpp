@@ -15,7 +15,7 @@ enum class Act {
     // Select
     ModeVertex, ModeEdge, ModeFace, ModePiece, SelectGrow, SelectShrink, SelectLoop, SelectRing, Hide, HideOthers, ShowAll,
     // Tools
-    ToolSelect, ToolVertex, ToolPrimitives, ToolDraw, ToolPushPull, ToolExtrude, ToolCut,
+    ToolSelect, ToolVertex, ToolPrimitives, ToolDraw, ToolPushPull, ToolExtrude, ToolInset, ToolCut,
     ToolLatheLoft, ToolBrush, ToolMapping, ToolPaint, ToolColour,
     // Mesh
     Transform, Replicate, MovePoints, SnapToGrid, MirrorX, MirrorY, MirrorZ, MirrorCloneX, MirrorCloneY,

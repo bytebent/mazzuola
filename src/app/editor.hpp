@@ -6,7 +6,10 @@
 #include "core/ops.hpp"
 #include "io/export.hpp"
 #include "render/view_draw.hpp"
+#include "tools/extrude_tool.hpp"
+#include "tools/inset_tool.hpp"
 #include "tools/prim_tool.hpp"
+#include "tools/pushpull_tool.hpp"
 #include "tools/select_tool.hpp"
 #include "tools/vertex_tool.hpp"
 #include "ui/actions.hpp"
@@ -174,6 +177,9 @@ private:
     SelectTool selectTool_;
     VertexTool vertexTool_;
     PrimTool primTool_;
+    PushPullTool pushPullTool_;
+    ExtrudeTool extrudeTool_;
+    InsetTool insetTool_;
     Tool* tool_ = &selectTool_;
     LastBox lastBox_;
     // What the views last drew (compared with the document's counters each frame).

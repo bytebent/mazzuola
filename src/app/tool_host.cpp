@@ -35,6 +35,8 @@ void Editor::setTool(Tool* t) {
     if (t == tool_) return;
     cancelTool();
     tool_ = t;
+    ToolEnv env = toolEnv();
+    tool_->activate(env);
     touch();
 }
 

@@ -273,6 +273,31 @@ void Editor::stepScript() {
             else scriptFail("unknown setting " + what);
             p = clampParams(p);
             touch();
+        } else if (cmd == "toolset") {
+            // toolset pushpull distance <d> | extrude <setting> <v> | inset <setting> <v>:
+            // as typed in Properties.
+            std::string t, what;
+            double v = 0;
+            in >> t >> what >> v;
+            ToolEnv env = toolEnv();
+            if (t == "pushpull" && what == "distance") pushPullTool_.setDistance(env, v);
+            else if (t == "extrude") {
+                ExtrudeParams& p = extrudeTool_.params();
+                if (what == "distance") p.distance = v;
+                else if (what == "each") p.each = v != 0;
+                else if (what == "straight") p.straight = v != 0;
+                else if (what == "axis") p.axis = (int)v;
+                else if (what == "keep") p.keepOriginal = v != 0;
+                else scriptFail("unknown extrude setting " + what);
+                extrudeTool_.changed(env);
+            } else if (t == "inset") {
+                InsetParams& p = insetTool_.params();
+                if (what == "width") p.width = v;
+                else if (what == "depth") p.depth = v;
+                else if (what == "each") p.each = v != 0;
+                else scriptFail("unknown inset setting " + what);
+                insetTool_.changed(env);
+            } else scriptFail("unknown toolset " + t + " " + what);
         } else if (cmd == "opset") {
             // opset <setting> <values>: as typed in the open operation window.
             std::string what;
@@ -301,6 +326,22 @@ void Editor::stepScript() {
                 flattenTo_ = w == "lowest" ? FlattenTo::Lowest : w == "highest" ? FlattenTo::Highest : FlattenTo::Average;
             } else scriptFail("unknown setting " + what);
             refreshOpPreview();
+        } else if (cmd == "addquad") {
+            // Test helper: one flat face facing up (x0 y0 x1 y1 z), selected, one undo step.
+            double x0, y0, x1, y1, z;
+            in >> x0 >> y0 >> x1 >> y1 >> z;
+            doc_.apply("Quad", [&](MeshEdit& e, Selection& sel) {
+                Face f;
+                f.n = 4;
+                f.v[0] = e.addVert({x0, y0, z});
+                f.v[1] = e.addVert({x1, y0, z});
+                f.v[2] = e.addVert({x1, y1, z});
+                f.v[3] = e.addVert({x0, y1, z});
+                sel = Selection();
+                sel.faces.insert(e.addFace(f));
+                return true;
+            });
+            touch();
         } else if (cmd == "addbox") {
             // Test helper (until the box tool exists): adds a box as one undo step and
             // selects it.
@@ -417,6 +458,21 @@ void Editor::stepScript() {
                 in >> w;
                 const char* names[] = {"none", "transform", "replicate", "flatten"};
                 if (w != names[(int)op_]) scriptFail(std::string("operation window is ") + names[(int)op_]);
+            } else if (what == "armed" || what == "opvalid") {
+                // The active tool's preview is up / possible (push/pull: a push pending).
+                int want = 0;
+                in >> want;
+                bool armed = false, valid = true;
+                if (tool_ == &pushPullTool_) armed = pushPullTool_.pending(), valid = pushPullTool_.valid();
+                else if (tool_ == &extrudeTool_) armed = extrudeTool_.armed(), valid = extrudeTool_.valid();
+                else if (tool_ == &insetTool_) armed = insetTool_.armed(), valid = insetTool_.valid();
+                const bool have = what == "armed" ? armed : valid;
+                if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "pushdist") {
+                double want = 0;
+                in >> want;
+                if (std::fabs(pushPullTool_.distance() - want) > 1e-9)
+                    scriptFail("push distance is " + std::to_string(pushPullTool_.distance()));
             } else if (what == "tool") {
                 std::string t;
                 in >> t;

@@ -81,6 +81,13 @@ expect tool <Select|Primitives>     the active tool
 expect fileline <file> <line>       the file contains exactly that line
 expect filehas <file> <text>        the file contains that text somewhere
 expect file <file> <0|1>            the file exists or not
+addquad <x0> <y0> <x1> <y1> <z>      test helper: one flat face facing up, selected
+toolset pushpull distance <d>       Push/pull: as typed in Properties
+toolset extrude distance|each|straight|axis|keep <v>   Extrude settings (preview follows)
+toolset inset width|depth|each <v>  Inset settings (preview follows)
+expect armed <0|1>                  the tool's preview is up (Push/pull: a push pending)
+expect opvalid <0|1>                that preview is possible (else red, Return does nothing)
+expect pushdist <d>                 the pending push's distance
 export <file.glb|.gltf|.obj>        File -> Export to that file (format from the extension)
 testimage <file.png> <w> <h>        test helper: write a checkerboard PNG (top-left square red)
 refload <view> <file>               load a reference image into that view's direction (opens its window)

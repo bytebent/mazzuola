@@ -119,6 +119,12 @@ bool Editor::enabled(Act a) const {
 
 void Editor::run(Act a) {
     if (!enabled(a)) return;
+    // Selection commands while a tool shows a preview: the preview goes first (tools
+    // that follow the selection bring it back for the new one).
+    if ((a == Act::SelectAll || a == Act::SelectNone || a == Act::SelectGrow || a == Act::SelectShrink ||
+         a == Act::SelectLoop || a == Act::SelectRing) &&
+        doc_.liveActive() && op_ == Op::None)
+        cancelTool();
     switch (a) {
     case Act::Quit: requestQuit(); break;
     case Act::New: fileNew(); break;
@@ -249,6 +255,9 @@ void Editor::run(Act a) {
     }
     case Act::ToolSelect: setTool(&selectTool_); break;
     case Act::ToolPrimitives: setTool(&primTool_); break;
+    case Act::ToolPushPull: setTool(&pushPullTool_); break;
+    case Act::ToolExtrude: setTool(&extrudeTool_); break;
+    case Act::ToolInset: setTool(&insetTool_); break;
     case Act::ToolVertex:
         // The Vertex tool works on points.
         setTool(&vertexTool_);
@@ -377,6 +386,10 @@ bool Editor::frame(double dt) {
     statusBar();
     dockspace();
 
+    {
+        ToolEnv env = toolEnv();
+        tool_->update(env);
+    }
     refreshModelDrawing();
     ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(kWinViews, nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
@@ -513,10 +526,11 @@ void Editor::menuBar() {
     }
     if (ImGui::BeginMenu("Tools")) {
         for (Act a : {Act::ToolSelect, Act::ToolVertex, Act::ToolPrimitives, Act::ToolDraw, Act::ToolPushPull,
-                      Act::ToolExtrude, Act::ToolCut, Act::ToolLatheLoft, Act::ToolBrush, Act::ToolMapping,
+                      Act::ToolExtrude, Act::ToolInset, Act::ToolCut, Act::ToolLatheLoft, Act::ToolBrush, Act::ToolMapping,
                       Act::ToolPaint, Act::ToolColour})
             menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_) ||
-                            (a == Act::ToolVertex && tool_ == &vertexTool_));
+                            (a == Act::ToolVertex && tool_ == &vertexTool_) || (a == Act::ToolPushPull && tool_ == &pushPullTool_) ||
+                            (a == Act::ToolExtrude && tool_ == &extrudeTool_) || (a == Act::ToolInset && tool_ == &insetTool_));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Create")) {

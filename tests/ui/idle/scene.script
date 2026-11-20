@@ -25,5 +25,10 @@ expect selected 6
 expect refimage 1 1
 expect refimage 2 1
 expect figure 1
+# A live preview waiting for Return (Extrude, armed) must not keep drawing either.
+key 3
+key Shift+E
+wait 2
+expect armed 1
 wait 3
 shot idle-ready.png

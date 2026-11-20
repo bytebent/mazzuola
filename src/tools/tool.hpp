@@ -38,6 +38,13 @@ struct ToolEnv {
     std::function<void()> touch; // the model or overlay changed: redraw the views
 };
 
+// Grey, wrapped text for tool notes in Properties.
+inline void dimWrapped(const char* text) {
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+    ImGui::TextWrapped("%s", text);
+    ImGui::PopStyleColor();
+}
+
 class Tool {
 public:
     virtual ~Tool() = default;
@@ -57,6 +64,11 @@ public:
     virtual void overlay(const ToolEnv&, const ViewGeom&, int /*view*/, ImDrawList*) const {}
     // The tool's section in the Properties panel.
     virtual void properties(ToolEnv&) {}
+
+    // Every frame, before the views are drawn (tools that follow the selection).
+    virtual void update(ToolEnv&) {}
+    // The tool was just chosen.
+    virtual void activate(ToolEnv&) {}
 
     // Drop whatever is in progress (a drag rolls back, a preview disappears).
     virtual void cancel(ToolEnv&) {}

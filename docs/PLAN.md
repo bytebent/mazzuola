@@ -30,8 +30,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   agreed; alpha 1 split into five releases (below).
   Foundations written (ARCHITECTURE §4, §5, §9, §10).
   **Released: v0.1.0 "Boxes", v0.1.1 "All shapes", v0.1.2 "Points, edges, faces",
-  v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).** The user tries
-  v0.1.4; then milestone 2 is planned with them, click by click, before any code.
+  v0.1.3 "Typed values", v0.1.4 "Out of the app" (alpha 1 complete).**
+- **Milestone 2 (alpha 2) started.** Released: **v0.2.0 "Push and pull"** (steps A–E).
+  The user tries it; then v0.2.1 "Draw on faces" is planned with them click by click.
 - **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open
   (they belong to the views); Export again is remembered only while the model is open.
 - **Waiting on the user:** confirm the shortcut table (Help → Controls).

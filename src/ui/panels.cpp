@@ -85,7 +85,10 @@ void Editor::toolBar() {
     struct Entry { Act act; const char* label; const Tool* tool; };
     const Entry tools[] = {{Act::ToolSelect, "Select", &selectTool_},
                            {Act::ToolVertex, "Vertex", &vertexTool_},
-                           {Act::ToolPrimitives, "Primitives", &primTool_}};
+                           {Act::ToolPrimitives, "Primitives", &primTool_},
+                           {Act::ToolPushPull, "Push/pull", &pushPullTool_},
+                           {Act::ToolExtrude, "Extrude", &extrudeTool_},
+                           {Act::ToolInset, "Inset", &insetTool_}};
     for (const Entry& e : tools) {
         if (accentButton(e.label, tool_ == e.tool, ImVec2(full, ImGui::GetFrameHeight() * 1.2f))) run(e.act);
         tip(e.act);
@@ -169,6 +172,8 @@ void Editor::controlsWindow() {
             row("Orbit the 3D view", "right mouse drag", 0);
             row("Move while flying", "W A S D, Q/E down/up, Shift fast", 0);
             row("Resize the views", "drag the bars between them; double-click resets", 0);
+            row("Push or pull a face (Push/pull)", "drag it (2D views: a face seen edge-on); Return applies; Cmd+drag: new side faces", 0);
+            row("Extrude / inset", "select faces (or open edges); drag the arrow or type in Properties; Return applies", 0);
             row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
             row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);
             row("Scale figure (175 cm)", "View \xE2\x86\x92 Scale figure", 0);

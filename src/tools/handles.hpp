@@ -52,6 +52,17 @@ bool arrowPoint(const ViewGeom& g, const Vec3& centre, int axis, double cm, doub
 Vec3 arrowOffset(const ViewGeom& g, const Grid& grid, const Vec3& centre, const Vec3& mn0, int axis, double x0,
                  double y0, double x1, double y1);
 
+// Dragging along a line (push/pull, the extrude arrow): the parameter t of the point
+// on the line o + d·t (d unit length) nearest to the mouse ray at (sx, sy). False when
+// the line points (almost) straight at the viewer.
+bool lineParam(const ViewGeom& g, const Vec3& o, const Vec3& d, double sx, double sy, double& t);
+// An arrow from `o` along `d` (unit), `px` pixels long on screen; false if it can't be
+// shown (pointing at the viewer or behind the camera). Gives its tip on screen.
+bool drawDirArrow(ImDrawList* dl, const ViewGeom& g, const Vec3& o, const Vec3& d, float px, ImU32 col, bool hot,
+                  double* tipX = nullptr, double* tipY = nullptr);
+// The screen tip of that arrow (for hit tests and scripts).
+bool dirArrowTip(const ViewGeom& g, const Vec3& o, const Vec3& d, float px, double& tx, double& ty);
+
 // Point mode: every point as a small square, the selected ones pink. In the 3D view only
 // points on a face turned toward the camera.
 void drawPoints(ImDrawList* dl, const ViewGeom& g, const Mesh& m, const std::set<int>& selected);

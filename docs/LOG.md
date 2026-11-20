@@ -4,6 +4,41 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.2.0 "Push and pull" (steps A–E)
+- Agreed with the user: milestone 2 in five releases (v0.2.0–v0.2.4, PLAN), separate
+  into group and smoothing of extruded sides moved to milestone 3; push/pull, extrude
+  and inset click by click (ARCHITECTURE §6); Inset its own tool (Shift+I); every tool
+  a button in the Tools panel, one-step commands in the menus only. The tools are in
+  the Tools menu (a separate "Modelling" menu, mentioned in the proposal, would have
+  repeated it).
+- `core/model_ops`: push/pull (stretch when every face touching the face's points
+  lies at right angles to it; else new side faces; Cmd = new faces; a face with an
+  open side becomes a solid), extrude faces (region / each; along normals with corners
+  moved so every face moves exactly the distance; straight; keep original), extrude
+  open edges (the strip continues the surface), inset (region / each; width; depth =
+  the inner faces extruded in with straight walls, leaving a flat frame), `isClosed`,
+  `signedVolume`. Refused when faces would turn over or vanish (too far, too wide,
+  straight along the face's own plane). Fixed on the way: `flipped()` changed which
+  diagonal a quad was split along (now kept).
+- Tools: `PushPullTool` (hover lights the face; 2D views pick faces seen edge-on within
+  6 px; drag along the normal via the closest point between the mouse ray and the
+  normal line; grid steps; release keeps the preview; Return / Esc; another face applies
+  the pending push first; red when refused), `SelectionOpTool` (shared by Extrude and
+  Inset: preview while the selection suits, Return applies and selects the result, Esc
+  drops it until the selection or a setting changes; selecting with `PickTool`, the
+  Select tool without moving), `ExtrudeTool` (arrow from the selection's centre along
+  its normal or the axis, dragged with grid steps), `InsetTool`. Tool interface gains
+  `update()` (each frame) and `activate()`. Selection commands (Select all / none /
+  grow / shrink / loop / ring) drop a preview first.
+- Tests: core 865 checks (push/pull stretch / new faces / flat shape / too far, extrude
+  region / each / corner / straight / keep original / edges, inset / depth / too wide
+  / triangle / region / each, flipped diagonal; every closed result checked closed with
+  the right volume). UI scripts `a2_pushpull`, `a2_extrude`; twelve scripts pass at 1×
+  and 2×; idle 0 ticks at 1× and 2× with an armed Extrude preview added to the scene.
+- Screenshots `m2-01-pushpull.png`, `m2-02-push-too-far.png`, `m2-03-inset.png`,
+  `m2-04-extrude.png`. Version 0.2.0, README, Help → Controls, DEV script commands,
+  release notes.
+
 ### 2026-11-20 — v0.1.4 choices confirmed; milestone 2 planning starts
 - User: both v0.1.4 choices are fine (reference images stay on New / Open; Export again
   only while the model is open). Parked questions removed from PLAN. Planning of

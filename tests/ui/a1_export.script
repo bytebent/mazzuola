@@ -36,7 +36,7 @@ uikey Enter
 wait 2
 expect file lamp.gltf 1
 expect file lamp.bin 1
-expect filehas lamp.gltf "generator": "Mazzuola 0.1.4"
+expect filehas lamp.gltf "generator": "Mazzuola 0.2.0"
 # Export again now repeats the .gltf
 key Cmd+Shift+E
 wait 2

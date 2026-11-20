@@ -7,12 +7,11 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 1 (milestone 1, redone) is complete with v0.1.4 "Out of the app":
-draw every primitive shape and rocks; select whole pieces, faces, edges or points; move,
-copy, resize and rotate them like brushes, along the arrows, or by typed values
-(Transform panel, Multi-Replicate, mirror, flatten); undo, save and open `.mazz`; export
-`.glb`, `.gltf` and `.obj`; reference images in the 2D views; a 175 cm scale figure.
-Milestone 2 (modelling) is planned next.
+**Status:** alpha 2 (milestone 2, modelling) has started. v0.2.0 "Push and pull":
+push/pull, extrude and inset, on top of alpha 1 (all primitive shapes and rocks;
+selecting pieces, faces, edges and points; moving, copying, resizing, turning, typed
+values, mirror, flatten; undo, save and open `.mazz`; export `.glb`, `.gltf`, `.obj`;
+reference images; a 175 cm scale figure). Next: v0.2.1 "Draw on faces".
 
 ## Download
 
@@ -30,7 +29,10 @@ including the planned ones with the milestone that brings them.
 | Export (.glb, .gltf + .bin, .obj + .mtl; Y-up, metres) | File → Export |
 | Export again (same file and format) | **Cmd+Shift+E** |
 | Undo / redo | **Cmd+Z** / **Cmd+Shift+Z** |
-| Tools (also the buttons on the left) | Select **Shift+S**, Vertex **Shift+V**, Primitives **Shift+B** |
+| Tools (also the buttons on the left) | Select **Shift+S**, Vertex **Shift+V**, Primitives **Shift+B**, Push/pull **Shift+F**, Extrude **Shift+E**, Inset **Shift+I** |
+| Push/pull | drag a face along its normal (3D view: any face; 2D views: a face seen edge-on); grid steps, or type the distance in Properties; **Return** applies, **Esc** cancels; the sides of a box stretch, otherwise new side faces (**Cmd**+drag: always new faces); a flat shape becomes a solid; pressing another face applies the pending push first |
+| Extrude | select faces (or open edges in edge mode); a live preview: drag its arrow or type the distance; Region / Each face, Along normals / Straight X Y Z, Keep original; **Return** applies and selects the new faces |
+| Inset | select faces; type the width and an optional depth (straight walls, flat frame); Region / Each face; red when too wide; **Return** applies and selects the inner faces |
 | Selection mode: points / edges / faces / whole pieces | **1** / **2** / **3** / **4** (and the buttons at the top of the tool bar); switching converts the selection |
 | Draw a shape | Primitives tool (or Create → Primitives / Rock): pick the shape and its settings in Properties, drag a rectangle in a 2D view, adjust with the handles in any 2D view (or type the size); **Return** creates, **Esc** cancels. Round shapes stand along the view's depth (drawn in Top = upright); the depth comes from the last shape made or selected |
 | Select | Select tool: click a piece (again on the same spot: the one underneath); **Cmd+click** adds/removes; drag from empty space for a rectangle; **Esc** selects nothing; **Cmd+A** all |

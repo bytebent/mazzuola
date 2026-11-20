@@ -345,4 +345,56 @@ Vec3 arrowOffset(const ViewGeom& g, const Grid& grid, const Vec3& centre, const 
     return d;
 }
 
+bool lineParam(const ViewGeom& g, const Vec3& o, const Vec3& d, double sx, double sy, double& t) {
+    Vec3 ro, rd;
+    g.ray(sx, sy, ro, rd);
+    // Closest points of two lines: o + d t and ro + rd s.
+    const Vec3 w = o - ro;
+    const double a = dot(d, d), b = dot(d, rd), c = dot(rd, rd), dd = dot(d, w), e = dot(rd, w);
+    const double den = a * c - b * b;
+    if (den < 1e-6 * a * c) return false;
+    t = (b * e - c * dd) / den;
+    return true;
+}
+
+bool dirArrowTip(const ViewGeom& g, const Vec3& o, const Vec3& d, float px, double& tx, double& ty) {
+    double ox, oy, ux, uy;
+    if (!g.project(o, ox, oy)) return false;
+    // How long one cm along d looks here; the arrow is then px long.
+    const double probe = g.is3D() ? std::max(1.0, length(o - g.cam.eye()) * 0.05) : 1.0;
+    if (!g.project(o + d * probe, ux, uy)) return false;
+    const double per = std::hypot(ux - ox, uy - oy) / probe;
+    if (per * probe < 1e-3 || per <= 0) return false;
+    const double len = px / per;
+    // Pointing nearly at the viewer: the arrow would be a dot.
+    if (g.is3D()) {
+        const Vec3 view = g.cam.forward();
+        if (std::fabs(dot(view, d)) > 0.97) return false;
+    } else if (std::hypot(ux - ox, uy - oy) < 0.2 * probe * g.pxPerCm()) {
+        return false;
+    }
+    if (!g.project(o + d * len, tx, ty)) return false;
+    return true;
+}
+
+bool drawDirArrow(ImDrawList* dl, const ViewGeom& g, const Vec3& o, const Vec3& d, float px, ImU32 col, bool hot,
+                  double* tipX, double* tipY) {
+    double ox, oy, tx, ty;
+    if (!g.project(o, ox, oy) || !dirArrowTip(g, o, d, px, tx, ty)) return false;
+    const float w = hot ? 3.5f : 2.5f;
+    const ImVec2 a((float)ox, (float)oy), b((float)tx, (float)ty);
+    dl->AddLine(a, b, col, w);
+    const double dx = tx - ox, dy = ty - oy, l = std::hypot(dx, dy);
+    if (l > 1) {
+        const double ux = dx / l, uy = dy / l, s = hot ? 11 : 9;
+        const ImVec2 p1((float)(tx + ux * s), (float)(ty + uy * s));
+        const ImVec2 p2((float)(tx - uy * s * 0.5), (float)(ty + ux * s * 0.5));
+        const ImVec2 p3((float)(tx + uy * s * 0.5), (float)(ty - ux * s * 0.5));
+        dl->AddTriangleFilled(p1, p2, p3, col);
+    }
+    if (tipX) *tipX = tx;
+    if (tipY) *tipY = ty;
+    return true;
+}
+
 } // namespace mazz
