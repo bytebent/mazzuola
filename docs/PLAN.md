@@ -16,9 +16,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   v0.2.0 "Push and pull", v0.2.1 "Edges and points" (confirmed good), v0.2.2 "Draw on
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool).
 - **Next:** the user tries v0.2.2; then v0.2.3 "Outlines and holes" is planned with them.
-- **Branch `audit-fixes`** (2026-11-20, not on main, no release): fixes from an audit:
-  release workflow, committed build folders, glTF export pair, view fallback without
-  anti-aliasing, dependency hashes. See LOG.md. Waiting for the user to merge.
+- **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
+  committed build folders, glTF export pair, view fallback without anti-aliasing,
+  dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
 - Milestone 1 was first built in one go and withdrawn (v0.1.0, reverted 2026-11-19; see
   LOG.md), then redesigned with the user click by click (ARCHITECTURE §4–§6, §9, §10).
 - **Decided 2026-11-20 (user, after v0.1.4):** reference images stay on New / Open

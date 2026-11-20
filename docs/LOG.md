@@ -4,7 +4,7 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
-### 2026-11-20 — Audit fixes (branch `audit-fixes`, no release)
+### 2026-11-20 — Audit fixes (merged into main by the user's go-ahead, no version release)
 - **Releases shipped later code** (twice: v0.0.0 got a later build fix, v0.1.0 later
   docs): any run on main published every notes file without a release, with its own
   build. Now a version release is tagged at the commit that added its notes and only
