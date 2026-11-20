@@ -240,7 +240,26 @@ each tried by the user before the next starts:
      release notes. User tries it.
 
 5. **v0.1.4 — Out of the app.** `.glb`/`.gltf` + `.obj` export (geometry; origin =
-   world origin); reference images; 175 cm figure.
+   world origin); reference images; 175 cm figure. Design: ARCHITECTURE §5 (reference
+   images, figure) and §7 "Alpha 1 export" (agreed 2026-11-20, "yes to all").
+   **Steps of v0.1.4:**
+   - **A. Export (io).** cgltf vendored. `.glb`, `.gltf` + `.bin`, `.obj` + `.mtl`:
+     Z-up cm → Y-up m, flat normals, quads split by their diagonal, one grey material,
+     units in `extras`. Written through a temporary file. Tests read the files back
+     (cgltf; the `.obj` parsed): counts, positions in metres, normals, winding.
+   - **B. Export in the app.** File → Export (three formats, file dialog);
+     Cmd+Shift+E exports again to the same file and format (asks for a file the first
+     time); script command; UI script.
+   - **C. Reference images.** From a 2D view's header: load (PNG, JPG, TGA, BMP),
+     remove, a pop-up with width in cm, rotation, transparency, in front / behind;
+     position and size with the brush handles (proportions kept) while the pop-up is
+     open; not pickable while modelling; one image per direction, shared by views
+     facing the same way; none in 3D; not saved. Script commands; UI script.
+   - **D. Scale figure.** View → Scale figure: a blocky see-through 175 cm person on
+     the ground beside the origin (−X side, outside the model's box), in all views,
+     never exported or saved.
+   - **E. Release v0.1.4.** UI scripts, idle scene with reference image and figure,
+     screenshots; controls, README, release notes. Look at an exported file by eye.
 
 Before each of v0.1.1–v0.1.4 starts, write its steps here the same way as v0.1.0's,
 taking in the user's feedback on the release before.

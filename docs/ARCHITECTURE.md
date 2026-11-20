@@ -123,8 +123,14 @@ to the GPU → one redraw of the views that show it.
   (proportions kept; real width typable in cm), rotation, transparency, in front of /
   behind the model. Not selectable while modelling. **Not saved** (not in the `.mazz`,
   not remembered by the app).
+  Details (agreed 2026-11-20): views facing the same way (two Top views) share one
+  image; the 3D view has none; a new image first fills the visible part of the view,
+  then the real width is typed in cm.
 - **Units / axes**: 1 unit = 1 cm, Z-up (matches Scalpellino, so models place at their
-  real size). A 175 cm human figure can be shown for scale (same as Scalpellino's).
+  real size). A 175 cm human figure can be shown for scale (same as Scalpellino's:
+  blocky, see-through, never exported). View → Scale figure, no shortcut. It stands on
+  the ground beside the origin on the −X side, just outside the model's box; its spot
+  is not saved (agreed 2026-11-20).
 - **Pivot**: the **world origin is the model's pivot** (agreed 2026-11-19): build the
   model with its base on the origin; that's where Scalpellino holds it and the export's
   zero point. No pivot tool. (Groups have their own pivots, milestone 3.)
@@ -217,6 +223,7 @@ to the GPU → one redraw of the views that show it.
 | Apply current texture | **Shift+T** |
 | Hide selected / hide others / show all | **H** / **Shift+H** / **Cmd+U** |
 | Frame selection / back to origin | **Cmd+E** / **Cmd+0** |
+| Export again (same file and format) | **Cmd+Shift+E** |
 | Problems list | **Cmd+Shift+O** |
 | Fly mode (3D view) | **Z** |
 | Smaller / larger grid | **è** / **+** |
@@ -502,7 +509,6 @@ Common to rock, tree, jitter, scatter and generate texture:
   f 0 1 2 3 tex=0 group=0 sg=1 two=0 diag=0
     uv 0 0 / 16 0 / 16 16 / 0 16
     col ffffff ffffff c0c0c0 c0c0c0
-  ref front "lamp-front.png" x=-80 y=0 rot=0 scale=0.5 alpha=0.4 layer=back
   palette 1a1c2c 5d275d b13e53 ef7d57
   ```
 
@@ -514,6 +520,12 @@ Common to rock, tree, jitter, scatter and generate texture:
   converts back exactly.
 - **Export `.obj` + `.mtl`**: positions, normals, texture coordinates, materials with
   texture paths, groups as OBJ groups (vertex colours as the common unofficial extension).
+- **Alpha 1 export (v0.1.4, agreed 2026-11-20):** File → Export → `.glb` / `.gltf` /
+  `.obj`; **Cmd+Shift+E** exports again to the same file and format (Cmd+E is Frame
+  selection). The whole model, hidden pieces included. Every edge hard (flat normals)
+  until smoothing groups arrive (milestone 3); quads split along their stored diagonal,
+  as drawn. One plain grey material. `.obj` uses the same convention as glTF: Y-up,
+  metres. `.gltf` writes its buffer to a `.bin` beside it.
 - **Images**: PNG in and out. TGA/BMP/JPG accepted as reference images.
 
 ## 8. Paint window and tablets (optional)
@@ -570,7 +582,8 @@ unsaved or saved exactly as it was at that step.
 Fetched by CMake, versions pinned:
 - GLFW: windows, input
 - Dear ImGui (docking branch) with its GLFW + OpenGL3 backends
-- cgltf: `.glb`/`.gltf` writing (and reading in tests); added in milestone 1
+- cgltf 1.15: `.glb`/`.gltf` writing (and reading in tests); vendored in
+  `third_party/cgltf` (as in Scalpellino), added in v0.1.4
 
 OpenGL functions: macOS links the system framework; elsewhere a short list of function
 pointers is loaded at start-up (`render/gl.hpp`), so no loader library is needed.

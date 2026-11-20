@@ -4,6 +4,18 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-20 — v0.1.4 design agreed; steps planned (docs only)
+- User tried v0.1.3 (Mesh menu found; works). Agreed for v0.1.4 ("yes to all"):
+  File → Export with `.glb` / `.gltf` / `.obj`; export again on **Cmd+Shift+E** (Cmd+E
+  was proposed first, but it is Frame selection, here and in Scalpellino); whole model;
+  flat normals until smoothing groups; quads split by their diagonal; one grey
+  material; `.obj` Y-up metres like glTF. Reference images: views facing the same way
+  share one image, none in 3D, a new image fills the visible view then its width is
+  typed. Scale figure as in Scalpellino (blocky, see-through, 175 cm, never exported),
+  View → Scale figure without a shortcut, beside the origin on −X outside the model,
+  not saved.
+- ARCHITECTURE §5, §6 shortcut table, §7, §11 updated; PLAN: steps of v0.1.4 (A–E).
+
 ### 2026-11-20 — v0.1.3 "Typed values" (steps A–E)
 - `core/ops`: transform about a pivot (scale, rotate X→Y→Z, move, along the
   selection's normal; mirrored results turn their faces round), replicate (per-copy
