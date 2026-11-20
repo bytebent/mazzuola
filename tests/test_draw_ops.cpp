@@ -307,9 +307,218 @@ void manyShapes(Mesh m, unsigned seed, int rounds) {
     (void)refused;
 }
 
+// Open surface check for flat outlines: every edge used once, and inside edges in both
+// directions; returns the number of border edges.
+int borderEdges(const Mesh& m) {
+    std::map<std::pair<int, int>, int> cnt;
+    for (const Face& f : m.faces)
+        for (int k = 0; k < f.n; ++k) ++cnt[{f.v[k], f.v[(k + 1) % f.n]}];
+    int border = 0;
+    for (const auto& [d, c] : cnt) {
+        if (c != 1) return -1;
+        if (!cnt.count({d.second, d.first})) ++border;
+    }
+    return border;
+}
+
+double totalArea(const Mesh& m) {
+    double a = 0;
+    for (int i = 0; i < (int)m.faces.size(); ++i) a += faceArea(m, i);
+    return a;
+}
+
+void testWindowThrough() {
+    // A wall 200 x 20 x 150: a window drawn on the front, pushed through to the back.
+    Mesh m = box({0, 0, 0}, {200, 20, 150});
+    const int front = faceFacing(m, {0, -1, 0});
+    MeshEdit e(m);
+    std::set<int> shape;
+    CHECK(cutShape(e, front, rectanglePoints({60, 0, 50}, {1, 0, 0}, {0, 0, 1}, 80, 60), true, &shape));
+    int target = -1;
+    CHECK(near(throughDistance(m, shape, &target), 20, 1e-9));
+    CHECK(target >= 0 && nearV(faceNormal(m, target), {0, 1, 0}, 1e-9));
+    std::string why;
+    CHECK(pushThrough(e, shape, &why));
+    CHECK(why.empty());
+    CHECK(isClosed(m) && goodFaces(m));
+    CHECK(near(signedVolume(m), 200 * 20 * 150 - 80 * 60 * 20, 1e-3));
+    // A circle through a slab, from the top.
+    Mesh s = box({0, 0, 0}, {100, 100, 10});
+    const int top = faceFacing(s, {0, 0, 1});
+    MeshEdit es(s);
+    shape.clear();
+    CHECK(cutShape(es, top, circlePoints({50, 50, 10}, {1, 0, 0}, {0, 1, 0}, 20, 8), true, &shape));
+    CHECK(near(throughDistance(s, shape), 10, 1e-9));
+    CHECK(pushThrough(es, shape));
+    CHECK(isClosed(s) && goodFaces(s));
+    // A doorway touching the floor: the wall's underside opens under it.
+    Mesh d = box({0, 0, 0}, {200, 20, 250});
+    const int df = faceFacing(d, {0, -1, 0});
+    MeshEdit ed(d);
+    shape.clear();
+    CHECK(cutShape(ed, df, {{80, 0, 0}, {120, 0, 0}, {120, 0, 200}, {80, 0, 200}}, true, &shape));
+    CHECK(near(throughDistance(d, shape), 20, 1e-9));
+    why.clear();
+    CHECK(pushThrough(ed, shape, &why));
+    CHECK(why.empty());
+    CHECK(isClosed(d) && goodFaces(d));
+    CHECK(near(signedVolume(d), 200 * 20 * 250 - 40 * 200 * 20, 1e-3));
+    CHECK(near(areaFacing(d, {0, 0, -1}), 160 * 20 + 40 * 20, 1e-6)); // floor either side + the top of the opening
+    // In a corner (floor and side both open).
+    Mesh k = box({0, 0, 0}, {200, 20, 250});
+    MeshEdit ek(k);
+    shape.clear();
+    CHECK(cutShape(ek, faceFacing(k, {0, -1, 0}), {{0, 0, 0}, {50, 0, 0}, {50, 0, 100}, {0, 0, 100}}, true, &shape));
+    why.clear();
+    CHECK(pushThrough(ek, shape, &why));
+    CHECK(why.empty());
+    CHECK(isClosed(k) && goodFaces(k));
+    CHECK(near(signedVolume(k), 200 * 20 * 250 - 50 * 100 * 20, 1e-3));
+}
+
+void testThroughRandom() {
+    // Random rectangles and circles on a wall's front (some touching its border), pushed
+    // through: closed, good faces, the right volume; or refused, changing nothing.
+    unsigned seed = 2024;
+    auto rnd = [&](int lo, int hi) {
+        seed = seed * 1103515245u + 12345u;
+        return lo + (int)((seed >> 8) % (unsigned)(hi - lo + 1));
+    };
+    int through = 0, bad = 0;
+    for (int round = 0; round < 300; ++round) {
+        Mesh m = box({0, 0, 0}, {120, 16, 90});
+        const double v0 = signedVolume(m);
+        const int front = faceFacing(m, {0, -1, 0});
+        MeshEdit e(m);
+        std::set<int> shape;
+        std::vector<Vec3> pts;
+        double area = 0;
+        if (rnd(0, 1)) {
+            const double x = rnd(0, 100), z = rnd(0, 70), w = rnd(4, 120 - (int)x), h = rnd(4, 90 - (int)z);
+            pts = rectanglePoints({x, 0, z}, {1, 0, 0}, {0, 0, 1}, w, h);
+            area = w * h;
+        } else {
+            const double r = rnd(4, 30);
+            const int segs = rnd(3, 12);
+            pts = circlePoints({(double)rnd(35, 85), 0, (double)rnd(35, 55)}, {1, 0, 0}, {0, 0, 1}, r, segs);
+            area = 0.5 * segs * r * r * std::sin(2 * M_PI / segs);
+        }
+        if (!cutShape(e, front, pts, true, &shape)) continue;
+        if (throughDistance(m, shape) <= 0) continue;
+        std::string why;
+        const size_t faces = m.faces.size();
+        if (pushThrough(e, shape, &why)) {
+            ++through;
+            if (!isClosed(m) || !goodFaces(m) || !near(signedVolume(m), v0 - area * 16, 2.0)) {
+                ++bad;
+                std::printf("through round %d closed %d good %d vol %.3f want %.3f\n", round, isClosed(m), goodFaces(m),
+                            signedVolume(m), v0 - area * 16);
+            }
+        } else if (m.faces.size() != faces) {
+            // A refusal may have changed the model inside its MeshEdit: the caller reverts.
+        }
+    }
+    CHECK(bad == 0);
+    CHECK(through > 100);
+}
+
+void testOutline() {
+    // A plain L, facing up.
+    Mesh m;
+    MeshEdit e(m);
+    std::set<int> faces;
+    std::string why;
+    const std::vector<Vec3> l = {{0, 0, 0}, {100, 0, 0}, {100, 40, 0}, {40, 40, 0}, {40, 100, 0}, {0, 100, 0}};
+    CHECK(makeOutline(e, l, {}, {0, 0, 1}, false, &faces, &why));
+    CHECK(why.empty() && faces.size() == 2);
+    CHECK(near(totalArea(m), 100 * 40 + 40 * 60, 1e-9));
+    for (int f : faces) CHECK(nearV(faceNormal(m, f), {0, 0, 1}, 1e-9));
+    CHECK(borderEdges(m) == 6 && goodFaces(m));
+    // Drawn clockwise, facing down: still faces the way asked.
+    Mesh cw;
+    MeshEdit ecw(cw);
+    std::vector<Vec3> rl(l.rbegin(), l.rend());
+    CHECK(makeOutline(ecw, rl, {}, {0, 0, -1}, true, &faces));
+    for (int f : faces) CHECK(nearV(faceNormal(cw, f), {0, 0, -1}, 1e-9) && cw.faces[f].twoSided);
+    // A square with a square hole (a frame), and with two holes.
+    Mesh h;
+    MeshEdit eh(h);
+    const std::vector<Vec3> sq = {{0, 0, 0}, {100, 0, 0}, {100, 100, 0}, {0, 100, 0}};
+    CHECK(makeOutline(eh, sq, {{{30, 30, 0}, {70, 30, 0}, {70, 70, 0}, {30, 70, 0}}}, {0, 0, 1}, false, &faces, &why));
+    CHECK(near(totalArea(h), 10000 - 1600, 1e-9));
+    CHECK(borderEdges(h) == 8 && goodFaces(h));
+    Mesh h2;
+    MeshEdit eh2(h2);
+    CHECK(makeOutline(eh2, sq,
+                      {{{10, 10, 0}, {40, 10, 0}, {40, 40, 0}, {10, 40, 0}},
+                       circlePoints({70, 70, 0}, {1, 0, 0}, {0, 1, 0}, 15, 8)},
+                      {0, 0, 1}, false, &faces, &why));
+    CHECK(near(totalArea(h2), 10000 - 900 - 2 * std::sqrt(2.0) * 225, 0.05));
+    CHECK(borderEdges(h2) == 4 + 4 + 8 && goodFaces(h2));
+    // Pulled up into a solid: closed, with its holes.
+    std::set<int> moved;
+    CHECK(pushKind(h2, faces, false) == PushKind::Solid);
+    CHECK(pushPullFaces(eh2, faces, 20, false, &moved));
+    CHECK(isClosed(h2) && goodFaces(h2));
+    CHECK(near(signedVolume(h2), (10000 - 900 - 2 * std::sqrt(2.0) * 225) * 20, 1));
+    // Refused: crossing itself, a hole outside, holes crossing.
+    Mesh r;
+    MeshEdit er(r);
+    CHECK(!makeOutline(er, {{0, 0, 0}, {100, 100, 0}, {100, 0, 0}, {0, 100, 0}}, {}, {0, 0, 1}, false, nullptr, &why));
+    CHECK(!makeOutline(er, sq, {{{150, 10, 0}, {160, 10, 0}, {160, 20, 0}}}, {0, 0, 1}, false, nullptr));
+    CHECK(!makeOutline(er, sq,
+                       {{{10, 10, 0}, {50, 10, 0}, {50, 50, 0}, {10, 50, 0}},
+                        {{30, 30, 0}, {70, 30, 0}, {70, 70, 0}, {30, 70, 0}}},
+                       {0, 0, 1}, false, nullptr));
+}
+
+void testOutlineRandom() {
+    // Random star-shaped outlines with a few random holes: faces or a clean refusal.
+    unsigned seed = 99;
+    auto rnd = [&](int lo, int hi) {
+        seed = seed * 1103515245u + 12345u;
+        return lo + (int)((seed >> 8) % (unsigned)(hi - lo + 1));
+    };
+    int made = 0, bad = 0;
+    for (int round = 0; round < 300; ++round) {
+        std::vector<Vec3> outer;
+        const int n = rnd(3, 12);
+        for (int i = 0; i < n; ++i) {
+            double c, s;
+            cosSinDeg(360.0 * i / n + rnd(-10, 10), c, s);
+            const double r = rnd(60, 120);
+            outer.push_back({std::round(r * c), std::round(r * s), 0});
+        }
+        std::vector<std::vector<Vec3>> holes;
+        for (int k = rnd(0, 3); k > 0; --k) {
+            const double cx = rnd(-30, 30), cy = rnd(-30, 30);
+            holes.push_back(circlePoints({cx, cy, 0}, {1, 0, 0}, {0, 1, 0}, rnd(4, 15), rnd(3, 8)));
+        }
+        Mesh m;
+        MeshEdit e(m);
+        std::set<int> faces;
+        if (makeOutline(e, outer, holes, {0, 0, 1}, false, &faces)) {
+            ++made;
+            int border = 0;
+            border += (int)outer.size();
+            for (const auto& h : holes) border += (int)h.size();
+            if (borderEdges(m) != border || !goodFaces(m)) {
+                ++bad;
+                std::printf("outline round %d border %d want %d good %d\n", round, borderEdges(m), border, goodFaces(m));
+            }
+        }
+    }
+    CHECK(bad == 0);
+    CHECK(made > 100);
+}
+
 } // namespace
 
 void testDrawOps() {
+    testWindowThrough();
+    testThroughRandom();
+    testOutline();
+    testOutlineRandom();
     testManyShapes();
     testSplitPolygon();
     testRectangleInside();

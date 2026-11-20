@@ -31,6 +31,20 @@ FacePlace placeOnFace(const Mesh& m, int face, const Vec3& p, int* edgeIndex = n
 bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& pts, bool closed, std::set<int>* shape,
               std::string* why = nullptr);
 
+// ---- v0.2.3: holes and outlines
+// Pushing a drawn shape (flat, joined faces lying inside one face) into the solid: the
+// distance at which it reaches the face on the other side (a parallel face facing the
+// other way that the shape fits inside), or 0 if there is none. `target` gets that face.
+double throughDistance(const Mesh& m, const std::set<int>& region, int* target = nullptr);
+// Makes the hole: the shape is cut into the far face, both go, walls join them.
+bool pushThrough(MeshEdit& e, const std::set<int>& region, std::string* why = nullptr);
+
+// A flat shape from an outline (and outlines of holes inside it), all in one plane,
+// facing `normal`. `faces` gets the new faces. False with `why` when an outline crosses
+// itself or another, or a hole isn't inside.
+bool makeOutline(MeshEdit& e, const std::vector<Vec3>& outer, const std::vector<std::vector<Vec3>>& holes,
+                 const Vec3& normal, bool twoSided, std::set<int>* faces, std::string* why = nullptr);
+
 // Points of a rectangle (corner, width along u, height along v) and of a circle (centre,
 // radius, segments) in a face's frame, counter-clockwise seen from n.
 std::vector<Vec3> rectanglePoints(const Vec3& corner, const Vec3& u, const Vec3& v, double w, double h);
