@@ -6,6 +6,7 @@
 #include "core/ops.hpp"
 #include "io/export.hpp"
 #include "render/view_draw.hpp"
+#include "tools/cut_tool.hpp"
 #include "tools/draw_tool.hpp"
 #include "tools/extrude_tool.hpp"
 #include "tools/inset_tool.hpp"
@@ -40,7 +41,7 @@ struct ViewsLayout {
 
 class Editor {
 public:
-    enum class Op { None, Transform, Replicate, Flatten }; // operation windows
+    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke }; // operation windows
     Editor(GLFWwindow* window, const EditorOptions& opt);
     ~Editor();
 
@@ -182,6 +183,7 @@ private:
     ExtrudeTool extrudeTool_;
     InsetTool insetTool_;
     DrawTool drawTool_;
+    CutTool cutTool_;
     Tool* tool_ = &selectTool_;
     LastBox lastBox_;
     // What the views last drew (compared with the document's counters each frame).
@@ -214,6 +216,10 @@ private:
     Selection opSel_;           // the selection when the window opened
     TransformParams opTransform_;
     ReplicateParams opReplicate_;
+    int subdivN_ = 2, subdivM_ = 2; // Subdivide...
+    int divideN_ = 2;               // Divide edges...
+    double pokeHeight_ = 0;         // Poke...
+    std::string opWhy_;             // the operation can't be done as set (shown in its window)
     int flattenAxis_ = 2;
     FlattenTo flattenTo_ = FlattenTo::Average;
 

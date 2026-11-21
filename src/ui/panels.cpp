@@ -89,7 +89,8 @@ void Editor::toolBar() {
                            {Act::ToolPushPull, "Push/pull", &pushPullTool_},
                            {Act::ToolExtrude, "Extrude", &extrudeTool_},
                            {Act::ToolInset, "Inset", &insetTool_},
-                           {Act::ToolDraw, "Draw", &drawTool_}};
+                           {Act::ToolDraw, "Draw", &drawTool_},
+                           {Act::ToolCut, "Cut", &cutTool_}};
     for (const Entry& e : tools) {
         if (accentButton(e.label, tool_ == e.tool, ImVec2(full, ImGui::GetFrameHeight() * 1.2f))) run(e.act);
         tip(e.act);
@@ -179,6 +180,8 @@ void Editor::controlsWindow() {
             row("Draw on a face (Draw)", "rectangle: two corners; circle: centre, radius; line: edge to edge; Return cuts it in; Shift: keep the direction", 0);
             row("Outline (Draw, 2D views)", "click points, the first one again to close; outlines inside become holes; Return", 0);
             row("A hole through", "Push/pull a drawn shape in until it reaches the other side", 0);
+            row("Knife / loop cut (Cut)", "knife: click on edges, Return; loop cut: click an edge, type cuts and position, Return", 0);
+            row("Slide a point (Vertex tool)", "Alt+drag it: along the edge closest to the drag", 0);
             row("Reference image", "Image... in a 2D view's header; while its window is open, drag it to move it, a corner to resize it", 0);
             row("Export", "File \xE2\x86\x92 Export (.glb, .gltf, .obj)", 0);
             row("Scale figure (175 cm)", "View \xE2\x86\x92 Scale figure", 0);

@@ -4,6 +4,27 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-21 — v0.2.4 "Cut and divide"
+- `core/divide_ops`: `knife` (each two points cut across the face they share, that face
+  alone: `cutShape` gained `wholeSurface = false`), `loopRing` (forward round the quads
+  through opposite edges, then backward; closed or ending at triangles / an open edge)
+  and `loopCut` (N cuts, one at a typed position or several spread evenly; the faces at
+  an open ring's ends get the points), `subdivide` (quads N x M bilinear, triangles N x N;
+  edge points shared, a clash between neighbours refused), `divideEdges`, `poke`,
+  `connectPoints`, `slideTarget`; new points always go into the faces next to them.
+- Found by a random test (loop cuts, subdivides, divides, pokes and knife steps one
+  after another on a box, a cylinder and a sphere): points put on an edge are rounded
+  up to 0.001 cm off it, which the angle-only "straight corner" test missed, so a sliver
+  ear was cut and the last triangle dropped (open model). Corners are now straight when
+  the point lies within 0.002 cm of the line; 1200 rounds clean.
+- UI: `CutTool` (Shift+X, button; knife with point / midpoint / edge snaps; loop cut ring
+  shown on hover, picked by a click, cuts and position typed), Vertex tool Alt+drag slide
+  (edge chosen by screen direction, grid steps along it), Mesh menu Subdivide / Divide
+  edges / Poke windows (operation windows with a red "Can't" line), Connect two points.
+- Tests: core 1073 checks; new UI script `a2_cut`; sixteen scripts at 1×, 2× and without
+  anti-aliasing; idle 0 ticks.
+- Screenshot `m2-09-cut.png`. Version 0.2.4, README, Help → Controls, DEV, notes.
+
 ### 2026-11-21 — v0.2.4 agreed
 - Proposal (knife, loop cut, slide with Alt in the Vertex tool, Mesh menu subdivide /
   divide edges / poke / connect): "yes to all".

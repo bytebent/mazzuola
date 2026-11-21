@@ -4,6 +4,7 @@
 // (or closing the window) cancels. Only one is open at a time; while it is, the views
 // can still be turned and zoomed but the tools don't take clicks.
 #include "app/editor.hpp"
+#include "core/divide_ops.hpp"
 #include "core/select_ops.hpp"
 #include "imgui.h"
 
@@ -15,6 +16,9 @@ const char* opTitle(Editor::Op op) {
     case Editor::Op::Transform: return "Move / rotate / scale";
     case Editor::Op::Replicate: return "Multi-Replicate";
     case Editor::Op::Flatten: return "Flatten";
+    case Editor::Op::Subdivide: return "Subdivide";
+    case Editor::Op::DivideEdges: return "Divide edges";
+    case Editor::Op::Poke: return "Poke";
     default: return "";
     }
 }
@@ -47,6 +51,7 @@ bool pivotField(PivotKind& kind, Vec3& typed, bool travelling) {
 
 void Editor::openOp(Op op) {
     cancelTool(); // also closes another operation window
+    opWhy_.clear();
     if (doc_.sel.empty()) {
         showMessage(opTitle(op), "Select something first.");
         return;
@@ -83,6 +88,36 @@ void Editor::refreshOpPreview() {
         break;
     }
     case Op::Flatten: flatten(e, opSel_, flattenAxis_, flattenTo_); break;
+    case Op::Subdivide:
+    case Op::Poke: {
+        const std::set<int> faces = convertSelection(doc_.mesh, opSel_, SelectMode::Face).faces;
+        std::set<int> out;
+        opWhy_.clear();
+        const bool ok = faces.empty() ? (opWhy_ = "select faces first", false)
+                        : op_ == Op::Subdivide ? subdivide(e, faces, subdivN_, subdivM_, &out, &opWhy_)
+                                               : poke(e, faces, pokeHeight_, &out);
+        if (!ok) {
+            if (opWhy_.empty()) opWhy_ = "it can't be done here";
+            e.revert();
+            break;
+        }
+        Selection s;
+        s.mode = SelectMode::Face;
+        s.faces = out;
+        doc_.select(s);
+        break;
+    }
+    case Op::DivideEdges: {
+        const std::set<Edge> edges =
+            opSel_.mode == SelectMode::Edge ? opSel_.edges : convertSelection(doc_.mesh, opSel_, SelectMode::Edge).edges;
+        opWhy_.clear();
+        if (edges.empty()) opWhy_ = "select edges first";
+        else if (!divideEdges(e, edges, divideN_, &opWhy_)) {
+            if (opWhy_.empty()) opWhy_ = "it can't be done here";
+            e.revert();
+        }
+        break;
+    }
     case Op::None: break;
     }
     touch();
@@ -91,9 +126,10 @@ void Editor::refreshOpPreview() {
 void Editor::applyOp() {
     if (op_ == Op::None) return;
     refreshOpPreview();
+    if (!opWhy_.empty()) return; // can't: the window says why
     const Op op = op_;
     op_ = Op::None;
-    doc_.commitLive(op == Op::Transform ? "Transform" : op == Op::Replicate ? "Multi-Replicate" : "Flatten");
+    doc_.commitLive(op == Op::Transform ? "Transform" : op == Op::Replicate ? "Multi-Replicate" : op == Op::Flatten ? "Flatten" : opTitle(op));
     touch();
 }
 
@@ -143,6 +179,19 @@ void Editor::opWindow() {
         changed |= vec3Field("Turn (degrees)", opReplicate_.turn, "%.3g");
         changed |= vec3Field("Scale (%)", opReplicate_.scale, "%.4g");
         changed |= pivotField(opReplicate_.pivot, opReplicate_.typed, true);
+    } else if (op == Op::Subdivide) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputInt("Pieces along", &subdivN_)) subdivN_ = std::clamp(subdivN_, 1, 16), changed = true;
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputInt("Pieces across", &subdivM_)) subdivM_ = std::clamp(subdivM_, 1, 16), changed = true;
+        ImGui::TextDisabled("Along each face's first edge, then across.\nTriangles: pieces along, both ways.");
+    } else if (op == Op::DivideEdges) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputInt("Pieces", &divideN_)) divideN_ = std::clamp(divideN_, 2, 32), changed = true;
+    } else if (op == Op::Poke) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        changed |= ImGui::InputDouble("Height (cm)", &pokeHeight_, 0, 0, "%g");
+        ImGui::TextDisabled("The middle point goes out along the face's normal\n(negative: in).");
     } else if (op == Op::Flatten) {
         ImGui::TextUnformatted("Line the points up on");
         for (int a = 0; a < 3; ++a) {
@@ -162,6 +211,11 @@ void Editor::opWindow() {
                 changed = true;
             }
         }
+    }
+    if (!opWhy_.empty()) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.2f, 0.2f, 1));
+        ImGui::TextUnformatted(("Can't: " + opWhy_ + ".").c_str());
+        ImGui::PopStyleColor();
     }
     ImGui::Separator();
     const bool apply = ImGui::Button("Apply (Return)") || (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&

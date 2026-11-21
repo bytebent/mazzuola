@@ -95,6 +95,10 @@ bool Editor::enabled(Act a) const {
     case Act::MovePoints:
     case Act::Replicate:
     case Act::Flatten:
+    case Act::Subdivide:
+    case Act::DivideEdges:
+    case Act::Poke:
+    case Act::Connect:
     case Act::Duplicate:
     case Act::MirrorX:
     case Act::MirrorY:
@@ -157,6 +161,22 @@ void Editor::run(Act a) {
     case Act::MovePoints: openOp(Op::Transform); break;
     case Act::Replicate: openOp(Op::Replicate); break;
     case Act::Flatten: openOp(Op::Flatten); break;
+    case Act::Subdivide: openOp(Op::Subdivide); break;
+    case Act::DivideEdges: openOp(Op::DivideEdges); break;
+    case Act::Poke: openOp(Op::Poke); break;
+    case Act::Connect: {
+        if (doc_.sel.mode != SelectMode::Vert || doc_.sel.verts.size() != 2) {
+            showMessage("Connect two points", "Select exactly two points (point mode) on the same face.");
+            break;
+        }
+        const int a = *doc_.sel.verts.begin(), b = *doc_.sel.verts.rbegin();
+        std::string why;
+        if (!doc_.apply("Connect", [&](MeshEdit& e, Selection&) { return connectPoints(e, a, b, &why); }))
+            showMessage("Connect two points", "Can't: " + why + ".");
+        touch();
+        break;
+    }
+    case Act::ToolCut: setTool(&cutTool_); break;
     case Act::Duplicate:
     case Act::MirrorX:
     case Act::MirrorY:
@@ -532,7 +552,7 @@ void Editor::menuBar() {
             menuItem(a, (a == Act::ToolSelect && tool_ == &selectTool_) || (a == Act::ToolPrimitives && tool_ == &primTool_) ||
                             (a == Act::ToolVertex && tool_ == &vertexTool_) || (a == Act::ToolPushPull && tool_ == &pushPullTool_) ||
                             (a == Act::ToolExtrude && tool_ == &extrudeTool_) || (a == Act::ToolInset && tool_ == &insetTool_) ||
-                            (a == Act::ToolDraw && tool_ == &drawTool_));
+                            (a == Act::ToolDraw && tool_ == &drawTool_) || (a == Act::ToolCut && tool_ == &cutTool_));
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Create")) {
@@ -575,8 +595,13 @@ void Editor::menuBar() {
         menuItem(Act::MirrorCloneZ);
         menuItem(Act::Flatten);
         ImGui::Separator();
-        plannedItem("Extrude, inset, bevel, bridge, shell", 2);
-        plannedItem("Divide, cut, slide, merge, weld", 2);
+        menuItem(Act::Subdivide);
+        menuItem(Act::DivideEdges);
+        menuItem(Act::Poke);
+        menuItem(Act::Connect);
+        ImGui::Separator();
+        plannedItem("Bevel, bridge, shell", 2);
+        plannedItem("Merge, weld, dissolve, fill", 2);
         plannedItem("Mirror mode", 2);
         ImGui::Separator();
         plannedItem("Groups, smoothing groups", 3);

@@ -301,6 +301,12 @@ void Editor::stepScript() {
                 else if (what == "segments") drawTool_.setSegments(env, (int)v);
                 else if (what == "twosided") drawTool_.setTwoSided(v != 0);
                 else scriptFail("unknown draw setting " + what);
+            } else if (t == "cut") {
+                // toolset cut mode 0|1 (knife, loop cut) | cuts <n> | position <0..1>
+                if (what == "mode") cutTool_.setMode(env, (CutTool::Mode)(int)v);
+                else if (what == "cuts") cutTool_.setCuts(env, (int)v);
+                else if (what == "position") cutTool_.setPosition(env, v);
+                else scriptFail("unknown cut setting " + what);
             } else if (t == "inset") {
                 InsetParams& p = insetTool_.params();
                 if (what == "width") p.width = v;
@@ -331,6 +337,9 @@ void Editor::stepScript() {
             else if (what == "scaleoffset") { int b = 0; in >> b; opReplicate_.scaleOffset = b != 0; }
             else if (what == "copypivot") pivot(opReplicate_.pivot);
             else if (what == "axis") in >> flattenAxis_;
+            else if (what == "pieces") in >> subdivN_ >> subdivM_;
+            else if (what == "divide") in >> divideN_;
+            else if (what == "height") in >> pokeHeight_;
             else if (what == "to") {
                 std::string w;
                 in >> w;
@@ -479,6 +488,19 @@ void Editor::stepScript() {
                 else if (tool_ == &insetTool_) armed = insetTool_.armed(), valid = insetTool_.valid();
                 const bool have = what == "armed" ? armed : valid;
                 if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "knife" || what == "ring") {
+                // expect knife <points> | expect ring <0|1 picked> <faces>
+                int want = 0;
+                in >> want;
+                if (what == "knife" && cutTool_.knifePoints() != want)
+                    scriptFail("knife has " + std::to_string(cutTool_.knifePoints()) + " points");
+                if (what == "ring") {
+                    int faces = 0;
+                    in >> faces;
+                    if ((int)cutTool_.ringPicked() != want || cutTool_.ringFaces() != faces)
+                        scriptFail("ring picked " + std::to_string(cutTool_.ringPicked()) + " faces " +
+                                   std::to_string(cutTool_.ringFaces()));
+                }
             } else if (what == "drawing" || what == "fits") {
                 int want = 0;
                 in >> want;
