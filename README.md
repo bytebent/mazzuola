@@ -51,7 +51,8 @@ including the planned ones with the milestone that brings them.
 | Drag a point | Vertex tool: press on any point and drag (in a 2D view all the points stacked there move) |
 | Edge loop / ring | double-click an edge / **Shift**+double-click (also in the Select menu) |
 | Grow / shrink selection | **Cmd++** / **Cmd+è** |
-| Delete | **Delete** (in point or edge mode: the faces that use them) |
+| Delete | **Delete**: pieces go; points, edges and faces dissolve and the model stays closed (a face alone shrinks to a point; a loop cut's edges go with their side points). Mesh → Tear open leaves a hole instead |
+| Clean up | Mesh menu: Merge at centre / at first selected point, Collapse edges, Weld by distance… (0.1 cm), Dissolve, Tear open, Fill (3 or 4 points), Detach, Flip faces, Flip diagonal, Triangulate, Join into quads, Double-sided on / off |
 | Typed move / rotate / scale | **Cmd+T** (a window that stays open; the views show it live; **Return** applies, **Esc** cancels) |
 | Multi-Replicate (copies in a row, circle, spiral...) | **Cmd+Shift+D** (same kind of window) |
 | Duplicate in place | **Cmd+D** |

@@ -19,6 +19,7 @@ void testExport(); // test_export.cpp
 void testModelOps(); // test_model_ops.cpp
 void testDrawOps(); // test_draw_ops.cpp
 void testDivideOps(); // test_divide_ops.cpp
+void testCleanOps(); // test_clean_ops.cpp
 
 static void testGrid() {
     Grid g;
@@ -260,6 +261,7 @@ int main() {
     testModelOps();
     testDrawOps();
     testDivideOps();
+    testCleanOps();
     if (gFailures) {
         std::fprintf(stderr, "%d of %d checks failed\n", gFailures, gChecks);
         return 1;

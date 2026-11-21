@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Mazzuola VERSION 0.2.4 LANGUAGES C CXX)
+project(Mazzuola VERSION 0.2.5 LANGUAGES C CXX)
 # Objective-C++ (native macOS file dialogs, tablet input later) and Objective-C (GLFW's
 # Cocoa files; without OBJC enabled, CMake would compile those .m files as Objective-C++,
 # which fails). Must be enabled here, at the top level, before any dependency is added.
@@ -40,7 +40,8 @@ add_library(mazz_core STATIC
   src/core/ref_image.cpp
   src/core/model_ops.cpp
   src/core/draw_ops.cpp
-  src/core/divide_ops.cpp)
+  src/core/divide_ops.cpp
+  src/core/clean_ops.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -51,7 +52,7 @@ target_link_libraries(mazz_io PUBLIC mazz_core)
 
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp tests/test_io.cpp tests/test_export.cpp tests/test_model_ops.cpp tests/test_draw_ops.cpp tests/test_divide_ops.cpp)
+  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp tests/test_io.cpp tests/test_export.cpp tests/test_model_ops.cpp tests/test_draw_ops.cpp tests/test_divide_ops.cpp tests/test_clean_ops.cpp)
   target_link_libraries(mazz_core_tests PRIVATE mazz_io mazz_core)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()
@@ -65,6 +66,7 @@ if(MAZZ_BUILD_APP)
     src/app/editor.cpp
     src/app/file_ops.cpp
     src/app/tool_host.cpp
+    src/app/clean_up.cpp
     src/tools/select_tool.cpp
     src/tools/prim_tool.cpp
     src/tools/handles.cpp

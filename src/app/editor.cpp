@@ -99,6 +99,18 @@ bool Editor::enabled(Act a) const {
     case Act::DivideEdges:
     case Act::Poke:
     case Act::Connect:
+    case Act::MergeCentre:
+    case Act::Collapse:
+    case Act::Weld:
+    case Act::TearOpen:
+    case Act::Fill:
+    case Act::Detach:
+    case Act::FlipFaces:
+    case Act::FlipDiagonal:
+    case Act::Triangulate:
+    case Act::JoinQuads:
+    case Act::TwoSidedOn:
+    case Act::TwoSidedOff:
     case Act::Duplicate:
     case Act::MirrorX:
     case Act::MirrorY:
@@ -111,6 +123,8 @@ bool Editor::enabled(Act a) const {
     case Act::SelectShrink: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
     case Act::SelectLoop:
     case Act::SelectRing: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
+    case Act::Dissolve: return !doc_.sel.empty() && doc_.sel.mode != SelectMode::Piece;
+    case Act::MergeFirst: return doc_.sel.mode == SelectMode::Vert && doc_.sel.verts.size() >= 2 && doc_.firstVert() >= 0;
     case Act::ExportGlb:
     case Act::ExportGltf:
     case Act::ExportObj:
@@ -144,19 +158,25 @@ void Editor::run(Act a) {
         break;
     case Act::Undo: cancelTool(); if (doc_.undo()) touch(); break;
     case Act::Redo: cancelTool(); if (doc_.redo()) touch(); break;
-    case Act::Delete: {
-        cancelTool();
-        if (doc_.sel.empty()) break;
-        // Faces, or the faces that use the selected points or edges.
-        const std::set<int> faces = facesToDelete(doc_.mesh, doc_.sel);
-        doc_.apply("Delete", [&](MeshEdit& e, Selection& sel) {
-            e.deleteFaces(faces);
-            sel.clear();
-            return true;
-        });
-        touch();
+    case Act::Delete:
+        // Pieces go; points, edges and faces dissolve (the model stays closed).
+        if (doc_.sel.mode == SelectMode::Piece) cleanUp(Act::TearOpen);
+        else cleanUp(Act::Dissolve);
         break;
-    }
+    case Act::MergeCentre:
+    case Act::MergeFirst:
+    case Act::Collapse:
+    case Act::Dissolve:
+    case Act::TearOpen:
+    case Act::Fill:
+    case Act::Detach:
+    case Act::FlipFaces:
+    case Act::FlipDiagonal:
+    case Act::Triangulate:
+    case Act::JoinQuads:
+    case Act::TwoSidedOn:
+    case Act::TwoSidedOff: cleanUp(a); break;
+    case Act::Weld: openOp(Op::Weld); break;
     case Act::Transform:
     case Act::MovePoints: openOp(Op::Transform); break;
     case Act::Replicate: openOp(Op::Replicate); break;
@@ -600,8 +620,23 @@ void Editor::menuBar() {
         menuItem(Act::Poke);
         menuItem(Act::Connect);
         ImGui::Separator();
+        menuItem(Act::MergeCentre);
+        menuItem(Act::MergeFirst);
+        menuItem(Act::Collapse);
+        menuItem(Act::Weld);
+        menuItem(Act::Dissolve);
+        menuItem(Act::TearOpen);
+        menuItem(Act::Fill);
+        menuItem(Act::Detach);
+        ImGui::Separator();
+        menuItem(Act::FlipFaces);
+        menuItem(Act::FlipDiagonal);
+        menuItem(Act::Triangulate);
+        menuItem(Act::JoinQuads);
+        menuItem(Act::TwoSidedOn);
+        menuItem(Act::TwoSidedOff);
+        ImGui::Separator();
         plannedItem("Bevel, bridge, shell", 2);
-        plannedItem("Merge, weld, dissolve, fill", 2);
         plannedItem("Mirror mode", 2);
         ImGui::Separator();
         plannedItem("Groups, smoothing groups", 3);

@@ -169,6 +169,7 @@ void Editor::controlsWindow() {
             row("Move along one axis", "drag an X/Y/Z arrow in the 3D view (points, edges, faces)", 0);
             row("Drag a point (Vertex tool)", "press on any point and drag", 0);
             row("Edge loop / ring", "double-click an edge / Shift+double-click", 0);
+            row("Delete in point / edge / face mode", "dissolves them; the model stays closed (Mesh \xE2\x86\x92 Tear open leaves a hole)", 0);
             row("Pan a view", "middle mouse, or Space + left mouse", 0);
             row("Zoom a view", "mouse wheel (2D: toward the cursor)", 0);
             row("Orbit the 3D view", "right mouse drag", 0);

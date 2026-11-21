@@ -17,7 +17,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool),
   v0.2.3 "Outlines and holes".
 - **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done") and
-  **v0.2.4 "Cut and divide"**. Building v0.2.5 "Clean up" (agreed 2026-11-21).
+  **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21. Next:
+  v0.2.6 "Bevel, bridge, mirror", to be proposed click by click.
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.

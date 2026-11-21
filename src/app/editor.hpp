@@ -41,7 +41,7 @@ struct ViewsLayout {
 
 class Editor {
 public:
-    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke }; // operation windows
+    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke, Weld }; // operation windows
     Editor(GLFWwindow* window, const EditorOptions& opt);
     ~Editor();
 
@@ -214,11 +214,15 @@ private:
     // operation window
     Op op_ = Op::None;
     Selection opSel_;           // the selection when the window opened
+    bool opWasClosed_ = false;  //   and whether the model was closed then
     TransformParams opTransform_;
     ReplicateParams opReplicate_;
     int subdivN_ = 2, subdivM_ = 2; // Subdivide...
     int divideN_ = 2;               // Divide edges...
     double pokeHeight_ = 0;         // Poke...
+    double weldDist_ = 0.1;         // Weld by distance... (cm)
+    int weldCount_ = 0;             //   points it would remove
+    void cleanUp(Act a);            // Mesh menu clean-up commands (clean_ops)
     std::string opWhy_;             // the operation can't be done as set (shown in its window)
     int flattenAxis_ = 2;
     FlattenTo flattenTo_ = FlattenTo::Average;

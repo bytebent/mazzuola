@@ -4,7 +4,9 @@
 // (or closing the window) cancels. Only one is open at a time; while it is, the views
 // can still be turned and zoomed but the tools don't take clicks.
 #include "app/editor.hpp"
+#include "core/clean_ops.hpp"
 #include "core/divide_ops.hpp"
+#include "core/model_ops.hpp"
 #include "core/select_ops.hpp"
 #include "imgui.h"
 
@@ -19,6 +21,7 @@ const char* opTitle(Editor::Op op) {
     case Editor::Op::Subdivide: return "Subdivide";
     case Editor::Op::DivideEdges: return "Divide edges";
     case Editor::Op::Poke: return "Poke";
+    case Editor::Op::Weld: return "Weld by distance";
     default: return "";
     }
 }
@@ -58,6 +61,7 @@ void Editor::openOp(Op op) {
     }
     op_ = op;
     opSel_ = doc_.sel;
+    opWasClosed_ = isClosed(doc_.mesh);
     // Transform values are added to where things are now, so they start at zero each
     // time (only the pivot choice is kept); Multi-Replicate keeps its pattern.
     if (op == Op::Transform) {
@@ -115,6 +119,23 @@ void Editor::refreshOpPreview() {
         else if (!divideEdges(e, edges, divideN_, &opWhy_)) {
             if (opWhy_.empty()) opWhy_ = "it can't be done here";
             e.revert();
+        }
+        break;
+    }
+    case Op::Weld: {
+        const std::set<int> verts = convertSelection(doc_.mesh, opSel_, SelectMode::Vert).verts;
+        opWhy_.clear();
+        weldCount_ = weldByDistance(e, verts, weldDist_);
+        if (weldCount_ > 0 && isClosed(doc_.mesh) != opWasClosed_) {
+            // Welding that opens a closed model isn't wanted (it can close an open one).
+            if (opWasClosed_) opWhy_ = "it would open the model";
+        }
+        if (weldCount_ == 0) opWhy_ = "no points are that close";
+        if (!opWhy_.empty()) e.revert();
+        else {
+            Selection none;
+            none.mode = SelectMode::Vert;
+            doc_.select(none);
         }
         break;
     }
@@ -192,6 +213,11 @@ void Editor::opWindow() {
         ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
         changed |= ImGui::InputDouble("Height (cm)", &pokeHeight_, 0, 0, "%g");
         ImGui::TextDisabled("The middle point goes out along the face's normal\n(negative: in).");
+    } else if (op == Op::Weld) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputDouble("Distance (cm)", &weldDist_, 0, 0, "%g")) weldDist_ = std::max(0.0, weldDist_), changed = true;
+        ImGui::TextDisabled("Selected points this close become one.");
+        if (opWhy_.empty()) ImGui::Text("%d point%s go.", weldCount_, weldCount_ == 1 ? "" : "s");
     } else if (op == Op::Flatten) {
         ImGui::TextUnformatted("Line the points up on");
         for (int a = 0; a < 3; ++a) {

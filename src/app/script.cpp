@@ -340,6 +340,7 @@ void Editor::stepScript() {
             else if (what == "pieces") in >> subdivN_ >> subdivM_;
             else if (what == "divide") in >> divideN_;
             else if (what == "height") in >> pokeHeight_;
+            else if (what == "weld") in >> weldDist_;
             else if (what == "to") {
                 std::string w;
                 in >> w;
@@ -443,6 +444,15 @@ void Editor::stepScript() {
                         scriptFail(b);
                     }
                 }
+            } else if (what == "closed" || what == "twosidedfaces") {
+                // expect closed 0|1: every edge has a face on each side; twosidedfaces <n>.
+                long want = 0;
+                in >> want;
+                long have = 0;
+                if (what == "closed") have = isClosed(doc_.mesh) ? 1 : 0;
+                else
+                    for (const Face& f : doc_.mesh.faces) have += f.twoSided ? 1 : 0;
+                if (have != want) scriptFail(what + " is " + std::to_string(have));
             } else if (what == "dirty" || what == "undo" || what == "faces" || what == "verts" || what == "selected") {
                 long want = 0;
                 in >> want;
@@ -476,7 +486,7 @@ void Editor::stepScript() {
             } else if (what == "op") {
                 std::string w;
                 in >> w;
-                const char* names[] = {"none", "transform", "replicate", "flatten"};
+                const char* names[] = {"none", "transform", "replicate", "flatten", "subdivide", "divideedges", "poke", "weld"};
                 if (w != names[(int)op_]) scriptFail(std::string("operation window is ") + names[(int)op_]);
             } else if (what == "armed" || what == "opvalid") {
                 // The active tool's preview is up / possible (push/pull: a push pending).

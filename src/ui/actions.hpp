@@ -19,7 +19,9 @@ enum class Act {
     ToolLatheLoft, ToolBrush, ToolMapping, ToolPaint, ToolColour,
     // Mesh
     Transform, Replicate, MovePoints, SnapToGrid, MirrorX, MirrorY, MirrorZ, MirrorCloneX, MirrorCloneY,
-    MirrorCloneZ, Flatten, Subdivide, DivideEdges, Poke, Connect, Problems,
+    MirrorCloneZ, Flatten, Subdivide, DivideEdges, Poke, Connect,
+    MergeCentre, MergeFirst, Collapse, Weld, Dissolve, TearOpen, Fill, Detach, FlipFaces, FlipDiagonal,
+    Triangulate, JoinQuads, TwoSidedOn, TwoSidedOff, Problems,
     // Texture
     ApplyTexture,
     // View

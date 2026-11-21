@@ -95,6 +95,9 @@ toolset cut mode <0|1> | cuts <n> | position <0..1>   Cut: knife / loop cut sett
 expect knife <points>               the knife's points so far
 expect ring <picked 0|1> <faces>    the loop cut's ring (picked or under the cursor) and its faces
 opset pieces <n> <m> | divide <n> | height <h>   Subdivide / Divide edges / Poke windows
+opset weld <cm>                     Weld by distance window
+expect closed 0|1                   every edge has a face on each side
+expect twosidedfaces <n>            double-sided faces
 toolset draw size <w> <h> | radius <r> | segments <n>   Draw: typed values while adjusting
 expect drawing <0|1>                Draw has a shape going
 expect fits <0|1>                   that shape fits its face

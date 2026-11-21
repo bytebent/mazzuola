@@ -1,0 +1,105 @@
+# Alpha 2, v0.2.5: clean up (ARCHITECTURE §6 Clean-up, agreed 2026-11-21).
+# Views: 0 3D, 1 Top (x right, y up), 2 Front (x right, z up), 3 Right. Grid 8, snap on.
+vworld 2 0 0 0
+wheel -3
+vworld 1 0 0 0
+wheel -3
+wait 2
+addbox 0 0 0 96 64 80
+key Shift+S
+
+# ---- Face mode: the top, triangulated and joined back, double-sided, flipped and back
+key 3
+vworld 1 48 32 80
+wait 2
+press left
+release left
+wait 1
+expect selected 1
+action mesh.triangulate
+expect faces 7
+expect selected 2
+action mesh.joinquads
+expect faces 6
+expect selected 1
+action mesh.twosidedon
+expect twosidedfaces 1
+action mesh.twosidedoff
+expect twosidedfaces 0
+action mesh.flip
+expect closed 0
+action mesh.flip
+expect closed 1
+expect undo 7
+
+# ---- Delete one face: it shrinks to a point (a roof)
+key Delete
+wait 1
+expect faces 5
+expect verts 5
+expect closed 1
+expect bounds 0 0 0 96 64 80
+action edit.undo
+
+# ---- Tear open leaves a hole; Detach gives the top its own points
+action mesh.tearopen
+expect faces 5
+expect closed 0
+action edit.undo
+action mesh.detach
+expect verts 12
+action edit.undo
+expect verts 8
+
+# ---- Loop cut round the sides, then Delete its edges: a plain box again
+key Shift+X
+toolset cut mode 1
+vworld 2 0 0 40
+wait 2
+press left
+release left
+wait 1
+key Return
+wait 1
+expect faces 10
+expect selected 4
+key Shift+S
+key Delete
+wait 1
+expect faces 6
+expect verts 8
+expect closed 1
+
+# ---- Point mode: a click in the Top view picks the corner above and the one below;
+# merged at their centre (half way up the edge)
+key 1
+vworld 1 0 0 80
+wait 2
+press left
+release left
+wait 1
+expect selected 2
+action mesh.mergecentre
+wait 1
+expect verts 7
+expect closed 1
+expect selected 1
+expect selbounds 0 0 40 0 0 40
+wait 2
+shot a2-clean.png
+
+# ---- Weld by distance: two boxes side by side become one
+action file.new
+wait 1
+addbox 0 0 0 48 64 80
+addbox 48 0 0 96 64 80
+expect verts 16
+action edit.selectall
+action mesh.weld
+opset weld 0.1
+key Return
+wait 1
+expect verts 12
+expect faces 10
+expect closed 1
+quit

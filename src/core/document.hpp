@@ -91,8 +91,20 @@ public:
     // Selection-only changes are not undo steps.
     void select(const Selection& s) {
         if (s != sel) ++selVersion_;
+        // The first point picked (Merge at first selected point): kept while it stays selected.
+        if (s.mode != SelectMode::Vert) firstVert_ = -1;
+        else if (!s.verts.count(firstVert_)) {
+            firstVert_ = -1;
+            for (int v : s.verts)
+                if (!sel.verts.count(v) || sel.mode != SelectMode::Vert) {
+                    firstVert_ = v;
+                    break;
+                }
+        }
         sel = s;
     }
+    // The first selected point, or -1 (not known: e.g. after an undo).
+    int firstVert() const { return sel.mode == SelectMode::Vert && sel.verts.count(firstVert_) ? firstVert_ : -1; }
 
     // Change counters: the geometry (any point or face) and the selection. Views compare
     // them with what they last drew.
@@ -130,6 +142,7 @@ private:
     long serial_ = 0, savedSerial_ = 0, nextSerial_ = 1;
 
     long meshVersion_ = 0, selVersion_ = 0;
+    int firstVert_ = -1;
     std::unique_ptr<MeshEdit> live_;
     Selection liveSelBefore_;
 

@@ -135,10 +135,16 @@ key Cmd+è
 expect selected 1
 shot m1-07-faces.png
 
-# ---- Delete in point mode removes the faces that use the points
+# ---- Delete in point mode dissolves the points (v0.2.5); Tear open removes the
+# faces that use them
 key 1
 expect selected 4
 key Delete
+expect faces 45
+key Cmd+Z
+expect faces 46
+key 1
+action mesh.tearopen
 expect faces 37
 key Cmd+Z
 expect faces 46
