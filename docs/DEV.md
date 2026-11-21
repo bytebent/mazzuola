@@ -188,6 +188,8 @@ policy), with everything it can show open, not only an empty app.
 ## Releasing
 
 Version: `v0.<milestone>.<patch>`, set in `project(... VERSION ...)` in `CMakeLists.txt`.
+A fix release between planned ones adds a fourth number (`v0.2.5.1`): the next planned
+number stays free, and the workflow only treats digits-and-dots names as the newest.
 Add `docs/releases/vX.Y.Z.md` (append `docs/releases/INSTALL.md`) and push to `main`. CI
 makes the tag and release after the builds pass (about 7–8 minutes). Add the notes on `main`
 in the release's last code commit (docs may follow): commits after it that change code make CI
@@ -215,5 +217,9 @@ blocked in the AI workspace, so this file-driven route is the one to use.
 - Use `mktemp -d` for scratch work.
 - There is no Mac or iPad here: anything macOS-only (pen input, Sidecar, Retina look) is
   compiled by CI and checked by the user by hand.
+- **Sanitizers:** a second build with `-DCMAKE_BUILD_TYPE=Debug
+  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"` in
+  `build-asan/` runs the core tests with memory checks (it found an overrun in Subdivide,
+  v0.2.5.1). Worth a run after changing core operations.
 - Measure before fixing: a probe reproduces the bug in numbers, the fix makes it zero, a
   permanent test keeps it zero.

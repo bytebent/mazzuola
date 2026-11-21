@@ -17,8 +17,10 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool),
   v0.2.3 "Outlines and holes".
 - **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done") and
-  **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21. Next:
-  v0.2.6 "Bevel, bridge, mirror", to be proposed click by click.
+  **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21, and the
+  fix release **v0.2.5.1** after a code review (Dissolve on faces, points sharing a
+  spot, a Subdivide overrun). Next: v0.2.6 "Bevel, bridge, mirror", to be proposed
+  click by click.
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -68,6 +70,13 @@ Downloads are checked against the SHA-256 in `cmake/Deps.cmake`.
 
 
 
+- **From the v0.2.5 review, not fixed yet (small):** commands rebuilding faces drop
+  their texture coordinates and colours (`faceFrom` in clean_ops / divide_ops): fix with
+  milestone 5 ("coordinates kept by ..."). Fill gives the new face no group or texture
+  from its neighbours. Delete shows as "Dissolve" in undo and messages. "Stays closed"
+  only guards a model whose every piece is closed. Delete on an open surface (a flat
+  grid) pulls the neighbours in instead of removing the face, as agreed; say if that
+  should change.
 - **Shared texture sheet**: several models using one sheet already works by referencing
   the same PNG; should the texture view also show other models' pieces on it?
 - **N-gons**: triangles and quads only (tools split anything larger). Enough?

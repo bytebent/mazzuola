@@ -429,8 +429,9 @@ the model gets:
   hole: the old Delete), **Fill** (3 or 4 points), **Detach** (was "split"), **Flip
   faces**, **Flip diagonal**, **Triangulate** / **Join into quads**, **Double-sided
   on/off**. **Delete** dissolves in point, edge and face mode (face mode: selected
-  neighbouring faces join into fewer; one face alone shrinks to a point); piece mode
-  still deletes the pieces.
+  neighbouring faces join into fewer; points left in a straight line on their outline
+  go, and the faces beyond them get their old shape back; one face alone shrinks to a
+  point); piece mode still deletes the pieces.
 - **Merge** (to centre / to last selected), **collapse edge**, **weld by distance**,
   **dissolve**, **fill** (face from 3 or 4 points), **split** (detach), **separate into
   group**, **delete**, **flip faces**, **flip quad diagonal**, **triangulate / join into

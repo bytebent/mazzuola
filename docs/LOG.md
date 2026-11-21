@@ -4,6 +4,35 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-21 — v0.2.5.1 fix release (code review of v0.2.5)
+- Review of v0.2.5 with probes (small programs against `libmazz_core.a`). Found and fixed:
+  - **Face Dissolve / Delete didn't join:** the points left along the old shared edges
+    stayed, so two halves of a split top stayed two faces (a 2x2 block four). Now those
+    points go when they lie in a straight line (0.002 cm) between their outline
+    neighbours, and the faces beyond them (a side split by Subdivide) are joined back
+    without them (`dropStraightPoint`: the faces on each side of the line join; if a
+    side can't, the point stays a corner). The old test only checked "closed".
+  - **Face Dissolve merged the wrong points:** a lone face's points were kept as
+    indices from before other points were removed; 2 of 6 box cases shrank the wrong
+    face. `MeshEdit::deleteFaces` now also reports how points were renumbered
+    (`vertMap`), and the points are followed through it.
+  - **Point Dissolve found points by position:** after Detach two points share a spot
+    and the other one went. Followed by index now.
+  - **Subdivide read past a list** (v0.2.4; found by an address-sanitizer run) when
+    neighbours would split a shared edge differently. It was refused anyway; it now
+    stops as soon as the clash is seen.
+- Smaller findings parked in PLAN.md (texture coordinates dropped by rebuilt faces,
+  Fill without group, Delete's undo name, open pieces).
+- Tests: core 1164 checks (new: halves and 2x2 joins back to the plain box, a block plus
+  a lone face on each of the 6 sides, Dissolve after Detach; the random test also
+  dissolves a face with its neighbour, 143 rounds closed), also clean under address and
+  undefined-behaviour sanitizers; `a2_clean` now splits the top 2x2 and Deletes it (fails
+  on v0.2.5: 13 faces). 17 scripts pass at normal, 2x and no anti-aliasing; idle 0 ticks
+  (control 898). Screenshot `docs/screenshots/m2-11-joined-top.png` (the joined top,
+  selected; 8 points).
+- Version 0.2.5.1 (the bundle's short version stays three numbers); DEV notes fix-release
+  numbering and the sanitizer build.
+
 ### 2026-11-21 — v0.2.5 "Clean up"
 - `core/clean_ops`: `mergePoints` (at a point, or onto a kept point), `collapseEdges`
   (joined edges to their middle), `weldByDistance` (clusters within the distance),

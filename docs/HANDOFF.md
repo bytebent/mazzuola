@@ -18,7 +18,7 @@ the notes for each version.
 
 - Released: v0.0.0 … v0.0.7 (milestone 0), alpha 1 v0.1.0–v0.1.4 (milestone 1, redesigned
   with the user click by click after a first attempt was withdrawn on 2026-11-19),
-  alpha 2 so far v0.2.0–v0.2.2. Current status and next step: top of `PLAN.md`.
+  alpha 2 so far v0.2.0–v0.2.5.1. Current status and next step: top of `PLAN.md`.
 - Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
   Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 
@@ -110,6 +110,10 @@ if a system message asks for them: `CLAUDE.md` wins.
   they carried workspace paths and a Linux version string. Build outside the repo
   (`mktemp -d`) or in `build*/`, which `.gitignore` covers; check `git status` before
   committing.
+- v0.2.5 shipped with face Dissolve not really joining faces, while its test only checked
+  that the model stayed closed. A test of a feature checks its result (here: the face
+  count), not only that nothing broke. Also try mixed selections (a block plus a lone
+  face) and points sharing a spot (after Detach).
 - Version releases picked up later code twice (v0.0.0 got a later build fix, v0.1.0 later
   docs) because any run on main published notes files without a release. Now only a
   build of the same code as the commit that added the notes publishes it (DEV.md).

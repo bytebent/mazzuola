@@ -41,6 +41,29 @@ expect closed 1
 expect bounds 0 0 0 96 64 80
 action edit.undo
 
+# ---- v0.2.5.1: the top split 2x2, then Delete: its four faces join into the old top
+# (the points left along its edges go, and the sides get their old shape back)
+expect selected 1
+action mesh.subdivide
+opset pieces 2 2
+key Return
+wait 1
+expect selected 4
+expect verts 13
+key Delete
+wait 1
+expect faces 6
+expect verts 8
+expect closed 1
+expect selected 1
+expect bounds 0 0 0 96 64 80
+wait 2
+shot a2-clean-join.png
+action edit.undo
+action edit.undo
+expect faces 6
+expect selected 1
+
 # ---- Tear open leaves a hole; Detach gives the top its own points
 action mesh.tearopen
 expect faces 5

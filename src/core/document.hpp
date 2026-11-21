@@ -49,8 +49,9 @@ public:
     void resizeVerts(int n);
     void resizeFaces(int n);
     // Removes faces, then points no face uses any more. Fills `faceMap` (old face index
-    // -> new index, -1 if removed) if given.
-    void deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap = nullptr);
+    // -> new index, -1 if removed) and `vertMap` (the same for points) if given.
+    void deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap = nullptr,
+                     std::vector<int>* vertMap = nullptr);
 
     // The change so far (only values that really differ are kept).
     MeshChange change() const;

@@ -77,7 +77,7 @@ void MeshEdit::resizeFaces(int n) {
     bump();
 }
 
-void MeshEdit::deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap) {
+void MeshEdit::deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap, std::vector<int>* vertMap) {
     const int nf = (int)m_.faces.size();
     std::vector<int> fmap(nf, -1);
     int out = 0;
@@ -115,6 +115,7 @@ void MeshEdit::deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap
         }
     }
     if (faceMap) *faceMap = fmap;
+    if (vertMap) *vertMap = vmap;
 }
 
 MeshChange MeshEdit::change() const {

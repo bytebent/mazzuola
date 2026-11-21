@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(Mazzuola VERSION 0.2.5 LANGUAGES C CXX)
+project(Mazzuola VERSION 0.2.5.1 LANGUAGES C CXX)
 # Objective-C++ (native macOS file dialogs, tablet input later) and Objective-C (GLFW's
 # Cocoa files; without OBJC enabled, CMake would compile those .m files as Objective-C++,
 # which fails). Must be enabled here, at the top level, before any dependency is added.
@@ -108,7 +108,8 @@ if(MAZZ_BUILD_APP)
       MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist.in
       MACOSX_BUNDLE_BUNDLE_NAME "Mazzuola"
       MACOSX_BUNDLE_GUI_IDENTIFIER "app.mazzuola.modeller"
-      MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+      # macOS wants at most three numbers here; a fix release (0.2.5.1) shows as 0.2.5
+      MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
       MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
     target_compile_definitions(Mazzuola PRIVATE GL_SILENCE_DEPRECATION)
     target_link_libraries(Mazzuola PRIVATE "-framework AppKit" "-framework OpenGL")

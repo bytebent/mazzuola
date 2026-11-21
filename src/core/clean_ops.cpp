@@ -160,19 +160,24 @@ std::vector<int> outline(const Mesh& m, const std::set<int>& region) {
     return loop;
 }
 
-// Replaces a region of faces by one outline split into 3- and 4-corner faces.
-bool rejoin(MeshEdit& e, const std::set<int>& region, const std::vector<int>& loop, std::set<int>& gone,
-            std::vector<int>* made = nullptr) {
-    const Mesh& m = e.mesh();
+// How a region of faces would be replaced by one outline split into 3- and 4-corner
+// faces (empty: it can't, e.g. too bent). Changes nothing.
+std::vector<std::vector<int>> planJoin(const Mesh& m, const std::set<int>& region, const std::vector<int>& loop) {
     Vec3 n{0, 0, 0};
     for (int fi : region) n = n + faceNormal(m, fi);
-    if (length(n) < 1e-6) return false;
+    if (length(n) < 1e-6) return {};
     n = n * (1.0 / length(n));
-    const auto pieces = splitPolygon(m, loop, n);
-    if (pieces.empty()) return false;
+    auto pieces = splitPolygon(m, loop, n);
     for (const auto& p : pieces)
-        if (area(m, p) < kMinArea) return false;
-    const Face like = m.faces[*region.begin()];
+        if (area(m, p) < kMinArea) return {};
+    return pieces;
+}
+
+// Puts the planned pieces in the region's face slots (more pieces: new faces; fewer: the
+// slots left over go into `gone`).
+void applyJoin(MeshEdit& e, const std::set<int>& region, const std::vector<std::vector<int>>& pieces,
+               std::set<int>& gone, std::vector<int>* made = nullptr) {
+    const Face like = e.mesh().faces[*region.begin()];
     std::vector<int> slots(region.begin(), region.end());
     for (size_t i = 0; i < pieces.size(); ++i) {
         const Face f = faceFrom(like, pieces[i]);
@@ -185,6 +190,89 @@ bool rejoin(MeshEdit& e, const std::set<int>& region, const std::vector<int>& lo
         }
     }
     for (size_t i = pieces.size(); i < slots.size(); ++i) gone.insert(slots[i]);
+}
+
+// Replaces a region of faces by one outline split into 3- and 4-corner faces.
+bool rejoin(MeshEdit& e, const std::set<int>& region, const std::vector<int>& loop, std::set<int>& gone,
+            std::vector<int>* made = nullptr) {
+    const auto pieces = planJoin(e.mesh(), region, loop);
+    if (pieces.empty()) return false;
+    applyJoin(e, region, pieces, gone, made);
+    return true;
+}
+
+// Point p lies on the straight line from a to b, between them.
+bool straightBetween(const Mesh& m, int p, int a, int b) {
+    const Vec3 A = m.verts[a], B = m.verts[b], P = m.verts[p];
+    const double len = length(B - A);
+    if (len < 1e-9) return false;
+    const double along = dot(P - A, B - A) / len;
+    return along > 0 && along < len && length(cross(P - A, B - A)) / len <= kStraightCm;
+}
+
+// Takes point p, lying straight between its outline neighbours a and b, out of the
+// faces round it: the faces on each side of the line a-p-b join without it (each side
+// gets its old shape back). False, with nothing changed, when it can't. `kept` (face
+// indices) and `vmap` (old point -> new point) follow the renumbering.
+bool dropStraightPoint(MeshEdit& e, int p, int a, int b, std::set<int>& kept, std::vector<int>& vmap) {
+    const Mesh& m = e.mesh();
+    std::map<int, int> byPrev, nextOf; // corner before p -> face; face -> corner after p
+    for (int fi = 0; fi < (int)m.faces.size(); ++fi) {
+        const Face& f = m.faces[fi];
+        for (int k = 0; k < f.n; ++k)
+            if (f.v[k] == p) {
+                const int prev = f.v[(k + f.n - 1) % f.n];
+                if (byPrev.count(prev)) return false;
+                byPrev[prev] = fi;
+                nextOf[fi] = f.v[(k + 1) % f.n];
+            }
+    }
+    // Round p from one end of the line to the other; empty when nothing is there (an open edge).
+    auto walk = [&](int from, int to, std::vector<int>& side) {
+        int x = from;
+        while (side.size() <= byPrev.size()) {
+            auto it = byPrev.find(x);
+            if (it == byPrev.end()) return side.empty() && x == from;
+            side.push_back(it->second);
+            x = nextOf[it->second];
+            if (x == to) return true;
+        }
+        return false;
+    };
+    std::vector<int> s1, s2;
+    if (!walk(a, b, s1) || !walk(b, a, s2) || s1.size() + s2.size() != byPrev.size()) return false;
+    std::vector<std::pair<std::set<int>, std::vector<std::vector<int>>>> plans;
+    for (const auto* side : {&s1, &s2}) {
+        if (side->empty()) continue;
+        const std::set<int> region(side->begin(), side->end());
+        if (region.size() != side->size()) return false;
+        std::vector<int> loop = outline(m, region);
+        if (loop.empty()) return false;
+        loop.erase(std::remove(loop.begin(), loop.end(), p), loop.end());
+        if (loop.size() < 3) return false;
+        auto pieces = planJoin(m, region, loop);
+        if (pieces.empty()) return false;
+        plans.push_back({region, pieces});
+    }
+    std::set<int> gone, nowKept;
+    for (const auto& [region, pieces] : plans) {
+        bool allKept = true;
+        for (int fi : region) allKept = allKept && kept.count(fi) > 0;
+        std::vector<int> made;
+        applyJoin(e, region, pieces, gone, &made);
+        if (allKept) nowKept.insert(made.begin(), made.end());
+    }
+    for (int fi : kept)
+        if (!nowKept.count(fi) && !gone.count(fi)) {
+            bool inPlan = false;
+            for (const auto& pl : plans) inPlan = inPlan || pl.first.count(fi) > 0;
+            if (!inPlan) nowKept.insert(fi);
+        }
+    std::vector<int> fmap;
+    e.deleteFaces(gone, &fmap, &vmap); // p is used by no face now: it goes
+    kept.clear();
+    for (int fi : nowKept)
+        if (fmap[fi] >= 0) kept.insert(fmap[fi]);
     return true;
 }
 
@@ -245,14 +333,11 @@ bool dissolvePoints(MeshEdit& e, const std::set<int>& vertsIn, std::string* why)
     };
     const bool closed = isClosed(e.mesh());
     if (vertsIn.empty()) return fail("select points first");
-    // By position: indices change as points go.
-    std::vector<Vec3> targets;
-    for (int v : vertsIn) targets.push_back(e.mesh().verts[v]);
-    for (const Vec3& t : targets) {
+    // Followed by index: points are renumbered as others go (two points can share a spot).
+    std::vector<int> todo(vertsIn.begin(), vertsIn.end());
+    for (size_t t = 0; t < todo.size(); ++t) {
         const Mesh& m = e.mesh();
-        int v = -1;
-        for (int i = 0; i < (int)m.verts.size() && v < 0; ++i)
-            if (length(m.verts[i] - t) < 1e-9) v = i;
+        const int v = todo[t];
         if (v < 0) continue;
         const std::vector<int> around = facesAround(m, v);
         if (around.empty()) continue;
@@ -277,7 +362,10 @@ bool dissolvePoints(MeshEdit& e, const std::set<int>& vertsIn, std::string* why)
         loop.erase(std::remove(loop.begin(), loop.end(), v), loop.end());
         if (loop.size() < 3) return fail("nothing would be left there");
         if (!rejoin(e, region, loop, gone)) return fail("the faces round a point are too bent to join");
-        e.deleteFaces(gone);
+        std::vector<int> vmap;
+        e.deleteFaces(gone, nullptr, &vmap);
+        for (size_t u = t + 1; u < todo.size(); ++u)
+            if (todo[u] >= 0) todo[u] = vmap[todo[u]];
     }
     tidy(e);
     if (closed && !isClosed(e.mesh())) return fail("it would open the model");
@@ -379,8 +467,12 @@ bool dissolveFaces(MeshEdit& e, const std::set<int>& faces, std::set<int>* out, 
     }
     std::map<int, std::set<int>> regions;
     for (int fi : faces) regions[uf.find(fi)].insert(fi);
+    struct Straight {
+        int p, a, b; // a point left in line between its outline neighbours
+    };
     std::set<int> gone;
     std::vector<std::set<int>> shrink;
+    std::vector<Straight> straight;
     std::vector<int> made;
     for (const auto& [root, region] : regions) {
         (void)root;
@@ -391,13 +483,57 @@ bool dissolveFaces(MeshEdit& e, const std::set<int>& faces, std::set<int>* out, 
         }
         const std::vector<int> loop = outline(e.mesh(), region);
         if (loop.empty()) return fail("the faces would make a ring (an outline with a hole)");
+        // Outline points on an edge between two of the joined faces, in line with their
+        // neighbours on the outline: they go afterwards.
+        std::set<int> inner;
+        for (int fi : region) {
+            const Face& f = m.faces[fi];
+            for (int k = 0; k < f.n; ++k) {
+                const int x = f.v[k], y = f.v[(k + 1) % f.n];
+                auto it = owner.find({y, x});
+                if (it != owner.end() && region.count(it->second)) inner.insert(x), inner.insert(y);
+            }
+        }
+        const int L = (int)loop.size();
+        for (int i = 0; i < L; ++i) {
+            const int p = loop[i], a = loop[(i + L - 1) % L], b = loop[(i + 1) % L];
+            if (inner.count(p) && straightBetween(m, p, a, b)) straight.push_back({p, a, b});
+        }
         if (!rejoin(e, region, loop, gone, &made)) return fail("the faces are too bent to join");
     }
-    std::vector<int> map;
-    e.deleteFaces(gone, &map);
+    // A point also on a face that shrinks stays.
+    for (const auto& g : shrink)
+        straight.erase(std::remove_if(straight.begin(), straight.end(), [&](const Straight& s) { return g.count(s.p) > 0; }),
+                       straight.end());
+    std::vector<int> fmap, vmap;
+    e.deleteFaces(gone, &fmap, &vmap);
     std::set<int> kept;
     for (int f : made)
-        if (f < (int)map.size() && map[f] >= 0) kept.insert(map[f]);
+        if (fmap[f] >= 0) kept.insert(fmap[f]);
+    // Points are followed by index through every renumbering.
+    auto remap = [&](const std::vector<int>& vm) {
+        for (auto& g : shrink) {
+            std::set<int> h;
+            for (int v : g) h.insert(vm[v]);
+            g = h;
+        }
+        auto at = [&](int v) { return v >= 0 ? vm[v] : -1; };
+        for (auto& s : straight) s = {at(s.p), at(s.a), at(s.b)};
+    };
+    remap(vmap);
+    // The points left in line go; the faces beyond them get their old shape back.
+    for (size_t i = 0; i < straight.size(); ++i) {
+        const Straight s = straight[i];
+        if (s.p < 0 || s.a < 0 || s.b < 0) continue;
+        std::vector<int> vm;
+        if (!dropStraightPoint(e, s.p, s.a, s.b, kept, vm)) continue; // kept as a corner
+        // A neighbour further along the same line now ends where this one ended.
+        for (size_t j = i + 1; j < straight.size(); ++j) {
+            if (straight[j].a == s.p) straight[j].a = s.a;
+            if (straight[j].b == s.p) straight[j].b = s.b;
+        }
+        remap(vm);
+    }
     // A face alone shrinks to a point.
     for (const auto& g : shrink) mergeRaw(e, g, centreOf(e.mesh(), g), *g.begin());
     if (!shrink.empty()) {

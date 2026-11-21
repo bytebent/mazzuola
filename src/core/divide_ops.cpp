@@ -319,6 +319,10 @@ bool subdivide(MeshEdit& e, const std::set<int>& faces, int n, int m, std::set<i
             G[0][0] = a, G[n][0] = b, G[n][m] = c, G[0][m] = d;
             const auto ab = pointsAlong(e, cache, a, b, n, clash), dc = pointsAlong(e, cache, d, c, n, clash);
             const auto ad = pointsAlong(e, cache, a, d, m, clash), bc = pointsAlong(e, cache, b, c, m, clash);
+            if (clash) { // the lists aren't the lengths used below
+            if (why) *why = "faces next to each other would split their shared edge differently; use the same number both ways";
+            return false;
+            }
             for (int i = 1; i < n; ++i) G[i][0] = ab[i - 1], G[i][m] = dc[i - 1];
             for (int j = 1; j < m; ++j) G[0][j] = ad[j - 1], G[n][j] = bc[j - 1];
             const Vec3 A = e.mesh().verts[a], B = e.mesh().verts[b], C = e.mesh().verts[c], D = e.mesh().verts[d];
@@ -337,6 +341,10 @@ bool subdivide(MeshEdit& e, const std::set<int>& faces, int n, int m, std::set<i
             P[0][0] = a, P[k][0] = b, P[0][k] = c;
             const auto ab = pointsAlong(e, cache, a, b, k, clash), bc = pointsAlong(e, cache, b, c, k, clash);
             const auto ac = pointsAlong(e, cache, a, c, k, clash);
+            if (clash) {
+            if (why) *why = "faces next to each other would split their shared edge differently; use the same number both ways";
+            return false;
+            }
             for (int i = 1; i < k; ++i) P[i][0] = ab[i - 1], P[k - i][i] = bc[i - 1], P[0][i] = ac[i - 1];
             const Vec3 A = e.mesh().verts[a], B = e.mesh().verts[b], C = e.mesh().verts[c];
             for (int i = 1; i < k; ++i)
@@ -346,10 +354,6 @@ bool subdivide(MeshEdit& e, const std::set<int>& faces, int n, int m, std::set<i
                     pieces.push_back({P[i][j], P[i + 1][j], P[i][j + 1]});
                     if (i + j + 2 <= k) pieces.push_back({P[i + 1][j], P[i + 1][j + 1], P[i][j + 1]});
                 }
-        }
-        if (clash) {
-            if (why) *why = "faces next to each other would split their shared edge differently; use the same number both ways";
-            return false;
         }
         std::vector<int> idx;
         if (!replaceWith(e, fi, pieces, &idx)) return false;

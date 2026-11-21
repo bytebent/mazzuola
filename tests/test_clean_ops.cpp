@@ -173,6 +173,74 @@ void testFillDetachFlip() {
     CHECK(setTwoSided(et, {0, 1}, true) && t.faces[0].twoSided && !t.faces[2].twoSided);
 }
 
+void testDissolveJoins() {
+    // v0.2.5.1. Joined faces really become one: the points left in a straight line on
+    // their outline go, and the faces beyond them get their old shape back.
+    std::string why;
+    // The two halves of a split top: the plain box again.
+    Mesh h = box({0, 0, 0}, {100, 100, 100});
+    MeshEdit eh(h);
+    std::set<int> halves;
+    CHECK(subdivide(eh, {faceFacing(h, {0, 0, 1})}, 2, 1, &halves));
+    CHECK(h.faces.size() > 7);
+    std::set<int> out;
+    CHECK(dissolveFaces(eh, halves, &out, &why));
+    CHECK(h.faces.size() == 6 && h.verts.size() == 8 && isClosed(h) && good(h));
+    CHECK(near(signedVolume(h), 1e6, 1e-3));
+    CHECK(out.size() == 1 && out.count(faceFacing(h, {0, 0, 1})));
+    // A top split 2x2 (a middle point, four edge points): the plain box again.
+    Mesh q = box({0, 0, 0}, {100, 100, 100});
+    MeshEdit eq(q);
+    std::set<int> quarters;
+    CHECK(subdivide(eq, {faceFacing(q, {0, 0, 1})}, 2, 2, &quarters));
+    CHECK(dissolveFaces(eq, quarters, &out, &why));
+    CHECK(q.faces.size() == 6 && q.verts.size() == 8 && isClosed(q) && good(q));
+    CHECK(near(signedVolume(q), 1e6, 1e-3));
+    // Every side split 2x2; a 2x2 block on one side and one face alone on the opposite
+    // side, together: the block joins, the lone face shrinks to its own centre (its
+    // points must be followed while others are renumbered).
+    const Vec3 dirs[6] = {{0, 0, 1}, {0, 0, -1}, {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
+    for (const Vec3& d : dirs) {
+        Mesh m = box({0, 0, 0}, {100, 100, 100});
+        MeshEdit e(m);
+        std::set<int> all;
+        for (int i = 0; i < 6; ++i) all.insert(i);
+        CHECK(subdivide(e, all, 2, 2));
+        std::set<int> sel;
+        int lone = -1;
+        for (int i = 0; i < (int)m.faces.size(); ++i) {
+            const Vec3 n = faceNormal(m, i);
+            if (nearV(n, d, 1e-9)) sel.insert(i);
+            else if (lone < 0 && nearV(n, d * -1.0, 1e-9)) lone = i;
+        }
+        CHECK(sel.size() == 4 && lone >= 0);
+        const Vec3 centre = faceCentre(m, lone);
+        sel.insert(lone);
+        CHECK(dissolveFaces(e, sel, &out, &why));
+        CHECK(vertAt(m, centre) >= 0 && isClosed(m) && good(m));
+    }
+}
+
+void testDissolveTwins() {
+    // Two points at one spot (after Detach): the selected one dissolves, not its twin.
+    Mesh m = box({0, 0, 0}, {100, 100, 100});
+    MeshEdit e(m);
+    const int top = faceFacing(m, {0, 0, 1});
+    CHECK(detachFaces(e, {top}));
+    const int copy = m.faces[top].v[0];
+    int twin = -1;
+    for (int i = 0; i < (int)m.verts.size(); ++i)
+        if (i != copy && nearV(m.verts[i], m.verts[copy], 1e-9)) twin = i;
+    CHECK(twin >= 0);
+    std::string why;
+    CHECK(dissolvePoints(e, {copy}, &why));
+    const int topAfter = faceFacing(m, {0, 0, 1});
+    CHECK(topAfter >= 0 && m.faces[topAfter].n == 3);
+    int quads = 0;
+    for (const Face& f : m.faces) quads += f.n == 4 ? 1 : 0;
+    CHECK(quads == 5 && m.verts.size() == 11);
+}
+
 void testRandomClean() {
     // Random clean-ups on cut-up shapes: closed or refused.
     unsigned seed = 4711;
@@ -192,7 +260,7 @@ void testRandomClean() {
             const int k = rnd(0, f.n - 1);
             const Edge ed = makeEdge(f.v[k], f.v[(k + 1) % f.n]);
             bool ok = false;
-            const int op = rnd(0, 6);
+            const int op = rnd(0, 7);
             switch (op) {
             case 0: ok = loopCut(e, loopRing(m, ed), 1, 0.5); break;
             case 1: ok = subdivide(e, {fi}, 2, 2); break;
@@ -200,6 +268,15 @@ void testRandomClean() {
             case 3: ok = dissolvePoints(e, {f.v[k]}); break;
             case 4: ok = collapseEdges(e, {ed}); break;
             case 5: ok = dissolveFaces(e, {fi}); break;
+            case 7: {
+                // A face and the faces sharing an edge with it.
+                std::set<int> fs = {fi};
+                for (int g = 0; g < (int)m.faces.size(); ++g)
+                    for (int a = 0; a < m.faces[g].n; ++a)
+                        if (m.faces[g].v[a] == f.v[(k + 1) % f.n] && m.faces[g].v[(a + 1) % m.faces[g].n] == f.v[k]) fs.insert(g);
+                ok = dissolveFaces(e, fs);
+                break;
+            }
             default: ok = triangulate(e, {fi}) && joinIntoQuads(e, {fi}) >= 0; break;
             }
             if (!ok) {
@@ -226,6 +303,8 @@ void testCleanOps() {
     testFirstSelected();
     testCollapseAndWeld();
     testDissolve();
+    testDissolveJoins();
+    testDissolveTwins();
     testFillDetachFlip();
     testRandomClean();
 }
