@@ -16,8 +16,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   v0.2.0 "Push and pull", v0.2.1 "Edges and points" (confirmed good), v0.2.2 "Draw on
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool),
   v0.2.3 "Outlines and holes".
-- **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done"). Next: plan
-  v0.2.4 "Cut and divide" with the user click by click.
+- **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done"). Building
+  v0.2.4 "Cut and divide" (agreed 2026-11-21).
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -281,8 +281,9 @@ planned click by click:
 - **v0.2.3 "Outlines and holes"** (agreed 2026-11-20, ARCHITECTURE §6 Draw): push/pull
   through a drawn shape makes a hole (window first, then doorways touching an edge);
   Outline in Draw (2D views) with holes; double-sided.
-- **v0.2.4 "Cut and divide"**: knife, loop cut, slide, subdivide, divide edges, poke,
-  connect.
+- **v0.2.4 "Cut and divide"** (agreed 2026-11-21, ARCHITECTURE §6 Cut / Slide /
+  Divide): Cut tool (knife, loop cut), slide (Alt+drag in the Vertex tool), Mesh menu:
+  subdivide, divide edges, poke, connect.
 - **v0.2.5 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in
   point/edge mode dissolving, the reminder below), fill, split, flip, flip diagonal,
   triangulate / join into quads, double-sided.

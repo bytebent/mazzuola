@@ -4,6 +4,10 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-21 — v0.2.4 agreed
+- Proposal (knife, loop cut, slide with Alt in the Vertex tool, Mesh menu subdivide /
+  divide edges / poke / connect): "yes to all".
+
 ### 2026-11-20 — v0.2.3 confirmed
 - User: "seems like it is done". Next session: plan v0.2.4 "Cut and divide" click by click.
 

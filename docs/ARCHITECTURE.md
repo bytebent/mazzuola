@@ -412,6 +412,16 @@ the model gets:
 - **Cut** (Shift+X): knife (click points on edges), **loop cut** (N cuts around a quad
   ring, typed position).
 - **Slide** a point along an edge or an edge loop along its neighbours.
+- v0.2.4 (agreed 2026-11-21, "yes to all"): **Cut tool** (Shift+X, button under
+  Draw), Properties: Knife / Loop cut. Knife: click points on edges or corners
+  (snapping as Draw); two clicks in a row must share a face, which is cut between them;
+  it may go round corners onto other faces; Return cuts. Loop cut: hover an edge to see
+  the ring of cuts through the quads in line with it (stops at triangles); click to
+  pick it; typed number of cuts (1) and position (50 %); Return applies. **Slide**:
+  in the Vertex tool, Alt+drag moves a point along the one of its edges closest to the
+  drag direction. **Mesh menu** with small dialogs: Subdivide (N×M, 2×2 to start),
+  Divide edges (N), Poke (centre point, typed height), Connect (two selected points on
+  one face). Neighbouring faces always get the new points (the model stays closed).
 - **Merge** (to centre / to last selected), **collapse edge**, **weld by distance**,
   **dissolve**, **fill** (face from 3 or 4 points), **split** (detach), **separate into
   group**, **delete**, **flip faces**, **flip quad diagonal**, **triangulate / join into
