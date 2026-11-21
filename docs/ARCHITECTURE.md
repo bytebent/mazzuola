@@ -422,6 +422,15 @@ the model gets:
   drag direction. **Mesh menu** with small dialogs: Subdivide (N×M, 2×2 to start),
   Divide edges (N), Poke (centre point, typed height), Connect (two selected points on
   one face). Neighbouring faces always get the new points (the model stays closed).
+- v0.2.5 (agreed 2026-11-21): Mesh menu: **Merge at centre** / **Merge at first
+  selected point**, **Collapse edges** (to their middle), **Weld by distance...** (0.1 cm
+  to start), **Dissolve** (points / edges / faces go, the faces round them join, the
+  surface stays closed; over 4 corners re-split), **Tear open** (removes faces, leaves a
+  hole: the old Delete), **Fill** (3 or 4 points), **Detach** (was "split"), **Flip
+  faces**, **Flip diagonal**, **Triangulate** / **Join into quads**, **Double-sided
+  on/off**. **Delete** dissolves in point, edge and face mode (face mode: selected
+  neighbouring faces join into fewer; one face alone shrinks to a point); piece mode
+  still deletes the pieces.
 - **Merge** (to centre / to last selected), **collapse edge**, **weld by distance**,
   **dissolve**, **fill** (face from 3 or 4 points), **split** (detach), **separate into
   group**, **delete**, **flip faces**, **flip quad diagonal**, **triangulate / join into

@@ -4,6 +4,13 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-21 — v0.2.5 agreed
+- User on the proposal: merge with both options (centre / first selected); collapse,
+  weld, dissolve, fill, flips, triangulate / join yes; split renamed **Detach**; Delete
+  dissolves in point and edge mode, and also in face mode (asked: selected neighbouring
+  faces join, one face alone shrinks to a point), with a separate **Tear open** for real
+  holes; Double-sided on/off yes.
+
 ### 2026-11-21 — v0.2.4 "Cut and divide"
 - `core/divide_ops`: `knife` (each two points cut across the face they share, that face
   alone: `cutShape` gained `wholeSurface = false`), `loopRing` (forward round the quads

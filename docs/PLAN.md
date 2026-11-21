@@ -17,8 +17,7 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   faces" (agreed 2026-11-20; "just go ahead, worst case we revert"; its own tool),
   v0.2.3 "Outlines and holes".
 - **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done") and
-  **v0.2.4 "Cut and divide"**. Next: the user tries it; then v0.2.5 "Clean up" is planned
-  with them click by click.
+  **v0.2.4 "Cut and divide"**. Building v0.2.5 "Clean up" (agreed 2026-11-21).
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -285,8 +284,10 @@ planned click by click:
 - **v0.2.4 "Cut and divide"** (agreed 2026-11-21, ARCHITECTURE §6 Cut / Slide /
   Divide): Cut tool (knife, loop cut), slide (Alt+drag in the Vertex tool), Mesh menu:
   subdivide, divide edges, poke, connect.
-- **v0.2.5 "Clean up"**: merge, collapse, weld by distance, dissolve (and Delete in
-  point/edge mode dissolving, the reminder below), fill, split, flip, flip diagonal,
+- **v0.2.5 "Clean up"** (agreed 2026-11-21, ARCHITECTURE §6): merge (centre / first
+  selected), collapse, weld by distance, dissolve, Delete dissolving in point / edge /
+  face mode (the reminder below; Tear open keeps the old Delete), fill, detach, flip,
+  flip diagonal,
   triangulate / join into quads, double-sided.
 - **v0.2.6 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
 - Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
