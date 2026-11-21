@@ -28,8 +28,9 @@ FacePlace placeOnFace(const Mesh& m, int face, const Vec3& p, int* edgeIndex = n
 //  - open (line): from an edge (or corner) of the face to another, through its inside.
 // `shape` gets the faces of the closed shape (open: the smaller of the two parts).
 // False with `why` set when the shape doesn't fit.
+// `wholeSurface` false: only that face, not the flat faces joined to it (the knife).
 bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& pts, bool closed, std::set<int>* shape,
-              std::string* why = nullptr);
+              std::string* why = nullptr, bool wholeSurface = true);
 
 // ---- v0.2.3: holes and outlines
 // Pushing a drawn shape (flat, joined faces lying inside one face) into the solid: the

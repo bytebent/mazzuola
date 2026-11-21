@@ -22,12 +22,18 @@ double dot2(P2 a, P2 b) { return a.x * b.x + a.y * b.y; }
 double len(P2 a) { return std::hypot(a.x, a.y); }
 
 // Turn at b going a -> b -> c: > 0 left (convex for a counter-clockwise outline), 0 straight.
+double turn(P2 a, P2 b, P2 c);
+// Straight when b lies within kOn of the line a-c (points are rounded to 0.001 cm, so a
+// point put on an edge can be that far off it), or the angle is tiny.
 double turn(P2 a, P2 b, P2 c) {
     const P2 e1 = b - a, e2 = c - b;
     const double l = len(e1) * len(e2);
     if (l <= 0) return 0;
     const double s = cross(e1, e2) / l;
-    return std::fabs(s) < kStraight ? 0 : s;
+    if (std::fabs(s) < kStraight) return 0;
+    const double ac = len(c - a);
+    if (ac > 0 && std::fabs(cross(c - a, b - a)) / ac < kOn) return 0;
+    return s;
 }
 
 struct Frame {
@@ -743,14 +749,24 @@ struct Cutter {
 
 } // namespace
 
-bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed, std::set<int>* shape, std::string* why) {
+bool cutShape(MeshEdit& e, int face, const std::vector<Vec3>& ptsIn, bool closed, std::set<int>* shape, std::string* why,
+              bool wholeSurface) {
     auto fail = [&](const std::string& w) {
         if (why) *why = w;
         return false;
     };
     if (face < 0 || face >= (int)e.mesh().faces.size()) return fail("no face there");
     Cutter c{e, {}, e.mesh().faces[face], (int)e.mesh().faces.size(), {}, {}, {}};
-    if (!surfaceOf(e.mesh(), face, c.S)) return fail("that face can't be drawn on");
+    if (wholeSurface) {
+        if (!surfaceOf(e.mesh(), face, c.S)) return fail("that face can't be drawn on");
+    } else {
+        Vec3 o, u, v, n;
+        if (!faceFrame(e.mesh(), face, o, u, v, n)) return fail("that face has no area");
+        c.S.fr = Frame{o, u, v, n};
+        c.S.faces = {face};
+        const Face& f = e.mesh().faces[face];
+        for (int k = 0; k < f.n; ++k) c.S.outer.push_back(f.v[k]);
+    }
     const Vec3 o = c.S.fr.o, n = c.S.fr.n;
     std::vector<Vec3> pts;
     for (const Vec3& p : ptsIn) {
