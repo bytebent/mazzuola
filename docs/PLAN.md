@@ -19,8 +19,8 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 - **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done") and
   **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21, and the
   fix release **v0.2.5.1** after a code review (Dissolve on faces, points sharing a
-  spot, a Subdivide overrun). Next: v0.2.6 "Bevel, bridge, mirror", to be proposed
-  click by click.
+  spot, a Subdivide overrun). **v0.2.6 "Bevel, bridge, shell"** agreed 2026-11-22,
+  being built (steps below); then v0.2.7 "Mirror mode" (agreed).
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -299,29 +299,23 @@ planned click by click:
   face mode (the reminder below; Tear open keeps the old Delete), fill, detach, flip,
   flip diagonal,
   triangulate / join into quads, double-sided.
-- **v0.2.6 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
-  **Proposal sent 2026-11-22, waiting for the user's answers** (nothing agreed yet):
-  - Bevel in the Extrude tool: Properties Extrude / Bevel (edges with faces on both
-    sides, or points, switch to Bevel by themselves); typed width, 1–3 segments (round
-    profile), a handle to drag; too wide: red, Return does nothing; new faces selected.
-    Box corner where three bevelled edges meet: a triangle (1 segment) or a small
-    patch of triangles and quads.
-  - Bridge (Mesh → Bridge…): two selected faces (or two blocks of faces, or two open
-    holes) are removed and joined by a tube; typed segments (1) and twist; different
-    point counts: some side faces become triangles. Live preview, Return / Esc.
-  - Shell (Mesh → Shell…): an open surface gets a thickness: a reversed inner copy and
-    a rim along the open edges; typed thickness (2 cm), inward / outward / centred.
-    A closed model: refused with a message.
-  - Mirror mode (Shift+M, Mesh menu checkbox; plane X / Y / Z through the world
-    origin, shown in the views): selecting something also selects its twin on the
-    other side, and moves are mirrored, so every selection-based command (extrude,
-    inset, bevel, dissolve, subdivide…) works on both sides. Points on the plane stay on
-    it. Push/pull is mirrored too. Draw, Cut and Primitives are not (later). Points
-    without a twin move alone; the status bar counts them. **Make symmetric** (was
-    "Apply mirror"): rebuilds the other side as a mirror of this one.
-  - Split into v0.2.6 "Bevel, bridge, shell" and v0.2.7 "Mirror mode".
+- **v0.2.6 "Bevel, bridge, shell"** (agreed 2026-11-22, "yes to all", ARCHITECTURE §6
+  Bevel / Bridge / Shell): bevel in the Extrude tool, Mesh → Bridge…, Mesh → Shell….
+- **v0.2.7 "Mirror mode"** (agreed 2026-11-22, ARCHITECTURE §6 Mirror mode): twin
+  selection, mirrored moves and Push/pull, Make symmetric. Parked: mirroring Draw, Cut
+  and Primitives.
 - Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
   faces (needs smoothing groups).
+
+**Steps of v0.2.6:**
+- **A. Core** (`core/bevel_ops`): bevel edges (width, 1–3 segments, corners where 2 or
+  3 bevelled edges meet), bevel points, "too wide" check; bridge (two faces / blocks /
+  holes, segments, twist, uneven counts); shell (thickness, inward / outward /
+  centred). Tests: valid, closed stays closed, winding outward, exact positions, counts.
+- **B. Bevel in the Extrude tool**: Extrude / Bevel, width, segments, handle, red when
+  too wide, new faces selected. UI script.
+- **C. Bridge… and Shell… windows** (Mesh menu): live preview, Return / Esc. UI script.
+- **D. Release v0.2.6**: controls, README, notes, screenshots, all tests, idle check.
 
 **Steps of v0.2.0:**
 - **A. Core operations** (`core/model_ops`): push/pull of one face (stretch the

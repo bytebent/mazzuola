@@ -4,6 +4,11 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-22 — v0.2.6 and v0.2.7 agreed
+- Proposal (bevel in Extrude, Bridge…, Shell…, mirror mode with twin selection and Make
+  symmetric) answered "yes to all": split into v0.2.6 "Bevel, bridge, shell" and v0.2.7
+  "Mirror mode". Recorded in ARCHITECTURE §6 and PLAN (steps of v0.2.6).
+
 ### 2026-11-21 — v0.2.5.1 fix release (code review of v0.2.5)
 - Review of v0.2.5 with probes (small programs against `libmazz_core.a`). Found and fixed:
   - **Face Dissolve / Delete didn't join:** the points left along the old shared edges

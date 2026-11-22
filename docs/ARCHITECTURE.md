@@ -399,13 +399,24 @@ the model gets:
   changing a setting does not start a new inset on the inner faces; clicking faces
   does (agreed 2026-11-20, after v0.2.0).
 - **Bevel** (edges or corners, typed width, 1–3 segments) shares the Extrude tool
-  (v0.2.6).
+  (v0.2.6). Agreed 2026-11-22: Properties **Extrude / Bevel**; edges with faces on both
+  sides, or points, switch to Bevel by themselves (open edges still extrude). Typed
+  width (cm) and segments (1–3, a round profile), a handle to drag; live preview; too
+  wide for the faces beside it: red, Return does nothing; Return applies, Esc cancels;
+  the new faces end up selected. A bevelled point cuts the corner off; where three
+  bevelled edges meet (a box corner) a triangle, or with more segments a small patch of
+  triangles and quads.
 - **Tool buttons** (agreed 2026-11-20): every tool gets a button in the Tools panel
   under Select / Vertex / Primitives (Push/pull, Extrude, Inset; later Draw, Cut, ...).
   One-step commands (Mirror, Flatten, later Merge, Flip, Subdivide, ...) stay in the
   menus only.
 - **Bridge** (join two open edge loops), **shell** (give an open surface a typed
-  thickness: inner wall plus rim).
+  thickness: inner wall plus rim). Agreed 2026-11-22 (v0.2.6), Mesh menu, small
+  windows with live preview, Return / Esc: **Bridge…**: two selected faces, two blocks
+  of faces or two open holes are removed and joined by a tube; typed segments (1) and
+  twist; different point counts: some tube faces become triangles. **Shell…**: an open
+  surface gets a reversed inner copy and a rim along its open edges; typed thickness
+  (2 cm), inward / outward / centred; a closed model is refused with a message.
 - **Divide**: **subdivide** selected faces (2×2 or N×M; plain or smoothed), **divide
   edges** into N, **poke** (centre point, typed height), **connect** (edge between two
   selected points across a face).
@@ -443,7 +454,13 @@ the model gets:
   with typed sides, or edited in a small section editor: move points, mirror, scale,
   rotate). Rounded path corners with typed segments; section scale and twist along the
   path; closed or open path; capped ends optional.
-- **Mirror mode** toggle and **Apply mirror**.
+- **Mirror mode** toggle and **Apply mirror**. Agreed 2026-11-22 (v0.2.7): **Shift+M**
+  and a Mesh menu checkbox; plane X / Y / Z through the world origin, drawn in the
+  views. Selecting also selects the twin on the other side and moves are mirrored, so
+  every selection command works on both sides; Push/pull is mirrored too; points on
+  the plane stay on it; points without a twin move alone (the status bar counts them).
+  **Make symmetric** (replaces "Apply mirror") rebuilds the other side as a mirror of
+  this one. Draw, Cut and Primitives are not mirrored yet (parked).
 - **Group pivots**: place the selected group's pivot by click (snaps to
   points, edge midpoints, face centres, bottom centre of the bounds) or typed position.
 - **Groups** (Cmd+G / Cmd+Shift+G): assign selected faces to a group; hide, show, isolate, select, rename;
