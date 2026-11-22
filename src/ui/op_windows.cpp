@@ -4,6 +4,7 @@
 // (or closing the window) cancels. Only one is open at a time; while it is, the views
 // can still be turned and zoomed but the tools don't take clicks.
 #include "app/editor.hpp"
+#include "core/bevel_ops.hpp"
 #include "core/clean_ops.hpp"
 #include "core/divide_ops.hpp"
 #include "core/model_ops.hpp"
@@ -22,6 +23,8 @@ const char* opTitle(Editor::Op op) {
     case Editor::Op::DivideEdges: return "Divide edges";
     case Editor::Op::Poke: return "Poke";
     case Editor::Op::Weld: return "Weld by distance";
+    case Editor::Op::Bridge: return "Bridge";
+    case Editor::Op::Shell: return "Shell";
     default: return "";
     }
 }
@@ -122,6 +125,31 @@ void Editor::refreshOpPreview() {
         }
         break;
     }
+    case Op::Bridge:
+    case Op::Shell: {
+        std::set<int> out;
+        opWhy_.clear();
+        bool ok;
+        if (op_ == Op::Shell) {
+            const std::set<int> faces = convertSelection(doc_.mesh, opSel_, SelectMode::Face).faces;
+            ok = shell(e, faces, shell_, &out, &opWhy_);
+        } else if (opSel_.mode == SelectMode::Edge) {
+            ok = bridgeHoles(e, opSel_.edges, bridge_, &out, &opWhy_); // an edge on each hole
+        } else {
+            const std::set<int> faces = convertSelection(doc_.mesh, opSel_, SelectMode::Face).faces;
+            ok = bridgeFaces(e, faces, bridge_, &out, &opWhy_);
+        }
+        if (!ok) {
+            if (opWhy_.empty()) opWhy_ = "it can't be done here";
+            e.revert();
+            break;
+        }
+        Selection s;
+        s.mode = SelectMode::Face;
+        s.faces = out;
+        doc_.select(s);
+        break;
+    }
     case Op::Weld: {
         const std::set<int> verts = convertSelection(doc_.mesh, opSel_, SelectMode::Vert).verts;
         opWhy_.clear();
@@ -218,6 +246,22 @@ void Editor::opWindow() {
         if (ImGui::InputDouble("Distance (cm)", &weldDist_, 0, 0, "%g")) weldDist_ = std::max(0.0, weldDist_), changed = true;
         ImGui::TextDisabled("Selected points this close become one.");
         if (opWhy_.empty()) ImGui::Text("%d point%s go.", weldCount_, weldCount_ == 1 ? "" : "s");
+    } else if (op == Op::Bridge) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputInt("Segments", &bridge_.segments)) bridge_.segments = std::clamp(bridge_.segments, 1, 32), changed = true;
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputInt("Twist", &bridge_.twist)) changed = true;
+        ImGui::TextDisabled("Two faces or two blocks of faces: they go and a tube\njoins them. Edge mode: an edge on each of two holes.");
+    } else if (op == Op::Shell) {
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 7);
+        if (ImGui::InputDouble("Thickness (cm)", &shell_.thickness, 0, 0, "%g"))
+            shell_.thickness = std::max(0.0, shell_.thickness), changed = true;
+        const char* side[3] = {"Inward", "Outward", "Centred"};
+        for (int k = 0; k < 3; ++k) {
+            if (k) ImGui::SameLine();
+            if (ImGui::RadioButton(side[k], (int)shell_.side == k)) shell_.side = (ShellSide)k, changed = true;
+        }
+        ImGui::TextDisabled("An open surface gets a wall this thick:\na turned-round copy and a rim.");
     } else if (op == Op::Flatten) {
         ImGui::TextUnformatted("Line the points up on");
         for (int a = 0; a < 3; ++a) {

@@ -4,6 +4,21 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-22 — v0.2.6 step C: Bridge… and Shell… windows
+- Mesh menu **Bridge…** (Segments 1–32, Twist; faces: two faces or blocks; edge mode:
+  an edge on each of two holes) and **Shell…** (Thickness, Inward / Outward / Centred;
+  works on the pieces of the selection), in place of the "Bevel, bridge, shell"
+  placeholder. Small windows like Weld's: live preview, red "Can't: …" with the reason,
+  Return / Esc; the new faces (Shell: the whole shelled piece) end up selected.
+  Script: `opset segments|twist|thickness|side`; `expect opvalid` also covers an open
+  operation window.
+- `a2_bridge_shell` (new): two boxes' facing sides (a rectangle round the gap) bridged,
+  3 segments, twist, Return: 22 faces, closed; the sides torn open and the holes
+  bridged (edge mode; nothing is selected after Tear open); a top-less box shelled 4
+  inward and outward (exact boxes), closed; a closed box refused, Return does nothing.
+  19 scripts pass; core 1682.
+- Screenshots: `m2-14-bridge.png` (the tube, 3 segments), `m2-15-shell.png` (the walls).
+
 ### 2026-11-22 — v0.2.6 step B: Bevel in the Extrude tool
 - Properties: **Extrude / Bevel** at the top (each greyed out when the selection can't
   use it). Edges with faces on both sides, or points, switch to Bevel when picked up

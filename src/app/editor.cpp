@@ -102,6 +102,8 @@ bool Editor::enabled(Act a) const {
     case Act::MergeCentre:
     case Act::Collapse:
     case Act::Weld:
+    case Act::Bridge:
+    case Act::Shell:
     case Act::TearOpen:
     case Act::Fill:
     case Act::Detach:
@@ -177,6 +179,8 @@ void Editor::run(Act a) {
     case Act::TwoSidedOn:
     case Act::TwoSidedOff: cleanUp(a); break;
     case Act::Weld: openOp(Op::Weld); break;
+    case Act::Bridge: openOp(Op::Bridge); break;
+    case Act::Shell: openOp(Op::Shell); break;
     case Act::Transform:
     case Act::MovePoints: openOp(Op::Transform); break;
     case Act::Replicate: openOp(Op::Replicate); break;
@@ -636,7 +640,8 @@ void Editor::menuBar() {
         menuItem(Act::TwoSidedOn);
         menuItem(Act::TwoSidedOff);
         ImGui::Separator();
-        plannedItem("Bevel, bridge, shell", 2);
+        menuItem(Act::Bridge);
+        menuItem(Act::Shell);
         plannedItem("Mirror mode", 2);
         ImGui::Separator();
         plannedItem("Groups, smoothing groups", 3);

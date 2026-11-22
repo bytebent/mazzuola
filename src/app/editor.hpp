@@ -1,6 +1,7 @@
 #pragma once
 // The app's state and per-frame logic. Real input and scripted input (tests,
 // screenshots) go through the same paths: key chords -> actions, mouse -> ImGui IO.
+#include "core/bevel_ops.hpp"
 #include "core/document.hpp"
 #include "core/grid.hpp"
 #include "core/ops.hpp"
@@ -41,7 +42,7 @@ struct ViewsLayout {
 
 class Editor {
 public:
-    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke, Weld }; // operation windows
+    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke, Weld, Bridge, Shell }; // operation windows
     Editor(GLFWwindow* window, const EditorOptions& opt);
     ~Editor();
 
@@ -222,6 +223,8 @@ private:
     double pokeHeight_ = 0;         // Poke...
     double weldDist_ = 0.1;         // Weld by distance... (cm)
     int weldCount_ = 0;             //   points it would remove
+    BridgeParams bridge_;           // Bridge...
+    ShellParams shell_;             // Shell...
     void cleanUp(Act a);            // Mesh menu clean-up commands (clean_ops)
     std::string opWhy_;             // the operation can't be done as set (shown in its window)
     int flattenAxis_ = 2;

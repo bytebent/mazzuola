@@ -81,6 +81,8 @@ const ActionInfo kActions[] = {
     {Act::JoinQuads, "mesh.joinquads", "Join into quads", "", 0},
     {Act::TwoSidedOn, "mesh.twosidedon", "Double-sided on", "", 0},
     {Act::TwoSidedOff, "mesh.twosidedoff", "Double-sided off", "", 0},
+    {Act::Bridge, "mesh.bridge", "Bridge...", "", 0},
+    {Act::Shell, "mesh.shell", "Shell...", "", 0},
     {Act::Problems, "mesh.problems", "Problems list", "Cmd+Shift+O", 3},
 
     {Act::ApplyTexture, "texture.apply", "Apply current texture", "Shift+T", 5},

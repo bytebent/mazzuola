@@ -344,6 +344,14 @@ void Editor::stepScript() {
             else if (what == "divide") in >> divideN_;
             else if (what == "height") in >> pokeHeight_;
             else if (what == "weld") in >> weldDist_;
+            else if (what == "segments") in >> bridge_.segments;
+            else if (what == "twist") in >> bridge_.twist;
+            else if (what == "thickness") in >> shell_.thickness;
+            else if (what == "side") {
+                std::string w;
+                in >> w;
+                shell_.side = w == "outward" ? ShellSide::Outward : w == "centred" ? ShellSide::Centred : ShellSide::Inward;
+            }
             else if (what == "to") {
                 std::string w;
                 in >> w;
@@ -489,7 +497,7 @@ void Editor::stepScript() {
             } else if (what == "op") {
                 std::string w;
                 in >> w;
-                const char* names[] = {"none", "transform", "replicate", "flatten", "subdivide", "divideedges", "poke", "weld"};
+                const char* names[] = {"none", "transform", "replicate", "flatten", "subdivide", "divideedges", "poke", "weld", "bridge", "shell"};
                 if (w != names[(int)op_]) scriptFail(std::string("operation window is ") + names[(int)op_]);
             } else if (what == "armed" || what == "opvalid") {
                 // The active tool's preview is up / possible (push/pull: a push pending).
@@ -499,6 +507,7 @@ void Editor::stepScript() {
                 if (tool_ == &pushPullTool_) armed = pushPullTool_.pending(), valid = pushPullTool_.valid();
                 else if (tool_ == &extrudeTool_) armed = extrudeTool_.armed(), valid = extrudeTool_.valid();
                 else if (tool_ == &insetTool_) armed = insetTool_.armed(), valid = insetTool_.valid();
+                if (op_ != Op::None) armed = true, valid = opWhy_.empty(); // an operation window
                 const bool have = what == "armed" ? armed : valid;
                 if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
             } else if (what == "bevelling") {

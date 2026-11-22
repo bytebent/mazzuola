@@ -97,6 +97,8 @@ expect knife <points>               the knife's points so far
 expect ring <picked 0|1> <faces>    the loop cut's ring (picked or under the cursor) and its faces
 opset pieces <n> <m> | divide <n> | height <h>   Subdivide / Divide edges / Poke windows
 opset weld <cm>                     Weld by distance window
+opset segments <n> | twist <n>      Bridge window
+opset thickness <cm> | side inward|outward|centred   Shell window
 expect closed 0|1                   every edge has a face on each side
 expect twosidedfaces <n>            double-sided faces
 toolset draw size <w> <h> | radius <r> | segments <n>   Draw: typed values while adjusting
@@ -106,6 +108,7 @@ expect drawsnap none|grid|point|midpoint|edge|centre   what the Draw cursor snap
 expect drawaxis X|Y|Z|-             the line piece is locked onto that axis
 expect armed <0|1>                  the tool's preview is up (Push/pull: a push pending)
 expect opvalid <0|1>                that preview is possible (else red, Return does nothing)
+                                    (an open operation window: no "Can't" line)
 expect bevelling <0|1>              the Extrude tool is in Bevel
 expect pushdist <d>                 the pending push's distance
 export <file.glb|.gltf|.obj>        File -> Export to that file (format from the extension)
