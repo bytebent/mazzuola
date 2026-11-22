@@ -300,6 +300,26 @@ planned click by click:
   flip diagonal,
   triangulate / join into quads, double-sided.
 - **v0.2.6 "Bevel, bridge, mirror"**: bevel, bridge, shell, mirror mode.
+  **Proposal sent 2026-11-22, waiting for the user's answers** (nothing agreed yet):
+  - Bevel in the Extrude tool: Properties Extrude / Bevel (edges with faces on both
+    sides, or points, switch to Bevel by themselves); typed width, 1–3 segments (round
+    profile), a handle to drag; too wide: red, Return does nothing; new faces selected.
+    Box corner where three bevelled edges meet: a triangle (1 segment) or a small
+    patch of triangles and quads.
+  - Bridge (Mesh → Bridge…): two selected faces (or two blocks of faces, or two open
+    holes) are removed and joined by a tube; typed segments (1) and twist; different
+    point counts: some side faces become triangles. Live preview, Return / Esc.
+  - Shell (Mesh → Shell…): an open surface gets a thickness: a reversed inner copy and
+    a rim along the open edges; typed thickness (2 cm), inward / outward / centred.
+    A closed model: refused with a message.
+  - Mirror mode (Shift+M, Mesh menu checkbox; plane X / Y / Z through the world
+    origin, shown in the views): selecting something also selects its twin on the
+    other side, and moves are mirrored, so every selection-based command (extrude,
+    inset, bevel, dissolve, subdivide…) works on both sides. Points on the plane stay on
+    it. Push/pull is mirrored too. Draw, Cut and Primitives are not (later). Points
+    without a twin move alone; the status bar counts them. **Make symmetric** (was
+    "Apply mirror"): rebuilds the other side as a mirror of this one.
+  - Split into v0.2.6 "Bevel, bridge, shell" and v0.2.7 "Mirror mode".
 - Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
   faces (needs smoothing groups).
 
