@@ -20,7 +20,7 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
   **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21, and the
   fix release **v0.2.5.1** after a code review (Dissolve on faces, points sharing a
   spot, a Subdivide overrun). **v0.2.6 "Bevel, bridge, shell"** agreed 2026-11-22,
-  being built: step A (core) done; next B (bevel in the Extrude tool). Then v0.2.7
+  being built: steps A (core) and B (bevel in Extrude) done; next C (Bridge…, Shell…). Then v0.2.7
   "Mirror mode" (agreed).
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,

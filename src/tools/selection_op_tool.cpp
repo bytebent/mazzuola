@@ -22,6 +22,7 @@ void SelectionOpTool::update(ToolEnv& env) {
 void SelectionOpTool::arm(ToolEnv& env) {
     Document& doc = env.doc;
     source_ = doc.sel;
+    picked(doc.mesh, source_);
     doc.beginLive();
     armed_ = true;
     afterApply_ = false;

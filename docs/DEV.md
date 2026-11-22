@@ -88,6 +88,7 @@ expect file <file> <0|1>            the file exists or not
 addquad <x0> <y0> <x1> <y1> <z>      test helper: one flat face facing up, selected
 toolset pushpull distance <d>       Push/pull: as typed in Properties
 toolset extrude distance|each|straight|axis|keep <v>   Extrude settings (preview follows)
+toolset extrude bevel <0|1> | width <cm> | segments <n>   Bevel in the Extrude tool
 toolset inset width|depth|each <v>  Inset settings (preview follows)
 toolset draw shape <0|1|2|3>        Draw: rectangle, circle, line, outline
 toolset draw twosided <0|1>         Draw: outlines double-sided
@@ -105,6 +106,7 @@ expect drawsnap none|grid|point|midpoint|edge|centre   what the Draw cursor snap
 expect drawaxis X|Y|Z|-             the line piece is locked onto that axis
 expect armed <0|1>                  the tool's preview is up (Push/pull: a push pending)
 expect opvalid <0|1>                that preview is possible (else red, Return does nothing)
+expect bevelling <0|1>              the Extrude tool is in Bevel
 expect pushdist <d>                 the pending push's distance
 export <file.glb|.gltf|.obj>        File -> Export to that file (format from the extension)
 testimage <file.png> <w> <h>        test helper: write a checkerboard PNG (top-left square red)

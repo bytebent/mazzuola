@@ -3,6 +3,7 @@
 #include "core/ops.hpp"
 #include "core/select_ops.hpp"
 #include "tools/handles.hpp"
+#include <algorithm>
 #include <cmath>
 
 namespace mazz {
@@ -27,17 +28,50 @@ double segDist(double px, double py, double ax, double ay, double bx, double by)
 } // namespace
 
 const char* ExtrudeTool::hint() const {
-    if (!armed_) return "select faces, or open edges (edge mode)  click / rectangle: select";
+    if (!armed_) return "select faces or open edges to extrude, edges or points to bevel  click / rectangle: select";
+    if (bevelling_) return "drag the arrow or type the width  Return: apply  Esc: cancel  click: select other edges";
     return "drag the arrow or type the distance  Return: apply  Esc: cancel  click: select other faces";
 }
 
-bool ExtrudeTool::suits(const Mesh& m, const Selection& s) const {
+bool ExtrudeTool::canExtrude(const Mesh& m, const Selection& s) const {
     if (s.mode == SelectMode::Edge) return !openEdges(m, s.edges).empty();
     if (s.mode == SelectMode::Face || s.mode == SelectMode::Piece) return !s.faces.empty();
     return false;
 }
 
+bool ExtrudeTool::canBevel(const Mesh& m, const Selection& s) const {
+    if (s.mode == SelectMode::Edge) return !innerEdges(m, s.edges).empty();
+    if (s.mode == SelectMode::Vert) return !s.verts.empty();
+    return false;
+}
+
+bool ExtrudeTool::suits(const Mesh& m, const Selection& s) const { return canExtrude(m, s) || canBevel(m, s); }
+
+void ExtrudeTool::picked(const Mesh& m, const Selection& s) {
+    // Edges with faces on both sides, or points: Bevel; faces or open edges: Extrude.
+    bevelling_ = canBevel(m, s) && !canExtrude(m, s);
+}
+
+void ExtrudeTool::setBevel(ToolEnv& env, bool on) {
+    const Selection& s = armed_ ? source_ : env.doc.sel;
+    if (on ? !canBevel(env.doc.mesh, s) : !canExtrude(env.doc.mesh, s)) return;
+    bevelling_ = on;
+    changed(env);
+}
+
 bool ExtrudeTool::compute(MeshEdit& e, const Selection& source, Selection& result) {
+    why_.clear();
+    if (bevelling_) {
+        arrowOk_ = arrowFor(e.mesh(), source, arrowOrigin_, arrowDir_);
+        std::set<int> made;
+        const bool ok = source.mode == SelectMode::Vert ? bevelPoints(e, source.verts, bevel_.width, &made, &why_)
+                                                        : bevelEdges(e, source.edges, bevel_, &made, &why_);
+        if (!ok) return false;
+        result = Selection();
+        result.mode = SelectMode::Face;
+        result.faces = made;
+        return true;
+    }
     // The arrow, from the model as it was (fixed while dragging).
     arrowOk_ = arrowFor(e.mesh(), source, arrowOrigin_, arrowDir_);
     if (edges(source)) {
@@ -67,6 +101,11 @@ bool ExtrudeTool::arrowFor(const Mesh& m, const Selection& s, Vec3& origin, Vec3
     Vec3 mn, mx;
     if (!selectionBounds(m, s, mn, mx)) return false;
     origin = (mn + mx) * 0.5;
+    if (bevelling_) {
+        // Into the surface: a wider bevel cuts deeper.
+        dir = selectionNormal(m, s) * -1.0;
+        return length(dir) > 1e-6;
+    }
     if (edges(s) || params_.straight) dir = axisDir(params_.axis);
     else {
         dir = selectionNormal(m, s);
@@ -80,7 +119,7 @@ bool ExtrudeTool::arrowFor(const Mesh& m, const Selection& s, Vec3& origin, Vec3
 bool ExtrudeTool::pressHandle(ToolEnv& env, const Pointer& p) {
     Vec3 o, d;
     if (!arrow(env.doc.mesh, o, d)) return false;
-    const Vec3 at = o + d * params_.distance;
+    const Vec3 at = o + d * handleValue();
     double ax, ay, tx, ty;
     if (!p.g.project(at, ax, ay) || !dirArrowTip(p.g, at, d, kArrowPx, tx, ty)) return false;
     if (segDist(p.sx, p.sy, ax, ay, tx, ty) > kGrabPx) return false;
@@ -90,7 +129,7 @@ bool ExtrudeTool::pressHandle(ToolEnv& env, const Pointer& p) {
     dragOrigin_ = o;
     dragDir_ = d;
     startT_ = t;
-    startDistance_ = params_.distance;
+    startDistance_ = handleValue();
     return true;
 }
 
@@ -98,9 +137,10 @@ void ExtrudeTool::dragHandle(ToolEnv& env, const Pointer& p) {
     if (p.view != dragView_) return;
     double t;
     if (!lineParam(p.g, dragOrigin_, dragDir_, p.sx, p.sy, t)) return;
-    const double d = clean(env.grid.snapValue(startDistance_ + (t - startT_)));
-    if (d == params_.distance) return;
-    params_.distance = d;
+    double d = clean(env.grid.snapValue(startDistance_ + (t - startT_)));
+    if (bevelling_ && d <= 0) d = clean(std::max(0.125, env.grid.snapValue(0.125)));
+    if (d == handleValue()) return;
+    handleValue() = d;
     refresh(env);
 }
 
@@ -108,18 +148,54 @@ void ExtrudeTool::drawHandle(const ToolEnv& env, const ViewGeom& g, int, ImDrawL
     Vec3 o, d;
     if (!arrow(env.doc.mesh, o, d)) return;
     const ImU32 col = valid_ ? IM_COL32(236, 92, 178, 255) : IM_COL32(230, 60, 60, 255);
-    drawDirArrow(dl, g, o + d * params_.distance, d, kArrowPx, col, dragging_);
+    drawDirArrow(dl, g, o + d * handleValue(), d, kArrowPx, col, dragging_);
 }
 
 void ExtrudeTool::properties(ToolEnv& env) {
-    ImGui::SeparatorText("Extrude");
+    ImGui::SeparatorText(bevelling_ ? "Bevel" : "Extrude");
     const Document& doc = env.doc;
-    const bool edgeMode = (armed_ ? source_ : doc.sel).mode == SelectMode::Edge;
+    const Selection& sel = armed_ ? source_ : doc.sel;
+    const bool edgeMode = sel.mode == SelectMode::Edge;
     if (!armed_ && !suits(doc.mesh, doc.sel)) {
-        ImGui::TextWrapped("Select faces to extrude, or open edges (edge mode: edges with a face on one side only).");
+        ImGui::TextWrapped("Select faces or open edges to extrude (open: a face on one side only), or edges with "
+                           "faces on both sides, or points, to bevel.");
     }
     bool ch = false;
     const float fieldW = ImGui::GetFontSize() * 7;
+    {
+        const bool ex = canExtrude(doc.mesh, sel), bv = canBevel(doc.mesh, sel);
+        ImGui::BeginDisabled(!ex);
+        if (ImGui::RadioButton("Extrude", !bevelling_) && bevelling_) bevelling_ = false, ch = true;
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+        ImGui::BeginDisabled(!bv);
+        if (ImGui::RadioButton("Bevel", bevelling_) && !bevelling_) bevelling_ = true, ch = true;
+        ImGui::EndDisabled();
+    }
+    if (bevelling_) {
+        ImGui::SetNextItemWidth(fieldW);
+        double w = bevel_.width;
+        if (ImGui::InputDouble("Width (cm)", &w, 0, 0, "%g")) {
+            bevel_.width = clean(std::max(0.0, w));
+            ch = true;
+        }
+        applyOnReturn(env);
+        if (sel.mode == SelectMode::Vert) {
+            dimWrapped("Points: the corner is cut off, width along each edge.");
+        } else {
+            ImGui::SetNextItemWidth(fieldW);
+            int sg = bevel_.segments;
+            if (ImGui::InputInt("Segments", &sg)) {
+                bevel_.segments = std::clamp(sg, 1, 3);
+                ch = true;
+            }
+            applyOnReturn(env);
+            dimWrapped("Segments: 1 is a flat cut, 2-3 round it.");
+        }
+        applyButtons(env, why_.empty() ? "Too wide for the faces beside it." : ("Can't: " + why_ + ".").c_str());
+        if (ch) changed(env);
+        return;
+    }
     ImGui::SetNextItemWidth(fieldW);
     double d = params_.distance;
     if (ImGui::InputDouble("Distance (cm)", &d, 0, 0, "%g")) {

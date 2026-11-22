@@ -40,6 +40,8 @@ protected:
     // After Return, does changing a setting start again on the result? (Extrude: yes,
     // ready to extrude again; Inset: no, until faces are clicked again.)
     virtual bool againAfterApply() const { return true; }
+    // A new selection was picked up (before its first preview).
+    virtual void picked(const Mesh&, const Selection&) {}
     // Optional drag handle (Extrude's arrow): true if the press grabbed it.
     virtual bool pressHandle(ToolEnv&, const Pointer&) { return false; }
     virtual void dragHandle(ToolEnv&, const Pointer&) {}

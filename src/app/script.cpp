@@ -288,6 +288,9 @@ void Editor::stepScript() {
                 else if (what == "straight") p.straight = v != 0;
                 else if (what == "axis") p.axis = (int)v;
                 else if (what == "keep") p.keepOriginal = v != 0;
+                else if (what == "bevel") extrudeTool_.setBevel(env, v != 0);
+                else if (what == "width") extrudeTool_.bevelParams().width = v;
+                else if (what == "segments") extrudeTool_.bevelParams().segments = (int)v;
                 else scriptFail("unknown extrude setting " + what);
                 extrudeTool_.changed(env);
             } else if (t == "draw") {
@@ -498,6 +501,11 @@ void Editor::stepScript() {
                 else if (tool_ == &insetTool_) armed = insetTool_.armed(), valid = insetTool_.valid();
                 const bool have = what == "armed" ? armed : valid;
                 if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "bevelling") {
+                // expect bevelling 0|1: the Extrude tool is in Bevel
+                int want = 0;
+                in >> want;
+                if (extrudeTool_.bevelling() != (want != 0)) scriptFail(std::string("bevelling is ") + (extrudeTool_.bevelling() ? "1" : "0"));
             } else if (what == "knife" || what == "ring") {
                 // expect knife <points> | expect ring <0|1 picked> <faces>
                 int want = 0;

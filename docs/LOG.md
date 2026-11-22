@@ -4,6 +4,24 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-22 — v0.2.6 step B: Bevel in the Extrude tool
+- Properties: **Extrude / Bevel** at the top (each greyed out when the selection can't
+  use it). Edges with faces on both sides, or points, switch to Bevel when picked up
+  (new `SelectionOpTool::picked` hook); faces and open edges stay Extrude. Width (cm),
+  Segments (1–3; points: one, with a note). The arrow points into the surface and sets
+  the width (grid steps). Red with the reason when it can't; the new faces end up
+  selected. Script: `toolset extrude bevel|width|segments`, `expect bevelling`.
+- `a2_bevel` (new): one edge picked in 3D (Bevel by itself, 9 faces), arrow dragged to
+  width 8 (exact selection box), 2 segments, too wide red, Return; every edge (a
+  rectangle; Cmd+A picks the piece) rounded with 2 segments, closed; every corner cut;
+  faces: Bevel can't be chosen. `a2_extrude`: points now bevel (was "points don't"),
+  as agreed. All 18 scripts pass.
+- Screenshots: `m2-12-bevel-edge.png` (one edge chamfered; the end caps, five corners,
+  are split in two: a diagonal shows in the 2D views, as with Draw and Cut),
+  `m2-13-bevel-all.png` (every edge, 2 segments).
+- Noted while testing: after Undo the tool's preview comes back at once (as Extrude
+  always did), and Cmd+A selects the piece, so "every edge" is a rectangle in edge mode.
+
 ### 2026-11-22 — v0.2.6 step A: bevel, bridge, shell (core)
 - `core/bevel_ops`: **bevelEdges** (edges with faces on both sides; at each point the
   faces round it are walked: between two bevelled edges a face gets the crossing of the

@@ -8,10 +8,14 @@ wait 2
 addbox 0 0 0 64 48 32
 expect faces 6
 
-# ---- Extrude: nothing suitable selected (pieces count as their faces; points don't)
+# ---- Points: since v0.2.6 they bevel (the tool switches to Bevel); Esc drops it
 key 1
 key Shift+E
 expect tool Extrude
+expect armed 1
+expect bevelling 1
+key Esc
+wait 1
 expect armed 0
 # Face mode: click the top face in the Top view; the preview comes up at once
 key 3
