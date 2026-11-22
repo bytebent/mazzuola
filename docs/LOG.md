@@ -4,6 +4,27 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-22 — v0.2.6 step A: bevel, bridge, shell (core)
+- `core/bevel_ops`: **bevelEdges** (edges with faces on both sides; at each point the
+  faces round it are walked: between two bevelled edges a face gets the crossing of the
+  offset lines, across plain edges new points slide along them at width / sin(angle);
+  strips with a round profile for 2–3 segments, tangent to both faces; corner patches
+  where ends meet; a flat end keeps the old point on the strip's end; points made at
+  one spot are shared), **bevelPoints** (corner cut off, width along each edge),
+  **bridgeFaces / bridgeHoles** (best match of the two outlines plus twist, rings for
+  segments, uneven counts spread with triangles), **shell** (point normals weighted by
+  angle, scaled for even thickness; inward / outward / centred; rim; closed pieces
+  refused). "Too wide": faces that would turn over, or points sliding past an edge.
+  `MeshEdit` unchanged; `regionOutline` now public in clean_ops.
+- Probes found and fixed while writing: corner patches were judged by the faces round
+  them (a bevel ending where the surface goes on straight ends in a triangle standing
+  across it); arc points at one spot weren't shared (compared unrounded); flat ends.
+- Tests: core 1682 checks (one edge with exact volumes for 1–3 segments, a corner,
+  all 12 edges, the top loop, flat ends, too wide, points, bridges with segments, a
+  tunnel, uneven counts, holes, shell three ways and an open box; 200 random bevels:
+  191 closed, 9 refused with a reason). Clean under address / undefined-behaviour
+  sanitizers.
+
 ### 2026-11-22 — v0.2.6 and v0.2.7 agreed
 - Proposal (bevel in Extrude, Bridge…, Shell…, mirror mode with twin selection and Make
   symmetric) answered "yes to all": split into v0.2.6 "Bevel, bridge, shell" and v0.2.7

@@ -41,7 +41,8 @@ add_library(mazz_core STATIC
   src/core/model_ops.cpp
   src/core/draw_ops.cpp
   src/core/divide_ops.cpp
-  src/core/clean_ops.cpp)
+  src/core/clean_ops.cpp
+  src/core/bevel_ops.cpp)
 target_include_directories(mazz_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # File formats: pure C++ too.
@@ -52,7 +53,7 @@ target_link_libraries(mazz_io PUBLIC mazz_core)
 
 if(MAZZ_BUILD_TESTS)
   enable_testing()
-  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp tests/test_io.cpp tests/test_export.cpp tests/test_model_ops.cpp tests/test_draw_ops.cpp tests/test_divide_ops.cpp tests/test_clean_ops.cpp)
+  add_executable(mazz_core_tests tests/test_core.cpp tests/test_model.cpp tests/test_io.cpp tests/test_export.cpp tests/test_model_ops.cpp tests/test_draw_ops.cpp tests/test_divide_ops.cpp tests/test_clean_ops.cpp tests/test_bevel_ops.cpp)
   target_link_libraries(mazz_core_tests PRIVATE mazz_io mazz_core)
   add_test(NAME core COMMAND mazz_core_tests)
 endif()

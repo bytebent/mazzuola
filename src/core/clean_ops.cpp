@@ -278,6 +278,8 @@ bool dropStraightPoint(MeshEdit& e, int p, int a, int b, std::set<int>& kept, st
 
 } // namespace
 
+std::vector<int> regionOutline(const Mesh& m, const std::set<int>& region) { return outline(m, region); }
+
 // ---------------------------------------------------------------- merge, collapse, weld
 
 bool mergePoints(MeshEdit& e, const std::set<int>& verts, const Vec3& at, int keep) {

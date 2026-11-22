@@ -6,6 +6,7 @@
 #include "core/document.hpp"
 #include <set>
 #include <string>
+#include <vector>
 
 namespace mazz {
 
@@ -34,5 +35,9 @@ bool triangulate(MeshEdit& e, const std::set<int>& faces, std::set<int>* out = n
 // Pairs of triangles sharing an edge that make a good flat, convex four-cornered face.
 int joinIntoQuads(MeshEdit& e, const std::set<int>& faces, std::set<int>* out = nullptr);
 bool setTwoSided(MeshEdit& e, const std::set<int>& faces, bool on);
+
+// The outline of a block of faces joined by edges, running as the faces do (empty if
+// it isn't one loop, e.g. the block has a hole).
+std::vector<int> regionOutline(const Mesh& m, const std::set<int>& region);
 
 } // namespace mazz
