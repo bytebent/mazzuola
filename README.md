@@ -7,15 +7,15 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 2 (milestone 2, modelling) has started. v0.2.0 "Push and pull" and
-v0.2.1 "Edges and points", v0.2.2 "Draw on faces", v0.2.3 "Outlines and holes" and
-v0.2.4 "Cut and divide":
-push/pull (faces, edges, points; through a shape: a hole), extrude, inset, drawing
-rectangles, circles, lines and outlines with holes, knife, loop cut, slide, subdivide,
-divide edges, poke, connect, on top of alpha 1 (all primitive shapes and rocks;
-selecting pieces, faces, edges and points; moving, copying, resizing, turning, typed
-values, mirror, flatten; undo, save and open `.mazz`; export `.glb`, `.gltf`, `.obj`;
-reference images; a 175 cm scale figure). Next: v0.2.5 "Clean up".
+**Status:** alpha 2 (milestone 2, modelling), up to v0.2.6 "Bevel, bridge, shell":
+push/pull (faces, edges, points; through a shape: a hole), extrude, inset, bevel,
+drawing rectangles, circles, lines and outlines with holes, knife, loop cut, slide,
+subdivide, divide edges, poke, connect, clean-up (merge, collapse, weld, dissolve, tear
+open, fill, detach, flips, triangulate / join, double-sided), bridge, shell, on top of
+alpha 1 (all primitive shapes and rocks; selecting pieces, faces, edges and points;
+moving, copying, resizing, turning, typed values, mirror, flatten; undo, save and open
+`.mazz`; export `.glb`, `.gltf`, `.obj`; reference images; a 175 cm scale figure).
+Next: v0.2.7 "Mirror mode".
 
 ## Download
 
@@ -40,6 +40,7 @@ including the planned ones with the milestone that brings them.
 | Draw | on a face (3D view: any face; 2D views: faces facing you). Rectangle: click a corner, click (or drag to) the opposite corner, then type the width / height or drag a corner. Circle: click the centre, click the radius; segments in Properties (8). Line: click, click, ... from one edge of the face to another, **Return** to finish, **Backspace** takes a point back. Outline (2D views): click points, click the first one to close; outlines clicked inside become holes; **Return** makes the flat shape (Double-sided option). **Return** cuts it in (the shape is selected), **Esc** cancels; red when it doesn't fit. Snaps: green a point, cyan a midpoint, red an edge, blue the centre; a line piece close to X / Y / Z clicks onto it (axis colour), **Shift** keeps that direction. Push/pull on a drawn shape pushes all of it; pushed in until it reaches the other side, it makes a hole (window, doorway) |
 | Push/pull | edge / point mode: drag an edge or a point along the surface's normal (the faces around tilt). Face mode: drag a face along its normal (3D view: any face; 2D views: a face seen edge-on); grid steps, or type the distance in Properties; **Return** applies, **Esc** cancels; the sides of a box stretch, otherwise new side faces (**Cmd**+drag: always new faces); a flat shape becomes a solid; pressing another face applies the pending push first |
 | Extrude | select faces (or open edges in edge mode); a live preview: drag its arrow or type the distance; Region / Each face, Along normals / Straight X Y Z, Keep original; **Return** applies and selects the new faces |
+| Bevel | in the Extrude tool: select edges with faces on both sides (or points) and it switches to **Bevel**; drag its arrow or type the width; Segments 1–3 round it (edges); red when too wide; **Return** applies and selects the new faces |
 | Inset | select faces; type the width and an optional depth (straight walls, flat frame); Region / Each face; red when too wide; **Return** applies and selects the inner faces (click faces to inset again) |
 | Selection mode: points / edges / faces / whole pieces | **1** / **2** / **3** / **4** (and the buttons at the top of the tool bar); switching converts the selection |
 | Draw a shape | Primitives tool (or Create → Primitives / Rock): pick the shape and its settings in Properties, drag a rectangle in a 2D view, adjust with the handles in any 2D view (or type the size); **Return** creates, **Esc** cancels. Round shapes stand along the view's depth (drawn in Top = upright); the depth comes from the last shape made or selected |
@@ -53,6 +54,7 @@ including the planned ones with the milestone that brings them.
 | Grow / shrink selection | **Cmd++** / **Cmd+è** |
 | Delete | **Delete**: pieces go; points, edges and faces dissolve and the model stays closed (a face alone shrinks to a point; a loop cut's edges go with their side points). Mesh → Tear open leaves a hole instead |
 | Clean up | Mesh menu: Merge at centre / at first selected point, Collapse edges, Weld by distance… (0.1 cm), Dissolve, Tear open, Fill (3 or 4 points), Detach, Flip faces, Flip diagonal, Triangulate, Join into quads, Double-sided on / off |
+| Bridge / Shell | Mesh menu: **Bridge…** joins two selected faces (or blocks of faces) by a tube, or two holes (edge mode: an edge on each); Segments, Twist. **Shell…** gives an open surface a wall: Thickness (2 cm), Inward / Outward / Centred |
 | Typed move / rotate / scale | **Cmd+T** (a window that stays open; the views show it live; **Return** applies, **Esc** cancels) |
 | Multi-Replicate (copies in a row, circle, spiral...) | **Cmd+Shift+D** (same kind of window) |
 | Duplicate in place | **Cmd+D** |

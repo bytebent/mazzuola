@@ -4,6 +4,15 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-22 — v0.2.6 "Bevel, bridge, shell" released
+- Help → Controls: a Bevel row (Bridge… and Shell… come from the menu table). README:
+  Bevel and Bridge / Shell rows; the status paragraph was behind (no v0.2.5), now up
+  to v0.2.6. Release notes `docs/releases/v0.2.6.md`. Version 0.2.6 (export check).
+- Checks: core 1682; 19 UI scripts pass at normal, 2× and no anti-aliasing; idle 0
+  ticks at 1× and 2× (control 903). A saved `.mazz` of one edge bevelled with 2
+  segments looked at by eye: clean numbers (the arc point 2.343 / 45.657), the end caps
+  took the arc as two quads, all quads.
+
 ### 2026-11-22 — v0.2.6 step C: Bridge… and Shell… windows
 - Mesh menu **Bridge…** (Segments 1–32, Twist; faces: two faces or blocks; edge mode:
   an edge on each of two holes) and **Shell…** (Thickness, Inward / Outward / Centred;
