@@ -53,6 +53,15 @@ public:
     void deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap = nullptr,
                      std::vector<int>* vertMap = nullptr);
 
+    // Whether point i was changed in this edit, and where it was before (points added
+    // in this edit count as unchanged).
+    bool vertChanged(int i, Vec3* before = nullptr) const {
+        auto it = vertBefore_.find(i);
+        if (it == vertBefore_.end()) return false;
+        if (before) *before = it->second;
+        return true;
+    }
+    int oldVertCount() const { return oldVerts_; }
     // The change so far (only values that really differ are kept).
     MeshChange change() const;
     // Puts back everything as it was before the edit.

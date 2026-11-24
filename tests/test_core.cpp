@@ -21,6 +21,7 @@ void testDrawOps(); // test_draw_ops.cpp
 void testDivideOps(); // test_divide_ops.cpp
 void testCleanOps(); // test_clean_ops.cpp
 void testBevelOps(); // test_bevel_ops.cpp
+void testMirrorOps(); // test_mirror_ops.cpp
 
 static void testGrid() {
     Grid g;
@@ -264,6 +265,7 @@ int main() {
     testDivideOps();
     testCleanOps();
     testBevelOps();
+    testMirrorOps();
     if (gFailures) {
         std::fprintf(stderr, "%d of %d checks failed\n", gFailures, gChecks);
         return 1;

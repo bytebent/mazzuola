@@ -4,6 +4,23 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-24 — v0.2.7 step A: mirror mode core
+- `core/mirror_ops`: **twinPoints** (pairs by position, rounded to the stored 1/1000 cm;
+  points on the plane are their own twins; points sharing a spot pair in order),
+  **unpairedPoints**, **twinFaces**, **withTwins** (points, edges, faces), **mirrorFix**
+  (after a change made on one side: each changed point there puts its twin at its
+  mirror; points that were on the plane keep that coordinate at 0; new points left
+  alone), **makeSymmetric** (faces across the plane cut along it, faces lying in it
+  dropped, the kept half mirror-cloned and welded along the plane; refuses an empty
+  side, a face crossing twice, or opening a closed model). `MeshEdit::vertChanged` /
+  `oldVertCount` added (where a point was before the edit).
+- Tests: core 1802 checks (twins of a box across X / Y, touching and apart; twin
+  selection of a point, edge, face, a face across the plane; the fix for a move, both
+  sides moved alike, the -X side, a 30° turn, a point on the plane, a point without a
+  twin; Make symmetric both ways with exact bounds and volume, a face in the plane, a box
+  apart, the empty side refused, a 7-sided cylinder made symmetric across Y). Clean
+  under the sanitizers.
+
 ### 2026-11-22 — v0.2.6 "Bevel, bridge, shell" released
 - Help → Controls: a Bevel row (Bridge… and Shell… come from the menu table). README:
   Bevel and Bridge / Shell rows; the status paragraph was behind (no v0.2.5), now up

@@ -305,7 +305,11 @@ planned click by click:
   Bevel / Bridge / Shell): bevel in the Extrude tool, Mesh → Bridge…, Mesh → Shell….
 - **v0.2.7 "Mirror mode"** (agreed 2026-11-22, ARCHITECTURE §6 Mirror mode): twin
   selection, mirrored moves and Push/pull, Make symmetric. Parked: mirroring Draw, Cut
-  and Primitives.
+  and Primitives. Being built (2026-11-24): **A.** core (`core/mirror_ops`: twins by
+  position, the fix-up after a change on one side, Make symmetric); **B.** the app
+  (Shift+M, plane X/Y/Z, drawn in the views, twin selection, mirrored moves through one
+  fix-up after each tool event and preview, Push/pull on both, status bar count);
+  **C.** Make symmetric window; **D.** release.
 - Moved to milestone 3: separate into group (needs groups), smoothing of extruded side
   faces (needs smoothing groups).
 
