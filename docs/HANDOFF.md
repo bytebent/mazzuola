@@ -18,7 +18,7 @@ the notes for each version.
 
 - Released: v0.0.0 … v0.0.7 (milestone 0), alpha 1 v0.1.0–v0.1.4 (milestone 1, redesigned
   with the user click by click after a first attempt was withdrawn on 2026-11-19),
-  alpha 2 so far v0.2.0–v0.2.6. Current status and next step: top of `PLAN.md`.
+  alpha 2 (complete): v0.2.0–v0.2.7. Current status and next step: top of `PLAN.md`.
 - Scalpellino (`bytebent/scalpellino`, same owner) is the map editor that places
   Mazzuola's models as props (its milestone 10). Its docs hold the Bottega decisions.
 

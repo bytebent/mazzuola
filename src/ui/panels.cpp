@@ -177,6 +177,7 @@ void Editor::controlsWindow() {
             row("Resize the views", "drag the bars between them; double-click resets", 0);
             row("Push or pull a face (Push/pull)", "drag it (2D views: a face seen edge-on); Return applies; Cmd+drag: new side faces", 0);
             row("Push/pull an edge or point", "in edge / point mode: drag it along the surface's normal; the faces around tilt", 0);
+            row("Mirror mode", "Shift+M (plane: Mesh menu); picking selects the twin too; moves, turns, Push/pull and the Vertex tool are mirrored; points on the plane stay on it", 0);
             row("Bevel edges or points (Extrude tool)", "select edges with faces on both sides, or points; Shift+E switches to Bevel; drag the arrow or type the width; Segments 1-3; Return applies", 0);
             row("Extrude / inset", "select faces (or open edges); drag the arrow or type in Properties; Return applies", 0);
             row("Draw on a face (Draw)", "rectangle: two corners; circle: centre, radius; line: edge to edge; Return cuts it in; Shift: keep the direction", 0);

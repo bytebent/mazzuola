@@ -4,6 +4,14 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-24 — v0.2.7 "Mirror mode" released; milestone 2 complete
+- Help → Controls: a Mirror mode row (the menu items come from the table). README: a
+  Mirror mode row; status: alpha 2 complete. Release notes `docs/releases/v0.2.7.md`
+  (they say plainly that Extrude "Straight X" isn't mirrored, and Draw / Cut /
+  Primitives aren't yet). Version 0.2.7 (export check).
+- Checks: core 1810; 20 UI scripts pass at normal, 2× and no anti-aliasing; idle 0
+  ticks at 1× and 2× (control 891).
+
 ### 2026-11-24 — v0.2.7 steps B–C: mirror mode in the app, Make symmetric window
 - `Document`: `mirrorAxis` / `mirrorSide`; `select()` takes in the twins; a live edit
   keeps the twins from its start and `mirrorFixLive()` mirrors its changes; `apply()`

@@ -7,15 +7,15 @@ pixel textures, vertex colours. Made to work alongside Scalpellino; will export
 Personal project, built milestone by milestone. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 for the design and [`docs/PLAN.md`](docs/PLAN.md) for progress.
 
-**Status:** alpha 2 (milestone 2, modelling), up to v0.2.6 "Bevel, bridge, shell":
+**Status:** alpha 2 (milestone 2, modelling) is complete with v0.2.7 "Mirror mode":
 push/pull (faces, edges, points; through a shape: a hole), extrude, inset, bevel,
 drawing rectangles, circles, lines and outlines with holes, knife, loop cut, slide,
 subdivide, divide edges, poke, connect, clean-up (merge, collapse, weld, dissolve, tear
-open, fill, detach, flips, triangulate / join, double-sided), bridge, shell, on top of
+open, fill, detach, flips, triangulate / join, double-sided), bridge, shell, mirror mode and Make symmetric, on top of
 alpha 1 (all primitive shapes and rocks; selecting pieces, faces, edges and points;
 moving, copying, resizing, turning, typed values, mirror, flatten; undo, save and open
 `.mazz`; export `.glb`, `.gltf`, `.obj`; reference images; a 175 cm scale figure).
-Next: v0.2.7 "Mirror mode".
+Next: milestone 3.
 
 ## Download
 
@@ -54,6 +54,7 @@ including the planned ones with the milestone that brings them.
 | Grow / shrink selection | **Cmd++** / **Cmd+è** |
 | Delete | **Delete**: pieces go; points, edges and faces dissolve and the model stays closed (a face alone shrinks to a point; a loop cut's edges go with their side points). Mesh → Tear open leaves a hole instead |
 | Clean up | Mesh menu: Merge at centre / at first selected point, Collapse edges, Weld by distance… (0.1 cm), Dissolve, Tear open, Fill (3 or 4 points), Detach, Flip faces, Flip diagonal, Triangulate, Join into quads, Double-sided on / off |
+| Mirror mode | **Shift+M** (or Mesh → Mirror mode; Mesh → Mirror plane X / Y / Z); the plane through the world origin shows in the views. Picking selects the twin on the other side too; moves, turns, scales, Push/pull and the Vertex tool are mirrored; points on the plane stay on it; the status bar counts points without a twin. **Make symmetric…** rebuilds the other side as a mirror of the one you keep |
 | Bridge / Shell | Mesh menu: **Bridge…** joins two selected faces (or blocks of faces) by a tube, or two holes (edge mode: an edge on each); Segments, Twist. **Shell…** gives an open surface a wall: Thickness (2 cm), Inward / Outward / Centred |
 | Typed move / rotate / scale | **Cmd+T** (a window that stays open; the views show it live; **Return** applies, **Esc** cancels) |
 | Multi-Replicate (copies in a row, circle, spiral...) | **Cmd+Shift+D** (same kind of window) |

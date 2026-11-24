@@ -19,10 +19,9 @@ Design: [`ARCHITECTURE.md`](ARCHITECTURE.md). Rules: [`../CLAUDE.md`](../CLAUDE.
 - **Released v0.2.3 "Outlines and holes"** (user: "seems like it is done") and
   **v0.2.4 "Cut and divide"**; **v0.2.5 "Clean up"** released 2026-11-21, and the
   fix release **v0.2.5.1** after a code review (Dissolve on faces, points sharing a
-  spot, a Subdivide overrun). **v0.2.6 "Bevel, bridge, shell"** agreed 2026-11-22,
-  **released 2026-11-22**. Next: v0.2.7 "Mirror mode" (agreed), after the user
-  has tried v0.2.6. Then v0.2.7
-  "Mirror mode" (agreed).
+  spot, a Subdivide overrun). **v0.2.6 "Bevel, bridge, shell"** released 2026-11-22;
+  **v0.2.7 "Mirror mode"** released 2026-11-24 (user: "next!"). **Milestone 2 (alpha
+  2) is complete.** Next: plan milestone 3 with the user, click by click.
 - **Audit fixes** (2026-11-20, merged into main, no version release): release workflow,
   committed build folders, glTF export pair, view fallback without anti-aliasing,
   dependency hashes. See LOG.md. The release fix gets its first real run at v0.2.3.
@@ -305,7 +304,7 @@ planned click by click:
   Bevel / Bridge / Shell): bevel in the Extrude tool, Mesh → Bridge…, Mesh → Shell….
 - **v0.2.7 "Mirror mode"** (agreed 2026-11-22, ARCHITECTURE §6 Mirror mode): twin
   selection, mirrored moves and Push/pull, Make symmetric. Parked: mirroring Draw, Cut
-  and Primitives. Being built (2026-11-24): **A.** core (`core/mirror_ops`: twins by
+  and Primitives. Released 2026-11-24. Steps were: **A.** core (`core/mirror_ops`: twins by
   position, the fix-up after a change on one side, Make symmetric); **B.** the app
   (Shift+M, plane X/Y/Z, drawn in the views, twin selection, mirrored moves through one
   fix-up after each tool event and preview, Push/pull on both, status bar count);
