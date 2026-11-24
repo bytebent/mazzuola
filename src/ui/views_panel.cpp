@@ -152,6 +152,7 @@ void Editor::viewCell(int i, ImVec2 pos, ImVec2 size) {
     dl->PushClipRect(imgPos, {imgPos.x + imgSize.x, imgPos.y + imgSize.y}, true);
     if (refEdit_ >= 0 && refSlot(v.dir) == refEdit_) refOverlay(i, imgPos, imgSize, dl);
     else tool_->overlay(toolEnv(), geom(i), i, dl);
+    drawMirrorPlane(i, dl);
     dl->PopClipRect();
 
     // An accent frame around the view the fly mode drives.
@@ -182,13 +183,17 @@ void Editor::viewInput(int i, ImVec2 imgPos, ImVec2 imgSize) {
         ToolEnv env = toolEnv();
         if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !space && toolView_ < 0) {
             toolView_ = i;
-            tool_->press(env, pointer(i));
+            const Pointer pp = pointer(i);
+            tool_->press(env, pp);
+            mirrorSideAt(i, pp.sx, pp.sy);
+            mirrorAfterTool();
         } else if (toolView_ == i && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
             toolView_ = -1;
             tool_->release(env, pointer(i));
         } else if (toolView_ == i && ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
                    (io.MouseDelta.x != 0 || io.MouseDelta.y != 0)) {
             tool_->drag(env, pointer(i));
+            mirrorAfterTool();
         } else if (hovered && toolView_ < 0 && !ImGui::IsAnyMouseDown() &&
                    (io.MouseDelta.x != 0 || io.MouseDelta.y != 0)) {
             tool_->hover(env, pointer(i));

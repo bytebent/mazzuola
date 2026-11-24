@@ -347,6 +347,8 @@ void Editor::stepScript() {
             else if (what == "segments") in >> bridge_.segments;
             else if (what == "twist") in >> bridge_.twist;
             else if (what == "thickness") in >> shell_.thickness;
+            else if (what == "plane") in >> symAxis_;
+            else if (what == "keep") in >> symKeep_;
             else if (what == "side") {
                 std::string w;
                 in >> w;
@@ -497,7 +499,7 @@ void Editor::stepScript() {
             } else if (what == "op") {
                 std::string w;
                 in >> w;
-                const char* names[] = {"none", "transform", "replicate", "flatten", "subdivide", "divideedges", "poke", "weld", "bridge", "shell"};
+                const char* names[] = {"none", "transform", "replicate", "flatten", "subdivide", "divideedges", "poke", "weld", "bridge", "shell", "symmetric"};
                 if (w != names[(int)op_]) scriptFail(std::string("operation window is ") + names[(int)op_]);
             } else if (what == "armed" || what == "opvalid") {
                 // The active tool's preview is up / possible (push/pull: a push pending).
@@ -510,6 +512,16 @@ void Editor::stepScript() {
                 if (op_ != Op::None) armed = true, valid = opWhy_.empty(); // an operation window
                 const bool have = what == "armed" ? armed : valid;
                 if (have != (want != 0)) scriptFail(what + " is " + (have ? "1" : "0"));
+            } else if (what == "mirror") {
+                // expect mirror <axis 0-2 | -1 off>
+                int want = 0;
+                in >> want;
+                if (doc_.mirrorAxis != want) scriptFail("mirror is " + std::to_string(doc_.mirrorAxis));
+            } else if (what == "unpaired") {
+                // expect unpaired <n>: points without a twin (mirror mode)
+                int want = 0;
+                in >> want;
+                if (unpairedCount() != want) scriptFail("unpaired is " + std::to_string(unpairedCount()));
             } else if (what == "bevelling") {
                 // expect bevelling 0|1: the Extrude tool is in Bevel
                 int want = 0;

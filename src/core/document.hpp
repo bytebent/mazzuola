@@ -62,6 +62,9 @@ public:
         return true;
     }
     int oldVertCount() const { return oldVerts_; }
+    // Points were renumbered in this edit (some were dropped): indices from before it
+    // no longer name the same points.
+    bool renumbered() const { return renumbered_; }
     // The change so far (only values that really differ are kept).
     MeshChange change() const;
     // Puts back everything as it was before the edit.
@@ -73,10 +76,16 @@ private:
     int oldVerts_, oldFaces_;
     std::map<int, Vec3> vertBefore_;
     std::map<int, Face> faceBefore_;
+    bool renumbered_ = false;
     void touchVert(int i);
     void touchFace(int i);
     void bump() { if (version_) ++*version_; }
 };
+
+// Mirror mode (core/mirror_ops.cpp).
+Selection withTwins(const Mesh& m, const Selection& s, int axis);
+std::vector<int> twinPoints(const Mesh& m, int axis);
+void mirrorFix(MeshEdit& e, int axis, int side, const std::vector<int>& twins);
 
 class Document {
 public:
@@ -86,6 +95,12 @@ public:
 
     Mesh mesh;
     Selection sel;
+    // Mirror mode (v0.2.7): the plane's axis (-1: off) and the side being worked on
+    // (+1 / -1). Selections take in their twins; edits made on that side are mirrored.
+    int mirrorAxis = -1;
+    int mirrorSide = 1;
+    // Mirrors the live edit's changes made so far (see mirrorFix).
+    void mirrorFixLive();
 
     // A one-shot command. `fn` edits through the MeshEdit and may change the selection;
     // it returns false to cancel (nothing is kept). Returns true if a step was recorded.
@@ -95,11 +110,13 @@ public:
     void beginLive();
     bool liveActive() const { return live_ != nullptr; }
     MeshEdit& live() { return *live_; }
+    const std::vector<int>& liveTwins() const { return liveTwins_; } // from the live edit's start
     bool commitLive(const std::string& name); // false if nothing changed (no step)
     void cancelLive();
 
     // Selection-only changes are not undo steps.
-    void select(const Selection& s) {
+    void select(const Selection& sIn) {
+        const Selection s = mirrorAxis >= 0 ? withTwins(mesh, sIn, mirrorAxis) : sIn;
         if (s != sel) ++selVersion_;
         // The first point picked (Merge at first selected point): kept while it stays selected.
         if (s.mode != SelectMode::Vert) firstVert_ = -1;
@@ -153,6 +170,8 @@ private:
 
     long meshVersion_ = 0, selVersion_ = 0;
     int firstVert_ = -1;
+    std::vector<int> liveTwins_; // twins at the live edit's start (mirror mode)
+    int liveTwinsAxis_ = -1;
     std::unique_ptr<MeshEdit> live_;
     Selection liveSelBefore_;
 

@@ -21,7 +21,8 @@ enum class Act {
     Transform, Replicate, MovePoints, SnapToGrid, MirrorX, MirrorY, MirrorZ, MirrorCloneX, MirrorCloneY,
     MirrorCloneZ, Flatten, Subdivide, DivideEdges, Poke, Connect,
     MergeCentre, MergeFirst, Collapse, Weld, Dissolve, TearOpen, Fill, Detach, FlipFaces, FlipDiagonal,
-    Triangulate, JoinQuads, TwoSidedOn, TwoSidedOff, Bridge, Shell, Problems,
+    Triangulate, JoinQuads, TwoSidedOn, TwoSidedOff, Bridge, Shell, MirrorMode, MirrorPlaneX, MirrorPlaneY,
+    MirrorPlaneZ, MakeSymmetric, Problems,
     // Texture
     ApplyTexture,
     // View

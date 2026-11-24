@@ -69,6 +69,7 @@ if(MAZZ_BUILD_APP)
     src/app/file_ops.cpp
     src/app/tool_host.cpp
     src/app/clean_up.cpp
+    src/app/mirror_mode.cpp
     src/tools/select_tool.cpp
     src/tools/prim_tool.cpp
     src/tools/handles.cpp

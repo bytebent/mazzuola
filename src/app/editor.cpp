@@ -130,7 +130,8 @@ bool Editor::enabled(Act a) const {
     case Act::ExportGlb:
     case Act::ExportGltf:
     case Act::ExportObj:
-    case Act::ExportAgain: return !doc_.mesh.faces.empty();
+    case Act::ExportAgain:
+    case Act::MakeSymmetric: return !doc_.mesh.faces.empty();
     case Act::Undo: return doc_.canUndo();
     case Act::Redo: return doc_.canRedo();
     default: return true;
@@ -181,6 +182,11 @@ void Editor::run(Act a) {
     case Act::Weld: openOp(Op::Weld); break;
     case Act::Bridge: openOp(Op::Bridge); break;
     case Act::Shell: openOp(Op::Shell); break;
+    case Act::MirrorMode: setMirror(!mirrorOn_, mirrorPlane_); break;
+    case Act::MirrorPlaneX: setMirror(true, 0); break;
+    case Act::MirrorPlaneY: setMirror(true, 1); break;
+    case Act::MirrorPlaneZ: setMirror(true, 2); break;
+    case Act::MakeSymmetric: openOp(Op::Symmetric); break;
     case Act::Transform:
     case Act::MovePoints: openOp(Op::Transform); break;
     case Act::Replicate: openOp(Op::Replicate); break;
@@ -380,7 +386,10 @@ void Editor::handleKeys() {
         }
         {
             ToolEnv env = toolEnv();
-            if (tool_->key(env, c.key, c.shift, c.cmd)) continue;
+            if (tool_->key(env, c.key, c.shift, c.cmd)) {
+                mirrorAfterTool();
+                continue;
+            }
         }
         for (int i = 0; i < (int)Act::Count; ++i) {
             const Act a = (Act)i;
@@ -642,7 +651,12 @@ void Editor::menuBar() {
         ImGui::Separator();
         menuItem(Act::Bridge);
         menuItem(Act::Shell);
-        plannedItem("Mirror mode", 2);
+        ImGui::Separator();
+        menuItem(Act::MirrorMode, mirrorOn_);
+        menuItem(Act::MirrorPlaneX, mirrorPlane_ == 0);
+        menuItem(Act::MirrorPlaneY, mirrorPlane_ == 1);
+        menuItem(Act::MirrorPlaneZ, mirrorPlane_ == 2);
+        menuItem(Act::MakeSymmetric);
         ImGui::Separator();
         plannedItem("Groups, smoothing groups", 3);
         menuItem(Act::Problems);
@@ -724,6 +738,13 @@ void Editor::statusBar() {
                 static const char* names[] = {"x", "y", "z"};
                 const int a0 = std::min(ax.u, ax.v), a1 = std::max(ax.u, ax.v);
                 std::snprintf(buf, sizeof buf, "   |   %s %.2f  %s %.2f cm", names[a0], cursorWorld_[a0], names[a1], cursorWorld_[a1]);
+                right += buf;
+            }
+            if (mirrorOn_) {
+                const int n = unpairedCount();
+                static const char* pn[] = {"X", "Y", "Z"};
+                if (n > 0) std::snprintf(buf, sizeof buf, "   |   mirror %s, %d point%s without a twin", pn[mirrorPlane_], n, n == 1 ? "" : "s");
+                else std::snprintf(buf, sizeof buf, "   |   mirror %s", pn[mirrorPlane_]);
                 right += buf;
             }
             std::snprintf(buf, sizeof buf, "   |   grid %g cm%s%s", grid_.size, grid_.snap ? ", snap" : "", grid_.visible ? "" : ", hidden");

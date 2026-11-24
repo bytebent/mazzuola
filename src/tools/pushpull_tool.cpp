@@ -1,4 +1,5 @@
 #include "tools/pushpull_tool.hpp"
+#include "core/mirror_ops.hpp"
 #include "core/draw_ops.hpp"
 #include "core/model_ops.hpp"
 #include "core/numbers.hpp"
@@ -172,6 +173,33 @@ void PushPullTool::begin(ToolEnv& env, const Target& t, bool forceNew) {
     movedRegion_ = region_;
     forceNew_ = forceNew;
     frame(doc.mesh, t, origin_, normal_);
+    twinRegion_.clear();
+    twinVerts_.clear();
+    twinCentres_.clear();
+    if (doc.mirrorAxis >= 0) {
+        const auto twins = twinPoints(doc.mesh, doc.mirrorAxis);
+        twinNormal_ = mirrored(normal_, doc.mirrorAxis);
+        if (t.face >= 0) {
+            const auto tf = twinFaces(doc.mesh, twins);
+            for (int f : region_) {
+                if (tf[f] < 0 || region_.count(tf[f])) { // no twin, or across the plane
+                    twinRegion_.clear();
+                    break;
+                }
+                twinRegion_.insert(tf[f]);
+            }
+            for (int f : twinRegion_) twinCentres_.push_back(faceCentre(doc.mesh, f));
+        } else {
+            for (int v : t.verts) {
+                const int w = twins[v];
+                if (w < 0 || t.verts.count(w)) {
+                    twinVerts_.clear();
+                    break;
+                }
+                twinVerts_.insert(w);
+            }
+        }
+    }
     distance_ = 0;
     valid_ = true;
     kind_ = t.face >= 0 ? (int)pushKind(doc.mesh, region_, forceNew) : 0;
@@ -194,6 +222,15 @@ void PushPullTool::refresh(ToolEnv& env) {
     if (target_.face >= 0 && throughAt_ > 0 && distance_ <= -throughAt_ + 1e-9) {
         distance_ = clean(-throughAt_);
         valid_ = pushThrough(e, region_);
+        if (valid_ && !twinCentres_.empty()) {
+            // The twin's hole: its faces found again by their centres (indices moved).
+            std::set<int> again;
+            for (const Vec3& c : twinCentres_)
+                for (int f = 0; f < (int)e.mesh().faces.size(); ++f)
+                    if (length(faceCentre(e.mesh(), f) - c) < 1e-6 && dot(faceNormal(e.mesh(), f), twinNormal_) > 1 - 1e-6)
+                        again.insert(f);
+            valid_ = again.size() == twinCentres_.size() && pushThrough(e, again);
+        }
         through_ = valid_;
         movedRegion_.clear();
         moved_ = -1;
@@ -205,6 +242,9 @@ void PushPullTool::refresh(ToolEnv& env) {
         if (target_.face >= 0) {
             std::set<int> moved;
             valid_ = pushPullFaces(e, region_, distance_, forceNew_, &moved);
+            // Mirror mode: the twin, the same way along its own normal (adding faces and
+            // dropping points leaves the twin faces' numbers as they were).
+            if (valid_ && !twinRegion_.empty()) valid_ = pushPullFaces(e, twinRegion_, distance_, forceNew_, nullptr);
             if (valid_) {
                 movedRegion_ = moved;
                 // The clicked face's place among them (they keep their order).
@@ -213,6 +253,7 @@ void PushPullTool::refresh(ToolEnv& env) {
             }
         } else {
             valid_ = pushPoints(e, target_.verts, normal_, distance_);
+            if (valid_ && !twinVerts_.empty()) valid_ = pushPoints(e, twinVerts_, twinNormal_, distance_);
         }
         if (!valid_) e.revert(); // shown as it was, outlined in red
     }

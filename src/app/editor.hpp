@@ -24,6 +24,8 @@
 
 struct GLFWwindow;
 
+struct ImDrawList;
+
 namespace mazz {
 
 struct EditorOptions {
@@ -42,7 +44,7 @@ struct ViewsLayout {
 
 class Editor {
 public:
-    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke, Weld, Bridge, Shell }; // operation windows
+    enum class Op { None, Transform, Replicate, Flatten, Subdivide, DivideEdges, Poke, Weld, Bridge, Shell, Symmetric }; // operation windows
     Editor(GLFWwindow* window, const EditorOptions& opt);
     ~Editor();
 
@@ -223,6 +225,17 @@ private:
     double pokeHeight_ = 0;         // Poke...
     double weldDist_ = 0.1;         // Weld by distance... (cm)
     int weldCount_ = 0;             //   points it would remove
+    // Mirror mode (app/mirror_mode.cpp)
+    bool mirrorOn_ = false;
+    int mirrorPlane_ = 0;           // X
+    long unpairedVersion_ = -1;     // mesh version the count is for
+    int unpaired_ = 0;
+    void setMirror(bool on, int plane);
+    void mirrorSideAt(int view, double sx, double sy); // the side being worked on, at a press
+    void mirrorAfterTool();         // mirrors what the tool just changed
+    int unpairedCount();
+    void drawMirrorPlane(int view, ImDrawList* dl);
+    int symAxis_ = 0, symKeep_ = 1; // Make symmetric...
     BridgeParams bridge_;           // Bridge...
     ShellParams shell_;             // Shell...
     void cleanUp(Act a);            // Mesh menu clean-up commands (clean_ops)

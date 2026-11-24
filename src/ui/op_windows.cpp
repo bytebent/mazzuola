@@ -7,9 +7,11 @@
 #include "core/bevel_ops.hpp"
 #include "core/clean_ops.hpp"
 #include "core/divide_ops.hpp"
+#include "core/mirror_ops.hpp"
 #include "core/model_ops.hpp"
 #include "core/select_ops.hpp"
 #include "imgui.h"
+#include <cstdio>
 
 namespace mazz {
 
@@ -25,6 +27,7 @@ const char* opTitle(Editor::Op op) {
     case Editor::Op::Weld: return "Weld by distance";
     case Editor::Op::Bridge: return "Bridge";
     case Editor::Op::Shell: return "Shell";
+    case Editor::Op::Symmetric: return "Make symmetric";
     default: return "";
     }
 }
@@ -58,7 +61,10 @@ bool pivotField(PivotKind& kind, Vec3& typed, bool travelling) {
 void Editor::openOp(Op op) {
     cancelTool(); // also closes another operation window
     opWhy_.clear();
-    if (doc_.sel.empty()) {
+    if (op == Op::Symmetric) { // the whole model; the mirror mode's plane and side to start
+        symAxis_ = mirrorPlane_;
+        symKeep_ = doc_.mirrorSide;
+    } else if (doc_.sel.empty()) {
         showMessage(opTitle(op), "Select something first.");
         return;
     }
@@ -167,8 +173,22 @@ void Editor::refreshOpPreview() {
         }
         break;
     }
+    case Op::Symmetric: {
+        opWhy_.clear();
+        if (!makeSymmetric(e, symAxis_, symKeep_, &opWhy_)) {
+            if (opWhy_.empty()) opWhy_ = "it can't be done here";
+            e.revert();
+            break;
+        }
+        Selection none;
+        none.mode = opSel_.mode;
+        doc_.select(none);
+        break;
+    }
     case Op::None: break;
     }
+    // Mirror mode: what the window moved on one side, mirrored (Make symmetric does its own).
+    if (op_ != Op::Symmetric) doc_.mirrorFixLive();
     touch();
 }
 
@@ -262,6 +282,22 @@ void Editor::opWindow() {
             if (ImGui::RadioButton(side[k], (int)shell_.side == k)) shell_.side = (ShellSide)k, changed = true;
         }
         ImGui::TextDisabled("An open surface gets a wall this thick:\na turned-round copy and a rim.");
+    } else if (op == Op::Symmetric) {
+        ImGui::TextUnformatted("Plane");
+        const char* pn[3] = {"X", "Y", "Z"};
+        for (int a = 0; a < 3; ++a) {
+            ImGui::SameLine();
+            if (ImGui::RadioButton(pn[a], symAxis_ == a)) symAxis_ = a, changed = true;
+        }
+        ImGui::TextUnformatted("Keep the side");
+        char lbl[2][16];
+        std::snprintf(lbl[0], sizeof lbl[0], "+%s", pn[symAxis_]);
+        std::snprintf(lbl[1], sizeof lbl[1], "-%s", pn[symAxis_]);
+        ImGui::SameLine();
+        if (ImGui::RadioButton(lbl[0], symKeep_ > 0)) symKeep_ = 1, changed = true;
+        ImGui::SameLine();
+        if (ImGui::RadioButton(lbl[1], symKeep_ < 0)) symKeep_ = -1, changed = true;
+        ImGui::TextDisabled("The other side is rebuilt as its mirror; faces\nacross the plane are cut along it.");
     } else if (op == Op::Flatten) {
         ImGui::TextUnformatted("Line the points up on");
         for (int a = 0; a < 3; ++a) {

@@ -64,6 +64,11 @@ private:
     double throughAt_ = 0; // pushed in this far it goes through (0: it can't)
     bool through_ = false; // the preview is a hole
     Vec3 origin_, normal_; // centre and normal before the push
+    // Mirror mode: the twin of what is pushed, pushed the same distance along its own
+    // (mirrored) normal; the twin faces' centres and normal, to find them after a hole.
+    std::set<int> twinRegion_, twinVerts_;
+    std::vector<Vec3> twinCentres_;
+    Vec3 twinNormal_{0, 0, 0};
     double distance_ = 0;
     double startDistance_ = 0, startT_ = 0; // at the press
     int view_ = -1;

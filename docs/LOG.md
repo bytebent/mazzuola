@@ -4,6 +4,30 @@ What was done, step by step, newest first. Recent work lives here; when this fil
 long, move the oldest entries to `LOG-archive.md` (newest first there too). Status, plan
 and open questions are in [`PLAN.md`](PLAN.md).
 
+### 2026-11-24 — v0.2.7 steps B–C: mirror mode in the app, Make symmetric window
+- `Document`: `mirrorAxis` / `mirrorSide`; `select()` takes in the twins; a live edit
+  keeps the twins from its start and `mirrorFixLive()` mirrors its changes; `apply()`
+  mirrors one-shot changes and twins their selection. `MeshEdit::renumbered()`: an
+  edit that dropped points (Bevel, Dissolve…) is not fixed up (it worked on the twin
+  selection, so both sides changed alike).
+- Editor (`app/mirror_mode.cpp`): Mesh → **Mirror mode** (Shift+M, checked), **Mirror
+  plane X / Y / Z** (picking one turns it on), **Make symmetric…**. The side being
+  worked on: the selected point (or any point) nearest the mouse at a press. The fix-up
+  runs after each tool press, drag and key, and after each operation window preview.
+  The plane: a dashed line in the axis colour in 2D views that see it edge-on, a
+  see-through rectangle round the model in 3D. Status bar: "mirror X" and how many
+  points have no twin. Push/pull pushes the twin face (or points) the same distance
+  along its own normal; a hole's twin is found again by its faces' centres.
+- **Make symmetric…** window: Plane X / Y / Z, Keep +side / -side (starting from the
+  mirror mode's plane and the side last worked on); live preview; red with the reason.
+- Tests: core 1810 (Document: twin selection, a one-shot move, a live drag on -X with
+  undo, a bevel through the twin selection). `a2_mirror` (new): twin pick, Push/pull
+  both sides out (exact bounds), a Vertex-tool drag mirrored, Move / rotate / scale
+  mirrored, a box only on +X (8 points without a twin) made symmetric, an off-centre box
+  kept +X / -X, off again. 20 scripts pass.
+- Screenshot `m2-16-mirror.png` (top corners dragged out on +X, the -X side follows;
+  the plane dashed in Top and Front, see-through in 3D).
+
 ### 2026-11-24 — v0.2.7 step A: mirror mode core
 - `core/mirror_ops`: **twinPoints** (pairs by position, rounded to the stored 1/1000 cm;
   points on the plane are their own twins; points sharing a spot pair in order),

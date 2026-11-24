@@ -102,6 +102,7 @@ void MeshEdit::deleteFaces(const std::set<int>& faces, std::vector<int>* faceMap
         ++vo;
     }
     if (vo != nv) {
+        renumbered_ = true;
         resizeVerts(vo);
         for (int i = 0; i < (int)m_.faces.size(); ++i) {
             Face f = m_.faces[i];
@@ -142,6 +143,7 @@ MeshChange MeshEdit::change() const {
 }
 
 void MeshEdit::revert() {
+    renumbered_ = false;
     m_.verts.resize(oldVerts_);
     m_.faces.resize(oldFaces_);
     for (const auto& [i, p] : vertBefore_) m_.verts[i] = p;
@@ -158,9 +160,15 @@ bool Document::apply(const std::string& name, const std::function<bool(MeshEdit&
     const Selection before = sel;
     MeshEdit e(mesh, &meshVersion_);
     Selection s = sel;
+    std::vector<int> twins;
+    if (mirrorAxis >= 0) twins = twinPoints(mesh, mirrorAxis);
     if (!fn(e, s)) {
         e.revert();
         return false;
+    }
+    if (mirrorAxis >= 0) {
+        mirrorFix(e, mirrorAxis, mirrorSide, twins);
+        s = withTwins(mesh, s, mirrorAxis);
     }
     if (s != sel) ++selVersion_;
     sel = s;
@@ -172,6 +180,14 @@ void Document::beginLive() {
     cancelLive();
     live_ = std::make_unique<MeshEdit>(mesh, &meshVersion_);
     liveSelBefore_ = sel;
+    liveTwinsAxis_ = mirrorAxis;
+    liveTwins_.clear();
+    if (mirrorAxis >= 0) liveTwins_ = twinPoints(mesh, mirrorAxis);
+}
+
+void Document::mirrorFixLive() {
+    if (!live_ || mirrorAxis < 0 || liveTwinsAxis_ != mirrorAxis) return;
+    mirrorFix(*live_, mirrorAxis, mirrorSide, liveTwins_);
 }
 
 bool Document::commitLive(const std::string& name) {

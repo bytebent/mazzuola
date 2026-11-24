@@ -83,6 +83,11 @@ const ActionInfo kActions[] = {
     {Act::TwoSidedOff, "mesh.twosidedoff", "Double-sided off", "", 0},
     {Act::Bridge, "mesh.bridge", "Bridge...", "", 0},
     {Act::Shell, "mesh.shell", "Shell...", "", 0},
+    {Act::MirrorMode, "mesh.mirrormode", "Mirror mode", "Shift+M", 0},
+    {Act::MirrorPlaneX, "mesh.mirrorplanex", "Mirror plane X", "", 0},
+    {Act::MirrorPlaneY, "mesh.mirrorplaney", "Mirror plane Y", "", 0},
+    {Act::MirrorPlaneZ, "mesh.mirrorplanez", "Mirror plane Z", "", 0},
+    {Act::MakeSymmetric, "mesh.symmetric", "Make symmetric...", "", 0},
     {Act::Problems, "mesh.problems", "Problems list", "Cmd+Shift+O", 3},
 
     {Act::ApplyTexture, "texture.apply", "Apply current texture", "Shift+T", 5},

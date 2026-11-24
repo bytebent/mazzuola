@@ -99,6 +99,9 @@ opset pieces <n> <m> | divide <n> | height <h>   Subdivide / Divide edges / Poke
 opset weld <cm>                     Weld by distance window
 opset segments <n> | twist <n>      Bridge window
 opset thickness <cm> | side inward|outward|centred   Shell window
+opset plane <0-2> | keep <1|-1>     Make symmetric window
+expect mirror <axis 0-2 | -1>       mirror mode's plane (-1: off)
+expect unpaired <n>                 points without a twin (mirror mode)
 expect closed 0|1                   every edge has a face on each side
 expect twosidedfaces <n>            double-sided faces
 toolset draw size <w> <h> | radius <r> | segments <n>   Draw: typed values while adjusting

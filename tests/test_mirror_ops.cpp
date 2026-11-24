@@ -1,5 +1,6 @@
 // v0.2.7: mirror mode (core/mirror_ops): twins, the fix-up, Make symmetric.
 #include "check.hpp"
+#include "core/bevel_ops.hpp"
 #include "core/divide_ops.hpp"
 #include "core/mirror_ops.hpp"
 #include "core/model_ops.hpp"
@@ -173,10 +174,50 @@ void testMakeSymmetric() {
     for (const Face& f : c.faces) CHECK(f.n == 3 || f.n == 4);
 }
 
+void testDocument() {
+    Document doc;
+    doc.mesh = box({-50, 0, 0}, {50, 40, 40});
+    doc.mirrorAxis = 0;
+    const int a = vertAt(doc.mesh, {50, 40, 40}), b = vertAt(doc.mesh, {-50, 40, 40});
+    Selection s;
+    s.mode = SelectMode::Vert;
+    s.verts = {a};
+    doc.select(s);
+    CHECK(doc.sel.verts.size() == 2 && doc.sel.verts.count(b));
+    // A one-shot change on +X: mirrored.
+    doc.apply("move", [&](MeshEdit& e, Selection&) {
+        e.setVert(a, {60, 45, 40});
+        return true;
+    });
+    CHECK(nearV(doc.mesh.verts[b], {-60, 45, 40}, 1e-9));
+    // A live drag on -X (the side being worked on): +X follows; undo puts both back.
+    doc.mirrorSide = -1;
+    doc.beginLive();
+    doc.live().setVert(b, {-70, 45, 40});
+    doc.mirrorFixLive();
+    CHECK(nearV(doc.mesh.verts[a], {70, 45, 40}, 1e-9));
+    CHECK(doc.commitLive("drag"));
+    doc.undo();
+    CHECK(nearV(doc.mesh.verts[a], {60, 45, 40}, 1e-9) && nearV(doc.mesh.verts[b], {-60, 45, 40}, 1e-9));
+    // An operation that renumbers points (a bevel of an edge and its twin): both sides
+    // bevelled alike, no point left without its twin.
+    Document d2;
+    d2.mesh = box({-50, 0, 0}, {50, 40, 40});
+    d2.mirrorAxis = 0;
+    Selection es;
+    es.mode = SelectMode::Edge;
+    es.edges = {makeEdge(vertAt(d2.mesh, {50, 0, 40}), vertAt(d2.mesh, {50, 40, 40}))};
+    d2.select(es);
+    CHECK(d2.sel.edges.size() == 2);
+    CHECK(d2.apply("bevel", [&](MeshEdit& e, Selection& sel) { return bevelEdges(e, sel.edges, {5, 2}); }));
+    CHECK(isClosed(d2.mesh) && unpairedPoints(d2.mesh, 0) == 0);
+}
+
 } // namespace
 
 void testMirrorOps() {
     testTwins();
     testFix();
     testMakeSymmetric();
+    testDocument();
 }

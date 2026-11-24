@@ -106,7 +106,9 @@ Selection withTwins(const Mesh& m, const Selection& s, int axis) {
 }
 
 void mirrorFix(MeshEdit& e, int axis, int side, const std::vector<int>& twins) {
-    if (axis < 0 || axis > 2) return;
+    // Renumbered (an operation dropped points): the twins no longer fit. Such operations
+    // work on the twin selection, so both sides were changed alike anyway.
+    if (axis < 0 || axis > 2 || e.renumbered()) return;
     const int n = std::min((int)twins.size(), e.oldVertCount());
     for (int a = 0; a < n; ++a) {
         Vec3 before = e.mesh().verts[a];
